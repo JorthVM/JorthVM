@@ -1,4 +1,3 @@
-require decode.fs
 
 \ aaload 	32 		arrayref, index -- value 	load onto the stack a reference from an array
 
@@ -186,7 +185,6 @@ require decode.fs
 
 \ iadd 	60 		value1, value2 -- result 	add two ints
 : jvm_op_iadd + ;
-' jvm_op_iadd 0x60 jvm_set_op
 
 \ iaload 	2e 		arrayref, index -- value 	load an int from an array
 
@@ -382,7 +380,6 @@ require decode.fs
 
 \ nop 	00 		[No change] 	perform no operation
 : jvm_op_nop ;
-' jvm_op_nop 0x00 jvm_set_op
 
 \ pop 	57 		value -- 	discard the top value on the stack
 
@@ -419,3 +416,10 @@ require decode.fs
 \ impdep2 	ff 			reserved for implementation-dependent operations within debuggers; should not appear in any class file
 
 \ (no name) 	cb-fd 			these values are currently unassigned for opcodes and are reserved for future use
+
+
+
+: jvm_init_ops ( -- )
+['] jvm_op_nop 0x00 jvm_set_op
+['] jvm_op_iadd 0x60 jvm_set_op
+;

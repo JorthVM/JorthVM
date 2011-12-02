@@ -1,11 +1,11 @@
 require ../jvm/jvm.fs
 
-\ test fetch_instruction
-: fetch_instruction-test
 create program 
 0x04030201 , 
 program jvm_set_pc
 
+\ test fetch_instruction
+: fetch_instruction-test
 jvm_fetch_instruction
 assert( 1 = )
 jvm_fetch_instruction

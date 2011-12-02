@@ -7,9 +7,17 @@ Forth JVM is an implementation of the Java Virual Machine written in Forth.
 
 SPECIFICATION
 =============
-- [JVMspec][] The Java&trade; Virtual Machine Specification
+- [The Java Virtual Machine Specification](http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html)
+- [Forth JVM implementation documenation](implementation.html)
 
-[JVMspec]: http://java.sun.com/docs/books/jvms/second_edition/html/VMSpecTOC.doc.html 
+
+DOCUMENTATION
+=============
+
+The Forth JVM documentation is contained in _this file_ as well as in [HEADER.txt](HEADER.txt). These
+files are formated using the [markdown](http://daringfireball.net/projects/markdown/) markup language.
+HTML version of the documentation can be created by `make doc`.
+
 
 INSTALL
 =======
@@ -18,6 +26,7 @@ TODO
 Requirements
 ------------
 - Gforth
+- markdown (optional, for HTML documentation)
 
 Compile & install
 -----------------
@@ -60,6 +69,4 @@ Forth JVM is written by
 - Sebastian Rumpl <e0828489@student.tuwien.ac.at>
 - Bernhard Urban <lewurm@gmail.com>
 - Josef Eisl <josef.eisl@student.tuwien.ac.at>
-
-Copyright (C) 2011, 2012 Sebastian Rumpl, Bernhard Urban, Josef Eisl
 

@@ -1,0 +1,82 @@
+FORTH JVM
+=========
+
+Java Virtual Machine
+--------------------
+
+### Architecture
+
+The Java Virtual Machine (JVM) is a stack machine.
+
+### Instruction Set
+
+The JVM instruction set consist of about 200 instruction. Their opcodes are encoded as 8 bit 
+values.
+
+### `Class` File
+
+The JVM uses socalled `class` files to store machine code as well as constants, etc..
+
+Core
+----
+
+### Threading Technique `jvm_next`  
+
+The main part of Forth JVM is the socalled _NEXT routine_. It repeatedly performes the following 
+tasks:
+
+1. load the next instruction
+2. increment the instruction pointer (`ip`)
+3. execute the instruction
+
+There are different ways how this can be done ([ThreadedCode][]). In the current implementation of 
+the NEXT routine the socalled _call threading_ technique is used. The main disadvantage is that 
+(indirect) calls are used instead of indirect jumps. If jumps are used one next cycle consists of 
+the following steps:
+
+1. load instruction and increment `ip`
+2. jump to the address of the implementation of the instruction
+3. perform instruction code
+4. jump back to 1.
+
+If call instead of jumps are used the following steps are performed:
+
+1. load instruction and increment `ip`
+2. call the subrouting that contains the implementation of the instruction
+3. perform instruction code
+4. return from the call
+5. jump back to 1.
+
+Even worse than the fact that there is one more step is that call-return creates and destroys 
+a new stack frame what decreases performance dramatically. 
+*FIXME:** is this really the case in forth?
+
+
+### Lookup Table
+
+The lookup table is an array of 256 cells. Each cell stores an _execution token_. The offset 
+corresponds to the opcode of the JVM e.g. at the offset 0x10 the execution token for the JVM 
+instruction `bipush` is stored.
+
+Improvements
+------------
+
+- use jumps instead of calles (call threading)
+- just in time compilation? replace opcode with execution token of the instruction?
+
+Known Problems
+--------------
+
+- much too much...
+- not even close to something usable...
+
+References
+----------
+
+- [JVMspec][]: The Java&trade; Virtual Machine Specification
+- [ClassFile][]: The `class` File Format
+- [ThreadedCode][]: Threaded Code
+
+[JVMspec]: http://java.sun.com/docs/books/jvms/second_edition/html/VMSpecTOC.doc.html 
+[ClassFile]: http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html
+[ThreadedCode]: http://www.complang.tuwien.ac.at/forth/threaded-code.html

@@ -9,6 +9,7 @@ variable jvm_opcodetbl_size
 variable jvm_opcodetbl 
 
 \ program counter
+variable jvm_pc_start
 variable jvm_pc
 
 : jvm_set_op ( ... xt opcode - )
@@ -19,7 +20,7 @@ cells jvm_opcodetbl @ + ! \ calculate opcode-addr and store xt
 cells jvm_opcodetbl @ + @ execute
 ;
 
-\ see the implementeation of opcode
+\ show the implementeation of opcode
 : jvm_opcode_see ( ... opcode - ) 
   cells jvm_opcodetbl @ + @ xt-see
 ;
@@ -30,17 +31,17 @@ cells jvm_opcodetbl @ + @ execute
 \ allocate opcode table cells
   jvm_opcodetbl_size @ cells allocate throw \ xt for opcodes 
   jvm_opcodetbl ! \ store table pointer
-\ jvm_opcodetbl @ jvm_opcodetbl_size @ cells erase 
 \ set default handler
   ['] jvm_op_unsupported
   jvm_opcodetbl_size @ 0 +DO
-\ dup i . .
   dup i jvm_set_op 
   LOOP
-  .
+  drop
 ;
 
 : jvm_set_pc ( ... addr -- ... )
+  dup
+  jvm_pc_start ! \ store start address
   jvm_pc ! 
 ;
 

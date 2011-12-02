@@ -38,6 +38,15 @@
 \ bastore 	54 		arrayref, index, value -- 	store a byte or Boolean value into an array
 
 \ bipush 	10 	1: byte 	-- value 	push a byte onto the stack as an integer value
+: jvm_op_bipush 
+  jvm_fetch_instruction \ load byte
+  dup 0x80 and \ sign ext
+  if 
+    -1 8 lshift or 
+    \ NOTE -1 8 lshift cant be replaced by a constant because the cell width (and thus
+    \ the representation of -1) is not known apriori
+  endif 
+; \ FIXME improve?!
 
 \ caload 	34 		arrayref, index -- value 	load a char from an array
 
@@ -98,6 +107,7 @@
 \ dsub 	67 		value1, value2 -- result 	subtract a double from another
 
 \ dup 	59 		value -- value, value 	duplicate the value on top of the stack
+: jvm_op_dup dup ;
 
 \ dup_x1 	5a 		value2, value1 -- value1, value2, value1 	insert a copy of the top value into the stack two values from the top
 
@@ -398,6 +408,11 @@
 \ sastore 	56 		arrayref, index, value -- 	store short to array
 
 \ sipush 	11 	2: byte1, byte2 	-- value 	push a short onto the stack
+: jvm_op_sipush 
+  jvm_op_bipush \ fetch high byte and sign ext
+  8 lshift 
+  jvm_fetch_instruction or \ fetch low byte
+; 
 
 \ swap 	5f 		value2, value1 -- value1, value2 	swaps two top words on the stack (note that value1 and value2 must not be double or long)
 
@@ -410,6 +425,10 @@
 \ iinc, indexbyte1, indexbyte2, countbyte1, countbyte2 	[same as for corresponding instructions] 	execute opcode, where opcode is either iload, fload, aload, lload, dload, istore, fstore, astore, lstore, dstore, or ret, but assume the index is 16 bit; or execute iinc, where the index is 16 bits and the constant to increment by is a signed 16 bit short
 
 \ breakpoint 	ca 			reserved for breakpoints in Java debuggers; should not appear in any class file
+: jvm_op_breakpoint 
+ CR S" Data Stack: " type CR .s CR 
+ s" JVM breakpoint" exception throw 
+ ;
 
 \ impdep1 	fe 			reserved for implementation-dependent operations within debuggers; should not appear in any class file
 
@@ -421,5 +440,9 @@
 
 : jvm_init_ops ( -- )
 ['] jvm_op_nop 0x00 jvm_set_op
+['] jvm_op_bipush 0x10 jvm_set_op
+['] jvm_op_sipush 0x11 jvm_set_op
+['] jvm_op_dup 0x59 jvm_set_op
 ['] jvm_op_iadd 0x60 jvm_set_op
+['] jvm_op_breakpoint 0xCA jvm_set_op
 ;

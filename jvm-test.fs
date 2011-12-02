@@ -1,14 +1,10 @@
 include jvm/jvm.fs
 
-jvm_init_ops
+jvm_init
 
 create program 
-0x60606060 , \ iadd
+0xCA60592A10 , \ bipush 42, dup, iadd (bipush=0x10)
+0xCA , \ breakpoint
 program jvm_set_pc
 
-5 5
-
-jvm_fetch_instruction 
-\ jvm_execute
-
-.s
+\ jvm_run

@@ -1,4 +1,8 @@
 
 : jvm_fetch_instruction ( ... -- opcode ... )
-  jvm_pc @ dup 1 + jvm_pc ! @ 0xff and \ swap
-;
+  POSTPONE jvm_pc POSTPONE @ 
+  POSTPONE dup 1 POSTPONE literal
+  POSTPONE + POSTPONE jvm_pc 
+  POSTPONE ! POSTPONE @ 0xff POSTPONE literal 
+  POSTPONE and \ swap
+; immediate

@@ -17,13 +17,13 @@ cells jvm_opcodetbl @ + ! \ calculate opcode-addr and store xt
 ;
 
 : jvm_execute (  ... opcode - ... [result of operation] )
-cells jvm_opcodetbl @ + @ execute
-;
+POSTPONE cells POSTPONE jvm_opcodetbl POSTPONE @ POSTPONE + POSTPONE @  POSTPONE execute
+; immediate
 
 \ show the implementeation of opcode
 : jvm_opcode_see ( ... opcode - ) 
   cells jvm_opcodetbl @ + @ xt-see
-;
+; 
 
 : jvm_init_op_tbl ( ... - ... )
 \ store opcode table size

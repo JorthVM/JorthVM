@@ -10,9 +10,9 @@ include execute.fs
 ;
 
 : jvm_next
-    jvm_fetch_instruction 
-    jvm_execute
-;
+  POSTPONE jvm_fetch_instruction 
+  POSTPONE jvm_execute
+; immediate
 
 : jvm_run
   begin 

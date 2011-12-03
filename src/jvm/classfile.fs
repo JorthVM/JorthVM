@@ -180,6 +180,36 @@ variable classfile
   4 + + \ add length filed and info field
 ;
 
+: jvm_constpool_print_code_attr { const-addr addr1 -- } 
+  addr1 6 + 
+  \ u2 max_stack
+  dup \ dup addr
+  ." max stack:  " 
+  @ jvm_swap_u2 \ load name idx
+  . CR
+  2 +
+
+  \ u2 max_locals
+  dup \ dup addr
+  ." max locals:  " 
+  @ jvm_swap_u2 \ load name idx
+  . CR
+  2 +
+
+  \ u4 code_length
+  dup \ dup addr
+  ." code length:  " 
+  @ jvm_swap_u4 \ load name idx
+  dup . CR
+  swap 4 + swap
+  
+  2dup \ dup ( addr n )
+  dump 
+  + \ calc new address
+
+  drop
+;
+
 : jvm_print_classfile { addr -- }
 \ addr stores the start address of the memory where the file is stored
 \ first 4  bytes should be 0xCAFEBABE
@@ -246,12 +276,12 @@ s" Magic:  " type
   
 \   	u2 this_class;
   dup \ save a-addr  
-  s" this class:  " type 
+  ." this class:  " 
   @ jvm_swap_u2 
   \ dup hex. space
   addr 10 + swap \ get start of the constpool
   jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
-  addr 10 + jvm_constpool_print_classname CR
+  addr 10 + swap jvm_constpool_print_classname CR
   2 +
   
 \   	u2 super_class;
@@ -261,7 +291,7 @@ s" Magic:  " type
   \ dup hex. space
   addr 10 + swap \ get start of the constpool
   jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
-  addr 10 + jvm_constpool_print_classname CR
+  addr 10 + swap jvm_constpool_print_classname CR
   2 + 
   
 \   	u2 interfaces_count;
@@ -271,17 +301,14 @@ s" Magic:  " type
   dup . CR \ store count
 
 \   	u2 interfaces[interfaces_count];
-  \ TODO test me!!
   0 ?DO
     2 + 
     dup \ save a-addr  
-    s" Interface[" type
     @ jvm_swap_u2 
-    \ dup hex. space
-    s" ] " type
+    ." Interface[ " i . ." ] "
     addr 10 + swap \ get start of the constpool
     jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
-    addr 10 + jvm_constpool_print_classname CR
+    addr 10 + swap jvm_constpool_print_classname CR
   LOOP
   2 + 
 
@@ -295,7 +322,6 @@ s" Magic:  " type
   swap 2 + swap
 
 \   	field_info fields[fields_count];
-  \ TODO test me!!
   0 ?DO
     \ print field idx
     s" Field[ " type
@@ -393,10 +419,12 @@ s" Magic:  " type
       dup @ jvm_swap_u2 \ const idx
       addr 10 + swap 
       jvm_constpool_idx
-      .s CR
       s" Code" jvm_constpool_cmp_utf8 
       IF
         ." CODE ATTRIBUTE" CR
+        dup \ dup address 
+        addr 10 + swap \ constpool address
+        jvm_constpool_print_code_attr
       ENDIF
       addr 10 + swap \ fixme
       ( const-addr addr1 -- addr2 )

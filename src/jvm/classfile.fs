@@ -206,6 +206,33 @@ variable classfile
   2dup \ dup ( addr n )
   dump 
   + \ calc new address
+  
+  \ u4 exception_table_length
+  dup \ dup addr
+  ." exception table length:  " 
+  @ jvm_swap_u2 \ load name idx
+  dup . CR
+  swap 2 + swap
+  
+  \ u2 attributes_count
+  \ TODO examin exception table
+  8 * \ u2 start_pc u2 end_pc u2 handler_pc u2 catch_type
+  + 
+
+  \ u2 attributes_count
+  dup \ save a-addr  
+  ." attributes count:  " 
+  @ jvm_swap_u2 
+  dup . CR
+  swap 2 + swap 
+  s" -----------" type CR
+  ( addr count -- )
+  0 ?DO 
+    const-addr swap \ fixme
+    ( const-addr addr1 -- addr2 )
+    jvm_constpool_print_attr
+  LOOP
+  s" -----------" type CR
 
   drop
 ;
@@ -421,10 +448,11 @@ s" Magic:  " type
       jvm_constpool_idx
       s" Code" jvm_constpool_cmp_utf8 
       IF
-        ." CODE ATTRIBUTE" CR
+        ." BEGIN CODE ATTRIBUTE" CR
         dup \ dup address 
         addr 10 + swap \ constpool address
         jvm_constpool_print_code_attr
+        ." END CODE ATTRIBUTE" CR
       ENDIF
       addr 10 + swap \ fixme
       ( const-addr addr1 -- addr2 )

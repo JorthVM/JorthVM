@@ -13,11 +13,11 @@ require ../jvm/classfile.fs
   dup 5 + 0x73 swap ! \ s
   dup 6 + 0x74 swap ! \ t
 
-  dup s" Test" rot jvm_constpool_cmp_utf8
+  dup s" Test" jvm_constpool_cmp_utf8
   assert( ) \ assert true
-  dup s" Test!" rot jvm_constpool_cmp_utf8
+  dup s" Test!" jvm_constpool_cmp_utf8
   assert( invert ) \ assert false
-  dup s" tEST" rot jvm_constpool_cmp_utf8
+  dup s" tEST" jvm_constpool_cmp_utf8
   assert( invert ) \ assert false
   drop
 ;

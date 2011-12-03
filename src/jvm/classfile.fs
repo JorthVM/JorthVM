@@ -129,7 +129,7 @@ variable classfile
   2drop
 ;
 
-: jvm_constpool_cmp_utf8 { xc-addr n addr -- } \ compare a counted xc string with a utf8 constant
+: jvm_constpool_cmp_utf8 { addr xc-addr n -- } \ compare a counted xc string with a utf8 constant
 \ FIXME not really efficient. may be we should ignore utf8 for the moment? anyway cell wide compare
 \ would be more efficient
   addr 1 + \ u2 length field
@@ -390,6 +390,14 @@ s" Magic:  " type
     s" -----------" type CR
     ( addr count -- )
     0 ?DO 
+      dup @ jvm_swap_u2 \ const idx
+      addr 10 + swap 
+      jvm_constpool_idx
+      .s CR
+      s" Code" jvm_constpool_cmp_utf8 
+      IF
+        ." CODE ATTRIBUTE" CR
+      ENDIF
       addr 10 + swap \ fixme
       ( const-addr addr1 -- addr2 )
       jvm_constpool_print_attr

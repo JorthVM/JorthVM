@@ -23,8 +23,6 @@
 
 \ 0 Value fd-in
 variable filebuffer
-10 allocate throw
-filebuffer !
 variable classfile
 
 : jvm_read_classfile ( c-addr u1 - u2 ) \ return the size of the file (in bytes)

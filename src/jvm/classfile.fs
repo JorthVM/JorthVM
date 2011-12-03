@@ -38,8 +38,6 @@ variable classfile
   read-file throw            ( c-addr u wfileid - u2 )
 ;
 
-1 cells allocate throw dup 
-
 : jvm_constpool_type_name ( a-addr - c-addr n ) \ get the name of an entry in the const table
   @ 0xff and
   CASE
@@ -111,7 +109,15 @@ variable classfile
   ENDCASE
 ;
 
-: jvm_print_classfile ( a-addr - )
+: jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+\ returns address of entry with index idx from constant pool starting at address a-addr1
+  1 ?DO
+    dup jvm_constpool_type_size +
+  LOOP
+;
+
+: jvm_print_classfile { addr -- }
+  addr 
   .s CR
   \ print magic
   dup \ save a-addr  
@@ -137,14 +143,45 @@ variable classfile
   @ jvm_swap_u2 
   dup . CR \ store count
 
+\ print constant pool
   swap 2 + \ start address 
   swap
 \  .s CR
   1 ?DO
+    s" [" type
+    i .
+    s" ] " type
     dup jvm_constpool_type_name type  
     s" : " type
     dup jvm_constpool_type_size dup . +
     CR
   LOOP
+
+  dup \ save a-addr  
+  s" Access_Flags (Class):  " type 
+  @ jvm_swap_u2 
+  hex. CR
+  
+  2 +
+  dup \ save a-addr  
+  s" this class:  " type 
+  @ jvm_swap_u2 
+  dup hex. CR
+  addr 10 + swap \ get start of the constpool
+  jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+  jvm_constpool_type_name type CR
+  
+  2 +
+  dup \ save a-addr  
+  s" super class:  " type 
+  @ jvm_swap_u2 
+  dup hex. CR
+  addr 10 + swap \ get start of the constpool
+  jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+  jvm_constpool_type_name type CR
+  
+  
+
+
   drop \ drop last address
 ;

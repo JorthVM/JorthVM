@@ -139,37 +139,70 @@ variable classfile
   jvm_constpool_print_utf8
 ;
 
-: jvm_print_classfile { addr -- }
-  addr 
-  .s CR
-  \ print magic
+: jvm_constpool_attr_size { attr-addr -- n } \ get the size of the attribute entry (in bytes)
+  2 + \ length field
+  @ jvm_swap_u4
+  6 + \ add u2 (name_index) and u4 (length)
+;
+
+: jvm_constpool_print_attr { const-addr addr1 -- addr2 } 
+  \ const-addr: address of the constpool, addr1: start address of the attribute, addr2: address after the attribute
+  addr1
+  s" attribute name:  " type 
+  dup \ dup addr
+  @ jvm_swap_u2 \ load name idx
+  \ dup hex. space
+  const-addr swap \ get start of the constpool
+  jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+  jvm_constpool_print_utf8 CR
+  2 +
+
   dup \ save a-addr  
-  s" Magic:  " type 
+  s" attribute length:  " type 
+  @ jvm_swap_u4 
+  dup . CR
+  4 + + \ add length filed and info field
+;
+
+: jvm_print_classfile { addr -- }
+\ addr stores the start address of the memory where the file is stored
+\ first 4  bytes should be 0xCAFEBABE
+\ after the info of an element has been printed, the top of the stack
+\ contains the address of the next data field. the only exception to this is 
+\ if the next filed is the array of a count/array pair. in this case after
+\ printing the count the top of the stack contains the next address and the count 
+\ e.g. ( addr1 n - addr2)
+
+  addr 
+\   	u4 magic;
+  dup \ save a-addr  
+s" Magic:  " type 
   @ jvm_swap_u4 
   hex. CR
-  s" Minor:  " type 
-  
   4 + 
+
+\   	u2 minor_version;
   dup \ save a-addr  
+  s" Minor:  " type 
   @ jvm_swap_u2 
   hex. CR
-
   2 +
+
+\   	u2 major_version;
   dup \ save a-addr  
   s" Major:  " type 
   @ jvm_swap_u2 
   hex. CR
-  
   2 + 
+  
+\   	u2 constant_pool_count;
   dup \ save a-addr  
   s" Constant Pool count:  " type 
   @ jvm_swap_u2 
   dup . CR \ store count
+  swap 2 + swap
 
-\ print constant pool
-  swap 2 + \ start address 
-  swap
-\  .s CR
+\   	cp_info constant_pool[constant_pool_count-1];
   1 ?DO
     s" [" type
     i .
@@ -179,70 +212,186 @@ variable classfile
     dup jvm_constpool_type_size dup . +
     CR
   LOOP
+  
+  CR
 
+\   	u2 access_flags;
   dup \ save a-addr  
   s" Access_Flags (Class):  " type 
   @ jvm_swap_u2 
   hex. CR
-  
   2 +
+  
+\   	u2 this_class;
   dup \ save a-addr  
   s" this class:  " type 
   @ jvm_swap_u2 
-  dup hex. space
+  \ dup hex. space
   addr 10 + swap \ get start of the constpool
   jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
   addr 10 + jvm_constpool_print_classname CR
-  
   2 +
+  
+\   	u2 super_class;
   dup \ save a-addr  
   s" super class:  " type 
   @ jvm_swap_u2 
-  dup hex. space
+  \ dup hex. space
   addr 10 + swap \ get start of the constpool
   jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
   addr 10 + jvm_constpool_print_classname CR
-  
   2 + 
+  
+\   	u2 interfaces_count;
   dup \ save a-addr  
   s" Interfaces count:  " type 
   @ jvm_swap_u2 
   dup . CR \ store count
 
+\   	u2 interfaces[interfaces_count];
   \ TODO test me!!
   0 ?DO
     2 + 
     dup \ save a-addr  
-    s" [" type
+    s" Interface[" type
     @ jvm_swap_u2 
-    dup hex. space
+    \ dup hex. space
     s" ] " type
     addr 10 + swap \ get start of the constpool
     jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
     addr 10 + jvm_constpool_print_classname CR
   LOOP
-
   2 + 
+
+  CR
+
+\   	u2 fields_count;
   dup \ save a-addr  
   s" Fields count:  " type 
   @ jvm_swap_u2 
   dup . CR \ store count
-  
-  \ TODO iterate fields
-  drop
+  swap 2 + swap
 
-  2 + 
+\   	field_info fields[fields_count];
+  \ TODO test me!!
+  0 ?DO
+    \ print field idx
+    s" Field[ " type
+    i .
+    s" ] " type CR
+
+    dup \ save a-addr  
+    s" access flags:  " type 
+    @ jvm_swap_u2 
+    hex. CR
+    2 +
+    
+    dup \ save a-addr  
+    s" name_index:  " type 
+    @ jvm_swap_u2 
+    \ dup hex. space
+    addr 10 + swap \ get start of the constpool
+    jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+    jvm_constpool_print_utf8 CR
+    2 +
+    
+    dup \ save a-addr  
+    s" decriptor_index:  " type 
+    @ jvm_swap_u2 
+    \ dup hex. space
+    addr 10 + swap \ get start of the constpool
+    jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+    jvm_constpool_print_utf8 CR
+    2 +
+    
+    dup \ save a-addr  
+    s" attributes counts:  " type 
+    @ jvm_swap_u2 
+    dup . CR
+    swap 2 + swap 
+    s" -----------" type CR
+    ( addr count -- )
+    0 ?DO 
+      addr 10 + swap \ fixme
+      ( const-addr addr1 -- addr2 )
+      jvm_constpool_print_attr
+    LOOP
+    s" -----------" type CR
+
+  LOOP
+ 
+  CR
+
+\   	u2 methods_count;
   dup \ save a-addr  
   s" Methodes count:  " type 
   @ jvm_swap_u2 
   dup . CR \ store count
+  swap 2 + swap
 
-  \ TODO iterate methods
-  drop
+\   	method_info methods[methods_count];
+  0 ?DO
+    \ print field idx
+    s" Method[ " type
+    i .
+    s" ] " type CR
 
-  \ TODO attributes count
+    dup \ save a-addr  
+    s" access flags:  " type 
+    @ jvm_swap_u2 
+    hex. CR
+    2 +
+    
+    dup \ save a-addr  
+    s" name_index:  " type 
+    @ jvm_swap_u2 
+    \ dup hex. space
+    addr 10 + swap \ get start of the constpool
+    jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+    jvm_constpool_print_utf8 CR
+    2 +
+    
+    dup \ save a-addr  
+    s" decriptor_index:  " type 
+    @ jvm_swap_u2 
+    \ dup hex. space
+    addr 10 + swap \ get start of the constpool
+    jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+    jvm_constpool_print_utf8 CR
+    2 +
+    
+    dup \ save a-addr  
+    s" attributes counts:  " type 
+    @ jvm_swap_u2 
+    dup . CR
+    swap 2 + swap 
+    s" -----------" type CR
+    ( addr count -- )
+    0 ?DO 
+      addr 10 + swap \ fixme
+      ( const-addr addr1 -- addr2 )
+      jvm_constpool_print_attr
+    LOOP
+    s" -----------" type CR
 
-  \ TODO iterate attributes
+  LOOP
+  
+  CR
+
+\   	u2 attributes_count;
+  dup \ save a-addr  
+  s" class attributes counts:  " type 
+  @ jvm_swap_u2 
+  dup . CR
+  swap 2 + swap 
+
+\   	attribute_info attributes[attributes_count];
+  ( addr count -- )
+  0 ?DO 
+    ( const-addr addr1 -- addr2 )
+    addr 10 + swap \ fixme
+    jvm_constpool_print_attr
+  LOOP
 
   drop \ drop last address
 ;

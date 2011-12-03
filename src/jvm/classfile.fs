@@ -131,6 +131,24 @@ variable classfile
   2drop
 ;
 
+: jvm_constpool_cmp_utf8 { xc-addr n addr -- } \ compare a counted xc string with a utf8 constant
+\ FIXME not really efficient. may be we should ignore utf8 for the moment? anyway cell wide compare
+\ would be more efficient
+  addr 1 + \ u2 length field
+  @ jvm_swap_u2 \ read length
+  n = IF
+    true
+    n 0 ?DO
+    ( b1 -- [b1 & *addr1=*addr2] )
+    xc-addr i + addr 3 + i +
+    @ 0xff and swap @ 0xff and = 
+    and \ & b1
+    LOOP
+  ELSE
+    false
+  ENDIF
+;
+
 : jvm_constpool_print_classname { const-addr class-addr -- } \ print the class name of a constpool class entry
   class-addr 1 + \ u2 idx field
   @ jvm_swap_u2 \ read idx
@@ -207,7 +225,13 @@ s" Magic:  " type
     s" [" type
     i .
     s" ] " type
-    dup jvm_constpool_type_name type  
+    dup dup dup jvm_constpool_type_name type  
+    @ 0xff and \ read tag
+    1 = IF \ if utf8 string, print it!
+      space 0x22 emit jvm_constpool_print_utf8 0x22 emit space \ 0x22 = "
+    ELSE
+      drop
+    ENDIF
     s" : " type
     dup jvm_constpool_type_size dup . +
     CR

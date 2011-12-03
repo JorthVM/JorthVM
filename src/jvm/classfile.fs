@@ -116,6 +116,24 @@ variable classfile
   LOOP
 ;
 
+: jvm_constpool_print_utf8 { addr -- } \ prints a utf8 string
+  addr 1 + \ u2 length field
+  @ jvm_swap_u2 \ read length
+  3 + \ add u1 (tag) and u2 (length)
+  addr + \ end addr
+  addr 3 + \ start addr
+  
+  begin
+  2dup
+  > while
+    xc@+ xemit
+  repeat
+\  0 ?DO
+\    i .    
+\  LOOP
+
+;
+
 : jvm_print_classfile { addr -- }
   addr 
   .s CR

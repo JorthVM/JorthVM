@@ -128,10 +128,15 @@ variable classfile
   > while
     xc@+ xemit
   repeat
-\  0 ?DO
-\    i .    
-\  LOOP
+  2drop
+;
 
+: jvm_constpool_print_classname { const-addr class-addr -- } \ print the class name of a constpool class entry
+  class-addr 1 + \ u2 idx field
+  @ jvm_swap_u2 \ read idx
+  const-addr swap 
+  jvm_constpool_idx
+  jvm_constpool_print_utf8
 ;
 
 : jvm_print_classfile { addr -- }
@@ -184,22 +189,65 @@ variable classfile
   dup \ save a-addr  
   s" this class:  " type 
   @ jvm_swap_u2 
-  dup hex. CR
+  dup hex. space
   addr 10 + swap \ get start of the constpool
   jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
-  jvm_constpool_type_name type CR
+  addr 10 + jvm_constpool_print_classname CR
   
   2 +
   dup \ save a-addr  
   s" super class:  " type 
   @ jvm_swap_u2 
-  dup hex. CR
+  dup hex. space
   addr 10 + swap \ get start of the constpool
   jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
-  jvm_constpool_type_name type CR
+  addr 10 + jvm_constpool_print_classname CR
   
-  
+  2 + 
+  dup \ save a-addr  
+  s" Interfaces count:  " type 
+  @ jvm_swap_u2 
+  dup . CR \ store count
 
+  \ TODO test me!!
+  0 ?DO
+    2 + 
+    dup \ save a-addr  
+    s" [" type
+    @ jvm_swap_u2 
+    dup hex. space
+    s" ] " type
+    addr 10 + swap \ get start of the constpool
+    jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+    addr 10 + jvm_constpool_print_classname CR
+  LOOP
+
+  2 + 
+  dup \ save a-addr  
+  s" Fields count:  " type 
+  @ jvm_swap_u2 
+  dup . CR \ store count
+  
+  \ TODO iterate fields
+  drop
+
+  2 + 
+  dup \ save a-addr  
+  s" Methodes count:  " type 
+  @ jvm_swap_u2 
+  dup . CR \ store count
+
+  \ TODO iterate methods
+  drop
+
+  \ TODO attributes count
+
+  \ TODO iterate attributes
 
   drop \ drop last address
 ;
+
+\ Usage:
+\   s" Main.class" jvm_read_classfile .
+\   filebuffer @ jvm_print_classfile  
+

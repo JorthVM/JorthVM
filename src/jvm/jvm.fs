@@ -1,5 +1,7 @@
 include decode.fs
 include fetch.fs
+include frame.fs
+include classfile.fs
 
 \ register operation
 include execute.fs

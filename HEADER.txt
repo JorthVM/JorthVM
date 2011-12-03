@@ -17,6 +17,27 @@ values.
 
 The JVM uses socalled `class` files to store machine code as well as constants, etc..
 
+### Constant Pool
+
+JVM heavily uses the constant pool.
+
+### JVM stack
+
+Each thread consists of a JVM stack. It is used to store frames for methods. The 
+specification does not require the JVM stack to be implemented in a contiguous memory area.
+
+### Frames
+
+Frames are used to store local variables, operant stacks, for dynamic linking and other purposes. 
+Frames may be heap allocated ([JVMStacks][]). The frame also contains a pointer to the previous 
+frame.
+
+### Operant Stack
+
+Conceptually the operant stack is part of the current frame. In Forth JVM the Forth stack is used
+for operants were as other frame data (local variables, previous frame pointer, etc.) are 
+stored on the heap.
+
 Core
 ----
 
@@ -58,11 +79,23 @@ The lookup table is an array of 256 cells. Each cell stores an _execution token_
 corresponds to the opcode of the JVM e.g. at the offset 0x10 the execution token for the JVM 
 instruction `bipush` is stored.
 
-Improvements
-------------
+TODO
+----
+
+- method frames/local variables
+- find a better solution for terminating a program (catch special exceptions)
+- Java Standard APIs. Somehow we must support at least some standard API calls 
+  (System.out.println(String) would be nice)
+- native code calls?!
+- threads? multiple pcs?!
+
+Ideas
+-----
 
 - use jumps instead of calles (call threading)
 - just in time compilation? replace opcode with execution token of the instruction?
+- constant pool: wordlist migth be useful
+- somehow abuse the (g)forth kernel to execute next?!
 
 Known Problems
 --------------
@@ -78,5 +111,7 @@ References
 - [ThreadedCode][]: Threaded Code
 
 [JVMspec]: http://java.sun.com/docs/books/jvms/second_edition/html/VMSpecTOC.doc.html 
+[JVMstacks]: http://java.sun.com/docs/books/jvms/second_edition/html/Overview.doc.html#30934
 [ClassFile]: http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html
 [ThreadedCode]: http://www.complang.tuwien.ac.at/forth/threaded-code.html
+

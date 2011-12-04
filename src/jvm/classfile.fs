@@ -130,13 +130,56 @@ variable classfile
 ; 
 
 \ integer
-: jvm_cp_integer_bytes ( addr -- n ) \ get the bytes of a integer constant pool entry
+: jvm_cp_integer_bytes ( addr -- n ) \ get the bytes of an integer constant pool entry
   1 + jvm_ul@
 ;
-\ integer
-: jvm_cp_float_bytes ( addr -- n ) \ get the bytes of a integer constant pool entry
-  POSTPONE jvm_cp_integer_bytes
+
+\ float
+: jvm_cp_float_bytes ( addr -- n ) \ get the bytes of a float constant pool entry
+\ FIXME should we use the float stack?
+  1 + jvm_ul@
 ;
+
+\ long
+: jvm_cp_long_bytes ( addr -- n2 n1 ) \ get the bytes of a long constant pool entry 
+\ (n2 high 32 bit, n1 low 32 bit)
+  dup 1 + jvm_ul@ swap
+  5 + jvm_ul@
+;
+
+\ double
+: jvm_cp_double_bytes ( addr -- n2 n1 ) \ get the bytes of a double constant pool entry 
+\ (n2 high 32 bit, n1 low 32 bit)
+\ FIXME should we use the float stack?
+  dup 1 + jvm_ul@ swap
+  5 + jvm_ul@
+;
+
+\ name type
+: jvm_cp_nametype_name_idx ( addr -- idx) \ get the name index of a nametype constant pool entry
+  1 + jvm_uw@
+; 
+
+: jvm_cp_nametype_desc_idx ( addr -- idx) \ get the descriptor index of a nametype constant pool entry
+  3 + jvm_uw@
+; 
+
+\ Utf8
+: jvm_cp_utf8_length ( addr -- n) \ get the length of the data of a utf8 constant pool entry
+  1 + jvm_uw@
+; 
+
+: jvm_cp_utf8_ref ( addr1 -- addr2) \ get the reference of the data of a utf8 constant pool entry
+  3 POSTPONE literal POSTPONE + 
+; immediate 
+
+: jvm_cp_utf8_c-ref ( addr1 -- addr2 n) \ get the counted reference of the data of a utf8 constant pool entry
+  dup jvm_cp_utf8_ref swap
+  1 + jvm_uw@
+;  
+
+
+
 
 : jvm_constpool_type_size { addr } ( a-addr - n2 ) \ get the size of an entry in the const table
   addr jvm_cp_tag

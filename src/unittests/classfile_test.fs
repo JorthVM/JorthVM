@@ -15,6 +15,8 @@ require ../jvm/classfile.fs
   
   dup 2 + jvm_ul@
   assert( 0x0201f1f2 = )
+  \ drop 
+  free throw
 ;
 
 \ test utf8 compare
@@ -32,7 +34,8 @@ require ../jvm/classfile.fs
   assert( invert ) \ assert false
   dup s" tEST" jvm_constpool_cmp_utf8
   assert( invert ) \ assert false
-  drop
+  \ drop 
+  free throw
 ;
 
 \ test utf8 compare
@@ -47,22 +50,26 @@ require ../jvm/classfile.fs
   dup 6  + 0x0400 swap w! \ u2 length
   dup 8  + 0x74747474 swap l! \ tttt
 
-  2 + \ get the start of the const pool
+  dup 2 + \ get the start of the const pool
   dup 1 jvm_constpool_idx
   assert( over = )
   dup 2 jvm_constpool_idx
   assert( over 3 + = )
   dup 1 jvm_constpool_idx
   assert( over 3 + <> )
-  drop
+
+  drop 
+  free throw
 ;
 
 : get_tag_test
   5 allocate throw
   dup      0x07 swap c! \ u1 tag
   dup 1  + 0xAAAAAAAA swap l! \ arbitrary data
-  jvm_cp_tag 
+  dup jvm_cp_tag 
   assert( 7 = )
+  \ drop 
+  free throw
 ;
 
 : get_class_name_idx_test 
@@ -74,9 +81,11 @@ require ../jvm/classfile.fs
   dup 6  + 0x0400 swap w! \ u2 length
   dup 8  + 0x74747474 swap l! \ tttt
 
-  2 + \ get the start of the const pool
+  dup 2 + \ get the start of the const pool
   jvm_cp_class_name_idx
   assert( 2 = )
+  \ drop 
+  free throw
 ;
 
 : get_string_idx_test 
@@ -88,9 +97,11 @@ require ../jvm/classfile.fs
   dup 6  + 0x0400 swap w! \ u2 length
   dup 8  + 0x74747474 swap l! \ tttt
 
-  2 + \ get the start of the const pool
+  dup 2 + \ get the start of the const pool
   jvm_cp_string_idx
   assert( 2 = )
+  \ drop 
+  free throw
 ;
 
 
@@ -139,8 +150,76 @@ require ../jvm/classfile.fs
   jvm_cp_interfacemethodref_nametype_idx
   assert( 6 = )
 
-  drop
+  \ drop 
+  free throw
 ;
+
+: get_integer_bytes_test
+  5 allocate throw
+  dup     0x03 swap c! \ u1 tag (integer) 
+  dup 1 + 0x0103070f swap l! \ u4 bytes
+
+  dup jvm_cp_integer_bytes
+  assert( 0x0f070301 = )
+  \ drop 
+  free throw
+;
+
+: get_float_bytes_test
+  5 allocate throw
+  dup     0x04 swap c! \ u1 tag (float) 
+  dup 1 + 0x0103070f swap l! \ u4 bytes
+
+  dup jvm_cp_float_bytes
+  assert( 0x0f070301 = )
+  \ drop 
+  free throw
+;
+
+: get_long_bytes_test
+  9 allocate throw
+  dup     0x05 swap c! \ u1 tag (long) 
+  dup 1 + 0x103070f0 swap l! \ u4 bytes high
+  dup 5 + 0x0103070f swap l! \ u4 bytes low
+  
+  dup jvm_cp_long_bytes
+  assert( 0x0f070301 = )
+  assert( 0xf0703010 = )
+  \ drop 
+  free throw
+;
+: get_double_bytes_test
+  9 allocate throw
+  dup     0x06 swap c! \ u1 tag (long) 
+  dup 1 + 0x103070f0 swap l! \ u4 bytes high
+  dup 5 + 0x0103070f swap l! \ u4 bytes low
+  
+  dup jvm_cp_double_bytes
+  assert( 0x0f070301 = )
+  assert( 0xf0703010 = )
+  \ drop 
+  free throw
+;
+
+: get_utf8_test
+  7 allocate throw
+  dup     0x01 swap c! \ u1 tag (long) 
+  dup 1 + 0x0400 swap w! \ u2 length  
+  dup 3 + 0x65656565 swap l! \ bytes tttt
+  
+  dup jvm_cp_utf8_length
+  assert( 4 = )
+
+  dup jvm_cp_utf8_ref
+  assert( over 3 + = )
+
+  dup jvm_cp_utf8_c-ref
+  assert( 4 = )
+  assert( over 3 + = )
+
+  free throw
+;
+
 
 cmp_utf8_test
 constpool_idx_test
@@ -148,5 +227,10 @@ get_tag_test
 get_class_name_idx_test
 get_string_idx_test
 ref_getter_test
+get_integer_bytes_test
+get_float_bytes_test
+get_long_bytes_test
+get_double_bytes_test
+get_utf8_test
 
 bye

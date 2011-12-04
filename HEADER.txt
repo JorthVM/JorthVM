@@ -40,6 +40,9 @@ stored on the heap.
 
 Core
 ----
+### Implementation Details
+
+- requires a cell with of at least 32 bit (e.g. `1 cells 4 >= .` yield true `-1`)
 
 ### Threading Technique `jvm_next`  
 

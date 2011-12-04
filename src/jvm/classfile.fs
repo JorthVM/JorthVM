@@ -36,28 +36,13 @@ variable classfile
   read-file throw            ( c-addr u wfileid - u2 )
 ;
 
-: jvm_constpool_type_name ( a-addr - c-addr n ) \ get the name of an entry in the const table
-  @ 0xff and
-  CASE
-     7 of s" CONSTANT_Class" ENDOF
-     9 of s" CONSTANT_Fieldref" ENDOF
-    10 of s" CONSTANT_Methodref" ENDOF
-    11 of s" CONSTANT_InterfaceMethodref" ENDOF
-     8 of s" CONSTANT_String" ENDOF
-     3 of s" CONSTANT_Integer" ENDOF
-     4 of s" CONSTANT_Float" ENDOF
-     5 of s" CONSTANT_Long" ENDOF
-     6 of s" CONSTANT_Double" ENDOF
-    12 of s" CONSTANT_NameAndType" ENDOF
-     1 of s" CONSTANT_Utf8" ENDOF
-\ default
-    drop 
-    s" Unknown Constant Pool Type " exception throw
-  ENDCASE
-;
+
+
+\ big endian load stuff
 
 : jvm_swap_u2 ( u1 - u2 ) \ little endian to big endian (2 byte)
 \ FIXME there must be something more efficient oO
+\ FIXME use jvm_uw@ instead if possible
   dup 0xff and 8 lshift swap  
   0xff00 and 8 rshift
   or
@@ -65,12 +50,14 @@ variable classfile
 
 : jvm_swap_u4 ( u1 - u2 ) \ little endian to big endian (4 byte)
 \ FIXME there must be something more efficient oO
+\ FIXME use jvm_ul@ instead if possible
   dup 0xff and 24 lshift swap  
   dup 0xff00 and 8 lshift swap
   dup 0xff0000 and 8 rshift swap
   0xff000000 and 24 rshift
   or or or
 ;
+
 
 : jvm_uw@ ( addr - u2) \ read big endian from memory (2 bytes)
 \ FIXME might be better to load 16 bit and manipulate it
@@ -181,6 +168,26 @@ variable classfile
 
 
 
+: jvm_constpool_type_name ( a-addr - c-addr n ) \ get the name of an entry in the const table
+  jvm_cp_tag
+  CASE
+     7 of s" CONSTANT_Class" ENDOF
+     9 of s" CONSTANT_Fieldref" ENDOF
+    10 of s" CONSTANT_Methodref" ENDOF
+    11 of s" CONSTANT_InterfaceMethodref" ENDOF
+     8 of s" CONSTANT_String" ENDOF
+     3 of s" CONSTANT_Integer" ENDOF
+     4 of s" CONSTANT_Float" ENDOF
+     5 of s" CONSTANT_Long" ENDOF
+     6 of s" CONSTANT_Double" ENDOF
+    12 of s" CONSTANT_NameAndType" ENDOF
+     1 of s" CONSTANT_Utf8" ENDOF
+\ default
+    drop 
+    s" Unknown Constant Pool Type " exception throw
+  ENDCASE
+;
+
 : jvm_constpool_type_size { addr } ( a-addr - n2 ) \ get the size of an entry in the const table
   addr jvm_cp_tag
   CASE
@@ -207,7 +214,7 @@ variable classfile
 \ CONSTANT_Utf8 	1
      1 OF  
       addr 1 + \ u2 length field
-      @ jvm_swap_u2 \ read length
+      jvm_uw@ \ read length
       3 + \ add u1 (tag) and u2 (length)
     ENDOF
 \ default
@@ -223,13 +230,12 @@ variable classfile
   LOOP
 ;
 
-: jvm_constpool_print_utf8 { addr -- } \ prints a utf8 string
-  addr 1 + \ u2 length field
-  @ jvm_swap_u2 \ read length
-  3 + \ add u1 (tag) and u2 (length)
-  addr + \ end addr
-  addr 3 + \ start addr
-  
+: jvm_constpool_print_utf8 ( addr -- ) \ prints a utf8 string
+  ( e-addr - c-addr length )
+  jvm_cp_utf8_c-ref 
+  ( c-addr length - end-addr c-addr )
+  over + swap
+
   begin
   2dup
   > while
@@ -241,14 +247,13 @@ variable classfile
 : jvm_constpool_cmp_utf8 { addr xc-addr n -- } \ compare a counted xc string with a utf8 constant
 \ FIXME not really efficient. may be we should ignore utf8 for the moment? anyway cell wide compare
 \ would be more efficient
-  addr 1 + \ u2 length field
-  @ jvm_swap_u2 \ read length
+  addr jvm_cp_utf8_length \ read length
   n = IF
     true
     n 0 ?DO
     ( b1 -- [b1 & *addr1=*addr2] )
     xc-addr i + addr 3 + i +
-    @ 0xff and swap @ 0xff and = 
+    c@ swap c@ = 
     and \ & b1
     LOOP
   ELSE
@@ -257,8 +262,8 @@ variable classfile
 ;
 
 : jvm_constpool_print_classname { const-addr class-addr -- } \ print the class name of a constpool class entry
-  class-addr 1 + \ u2 idx field
-  @ jvm_swap_u2 \ read idx
+  class-addr 
+  jvm_cp_class_name_idx \ read idx
   const-addr swap 
   jvm_constpool_idx
   jvm_constpool_print_utf8
@@ -266,25 +271,25 @@ variable classfile
 
 : jvm_constpool_attr_size { attr-addr -- n } \ get the size of the attribute entry (in bytes)
   2 + \ length field
-  @ jvm_swap_u4
+  jvm_ul@
   6 + \ add u2 (name_index) and u4 (length)
 ;
 
 : jvm_constpool_print_attr { const-addr addr1 -- addr2 } 
   \ const-addr: address of the constpool, addr1: start address of the attribute, addr2: address after the attribute
   addr1
-  s" attribute name:  " type 
   dup \ dup addr
-  @ jvm_swap_u2 \ load name idx
+  jvm_uw@ \ load name idx
   \ dup hex. space
   const-addr swap \ get start of the constpool
   jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+  s" attribute name:  " type 
   jvm_constpool_print_utf8 CR
   2 +
 
   dup \ save a-addr  
+  jvm_ul@ 
   s" attribute length:  " type 
-  @ jvm_swap_u4 
   dup . CR
   4 + + \ add length filed and info field
 ;
@@ -294,21 +299,21 @@ variable classfile
   \ u2 max_stack
   dup \ dup addr
   ." max stack:  " 
-  @ jvm_swap_u2 \ load name idx
+  jvm_uw@ \ load name idx
   . CR
   2 +
 
   \ u2 max_locals
   dup \ dup addr
   ." max locals:  " 
-  @ jvm_swap_u2 \ load name idx
+  jvm_uw@ \ load name idx
   . CR
   2 +
 
   \ u4 code_length
   dup \ dup addr
   ." code length:  " 
-  @ jvm_swap_u4 \ load name idx
+  jvm_ul@ \ load name idx
   dup . CR
   swap 4 + swap
   
@@ -319,7 +324,7 @@ variable classfile
   \ u4 exception_table_length
   dup \ dup addr
   ." exception table length:  " 
-  @ jvm_swap_u2 \ load name idx
+  jvm_uw@ \ load name idx
   dup . CR
   swap 2 + swap
   
@@ -331,7 +336,7 @@ variable classfile
   \ u2 attributes_count
   dup \ save a-addr  
   ." attributes count:  " 
-  @ jvm_swap_u2 
+  jvm_uw@ 
   dup . CR
   swap 2 + swap 
   s" -----------" type CR
@@ -359,28 +364,28 @@ variable classfile
 \   	u4 magic;
   dup \ save a-addr  
 s" Magic:  " type 
-  @ jvm_swap_u4 
+  jvm_ul@ 
   hex. CR
   4 + 
 
 \   	u2 minor_version;
   dup \ save a-addr  
   s" Minor:  " type 
-  @ jvm_swap_u2 
+  jvm_uw@ 
   hex. CR
   2 +
 
 \   	u2 major_version;
   dup \ save a-addr  
   s" Major:  " type 
-  @ jvm_swap_u2 
+  jvm_uw@ 
   hex. CR
   2 + 
   
 \   	u2 constant_pool_count;
   dup \ save a-addr  
   s" Constant Pool count:  " type 
-  @ jvm_swap_u2 
+  jvm_uw@ 
   dup . CR \ store count
   swap 2 + swap
 
@@ -390,7 +395,7 @@ s" Magic:  " type
     i .
     s" ] " type
     dup dup dup jvm_constpool_type_name type  
-    @ 0xff and \ read tag
+    jvm_cp_tag \ read tag
     CASE
     ( addr1 - ) \ addr1: address of the constpool entry
     1 OF  \ if utf8 string, print it!
@@ -411,14 +416,14 @@ s" Magic:  " type
 \   	u2 access_flags;
   dup \ save a-addr  
   s" Access_Flags (Class):  " type 
-  @ jvm_swap_u2 
+  jvm_uw@ 
   hex. CR
   2 +
   
 \   	u2 this_class;
   dup \ save a-addr  
   ." this class:  " 
-  @ jvm_swap_u2 
+  jvm_uw@ 
   \ dup hex. space
   addr 10 + swap \ get start of the constpool
   jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
@@ -428,7 +433,7 @@ s" Magic:  " type
 \   	u2 super_class;
   dup \ save a-addr  
   s" super class:  " type 
-  @ jvm_swap_u2 
+  jvm_uw@ 
   \ dup hex. space
   addr 10 + swap \ get start of the constpool
   jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
@@ -438,14 +443,14 @@ s" Magic:  " type
 \   	u2 interfaces_count;
   dup \ save a-addr  
   s" Interfaces count:  " type 
-  @ jvm_swap_u2 
+  jvm_uw@ 
   dup . CR \ store count
 
 \   	u2 interfaces[interfaces_count];
   0 ?DO
     2 + 
     dup \ save a-addr  
-    @ jvm_swap_u2 
+    jvm_uw@ 
     ." Interface[ " i . ." ] "
     addr 10 + swap \ get start of the constpool
     jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
@@ -458,7 +463,7 @@ s" Magic:  " type
 \   	u2 fields_count;
   dup \ save a-addr  
   s" Fields count:  " type 
-  @ jvm_swap_u2 
+  jvm_uw@ 
   dup . CR \ store count
   swap 2 + swap
 
@@ -471,13 +476,13 @@ s" Magic:  " type
 
     dup \ save a-addr  
     s" access flags:  " type 
-    @ jvm_swap_u2 
+    jvm_uw@ 
     hex. CR
     2 +
     
     dup \ save a-addr  
     s" name_index:  " type 
-    @ jvm_swap_u2 
+    jvm_uw@ 
     \ dup hex. space
     addr 10 + swap \ get start of the constpool
     jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
@@ -486,7 +491,7 @@ s" Magic:  " type
     
     dup \ save a-addr  
     s" decriptor_index:  " type 
-    @ jvm_swap_u2 
+    jvm_uw@ 
     \ dup hex. space
     addr 10 + swap \ get start of the constpool
     jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
@@ -495,7 +500,7 @@ s" Magic:  " type
     
     dup \ save a-addr  
     s" attributes counts:  " type 
-    @ jvm_swap_u2 
+    jvm_uw@ 
     dup . CR
     swap 2 + swap 
     s" -----------" type CR
@@ -514,7 +519,7 @@ s" Magic:  " type
 \   	u2 methods_count;
   dup \ save a-addr  
   s" Methodes count:  " type 
-  @ jvm_swap_u2 
+  jvm_uw@ 
   dup . CR \ store count
   swap 2 + swap
 
@@ -527,13 +532,13 @@ s" Magic:  " type
 
     dup \ save a-addr  
     s" access flags:  " type 
-    @ jvm_swap_u2 
+    jvm_uw@ 
     hex. CR
     2 +
     
     dup \ save a-addr  
     s" name_index:  " type 
-    @ jvm_swap_u2 
+    jvm_uw@ 
     \ dup hex. space
     addr 10 + swap \ get start of the constpool
     jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
@@ -542,7 +547,7 @@ s" Magic:  " type
     
     dup \ save a-addr  
     s" decriptor_index:  " type 
-    @ jvm_swap_u2 
+    jvm_uw@ 
     \ dup hex. space
     addr 10 + swap \ get start of the constpool
     jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
@@ -551,13 +556,13 @@ s" Magic:  " type
     
     dup \ save a-addr  
     s" attributes counts:  " type 
-    @ jvm_swap_u2 
+    jvm_uw@ 
     dup . CR
     swap 2 + swap 
     s" -----------" type CR
     ( addr count -- )
     0 ?DO 
-      dup @ jvm_swap_u2 \ const idx
+      dup jvm_uw@ \ const idx
       addr 10 + swap 
       jvm_constpool_idx
       s" Code" jvm_constpool_cmp_utf8 
@@ -581,7 +586,7 @@ s" Magic:  " type
 \   	u2 attributes_count;
   dup \ save a-addr  
   s" class attributes counts:  " type 
-  @ jvm_swap_u2 
+  jvm_uw@ 
   dup . CR
   swap 2 + swap 
 
@@ -597,7 +602,7 @@ s" Magic:  " type
 ;
 
 : Usage ( -- )
-   s" Main.class" jvm_read_classfile .
+   s" ../testfiles/Test.class" jvm_read_classfile .
    filebuffer @ jvm_print_classfile  
 ;
 

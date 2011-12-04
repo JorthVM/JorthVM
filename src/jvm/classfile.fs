@@ -72,8 +72,50 @@ variable classfile
   or or or
 ;
 
+\ Constant Pool Entry access words
+
+: jvm_cp_tag ( addr -- tag) \ get the tag of a given constant pool entry
+  POSTPONE c@ 
+; immediate
+
+\ class
+: jvm_cp_class_name_idx ( addr -- idx) \ get the name index of a class constant pool entry
+  dup 1 + c@ 8 lshift swap 
+  2 + c@ or 
+; 
+
+\ fieldref
+: jvm_cp_fieldref_class_idx ( addr -- idx) \ get the class index of a fieldref constant pool entry
+  dup 1 + c@ 8 lshift swap 
+  2 + c@ or 
+; 
+
+: jvm_cp_fieldref_nametype_idx ( addr -- idx) \ get the class index of a fieldref constant pool entry
+  dup 3 + c@ 8 lshift swap 
+  5 + c@ or 
+; 
+
+\ methodref
+: jvm_cp_methodref_class_idx ( addr -- idx) \ get the class index of a methodref constant pool entry
+  POSTPONE jvm_cp_fieldref_class_idx 
+; immediate
+
+: jvm_cp_methodref_nametype_idx ( addr -- idx) \ get the class index of a methodref constant pool entry
+  POSTPONE jvm_cp_fieldref_nametype_idx 
+; immediate
+
+\ interfacemethodref
+: jvm_cp_interfacemethodref_class_idx ( addr -- idx) \ get the class index of a interfacemethodref constant pool entry
+  POSTPONE jvm_cp_fieldref_class_idx 
+; immediate
+
+: jvm_cp_interfacemethodref_nametype_idx ( addr -- idx) \ get the class index of a methodref constant pool entry
+  POSTPONE jvm_cp_fieldref_nametype_idx 
+; immediate
+
+
 : jvm_constpool_type_size { addr } ( a-addr - n2 ) \ get the size of an entry in the const table
-  addr @ 0xff and
+  addr jvm_cp_tag
   CASE
 \ CONSTANT_Class 	7
      7 OF 3 ENDOF
@@ -282,11 +324,16 @@ s" Magic:  " type
     s" ] " type
     dup dup dup jvm_constpool_type_name type  
     @ 0xff and \ read tag
-    1 = IF \ if utf8 string, print it!
+    CASE
+    ( addr1 - ) \ addr1: address of the constpool entry
+    1 OF  \ if utf8 string, print it!
       space 0x22 emit jvm_constpool_print_utf8 0x22 emit space \ 0x22 = "
-    ELSE
-      drop
-    ENDIF
+    ENDOF
+    12 OF \ NameAndType
+            
+    ENDOF
+      drop 
+    ENDCASE
     s" : " type
     dup jvm_constpool_type_size dup . +
     CR
@@ -482,7 +529,8 @@ s" Magic:  " type
   drop \ drop last address
 ;
 
-\ Usage:
-\   s" Main.class" jvm_read_classfile .
-\   filebuffer @ jvm_print_classfile  
+: Usage ( -- )
+   s" Main.class" jvm_read_classfile .
+   filebuffer @ jvm_print_classfile  
+;
 

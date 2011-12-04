@@ -221,8 +221,227 @@ require ../jvm/classfile.fs
 ;
 
 
+
+\ test classfile access stuff
+
+: load_class_file
+   s" Test.class" jvm_read_classfile 
+   assert( 405 = )
+;
+
+: get_cf_magic_test
+  filebuffer @ jvm_cf_magic
+  assert( 0xCAFEBABE = )
+;
+
+: get_cf_minor_test
+  filebuffer @ jvm_cf_minor_version
+  assert( 0x0000 = )
+;
+
+: get_cf_major_test
+  filebuffer @ jvm_cf_major_version
+  assert( 0x0032 = )
+;
+
+: get_cf_constpool_count_test
+  filebuffer @ jvm_cf_constpool_count
+  assert( 28 = )
+;
+
+: get_cf_constpool_addr_test
+  filebuffer @ jvm_cf_constpool_addr
+  assert( filebuffer @ 10 + = )
+;
+
+: get_cf_access_flags_addr_test
+  filebuffer @ jvm_cf_access_flags_addr
+  assert( filebuffer @ 227 + = )
+;
+
+: get_cf_access_flags_test
+  filebuffer @ jvm_cf_access_flags
+  assert( 0x21 = )
+;
+
+: get_cf_this_class_test
+  filebuffer @ jvm_cf_this_class
+  assert( 5 = )
+;
+
+: get_cf_super_class_test
+  filebuffer @ jvm_cf_super_class
+  assert( 6 = )
+;
+
+: get_cf_interface_count_test
+  filebuffer @ jvm_cf_interface_count
+  assert( 1 = )
+;
+
+: get_cf_interface_addr_test
+  filebuffer @ jvm_cf_interface_addr
+  assert( filebuffer @ 235 + = )
+;
+
+: get_cf_fields_count_addr_test
+  filebuffer @ jvm_cf_fields_count_addr
+  assert( filebuffer @ 237 + = )
+;
+
+: get_cf_fields_count_test
+  filebuffer @ jvm_cf_fields_count_addr
+  assert( 2 = )
+;
+
+: get_cf_fields_addr_test
+  filebuffer @ jvm_cf_fields_addr
+  assert( filebuffer @ 239 + = )
+;
+
+: get_cf_fields_size_test
+  filebuffer @ jvm_cf_fields_size
+  assert( 16 = )
+;
+
+: get_cf_methods_count_addr_test
+  filebuffer @ jvm_cf_methods_count_addr
+  assert( filebuffer @ 255 + = )
+;
+
+: get_cf_methods_count_test
+  filebuffer @ jvm_cf_methods_count
+  assert( 3 = )
+;
+
+: get_cf_methods_addr_test
+  filebuffer @ jvm_cf_methods_addr
+  assert( filebuffer @ 257 + = )
+;
+
+: get_cf_methods_size_test
+  filebuffer @ jvm_cf_methods_size
+  assert( 138 = )
+;
+
+: get_cf_attr_count_addr_test
+  filebuffer @ dup jvm_cf_attr_count_addr
+  assert( filebuffer @ 395 + = )
+;
+
+: get_cf_attr_count_test
+  filebuffer @ jvm_cf_attr_count
+  assert( 1 = )
+;
+
+: get_cf_attr_addr_test
+  filebuffer @ jvm_cf_attr_addr
+  assert( filebuffer @ 397 + = )
+;
+
+: get_cf_attr_size_test
+  filebuffer @ jvm_cf_attr_size
+  assert( = 8 )
+;
+
+
+
+\ attr test
+
+: get_attr_name_index
+  filebuffer @ jvm_cf_fields_addr
+  8 + 8 + \ 2 field, no attributes
+  2 + \ methods count
+  8 + \ first method first attribute
+  jvm_attr_name_idx
+  assert( 14 = ) \ Code
+;
+
+: get_attr_length
+  filebuffer @ jvm_cf_fields_addr
+  8 + 8 + \ 2 field, no attributes
+  2 + \ methods count
+  8 + \ first method first attribute
+  jvm_attr_length
+  assert( 29 = ) \ Code
+;
+
+: get_attr_size
+  filebuffer @ jvm_cf_fields_addr
+  8 + 8 + \ 2 field, no attributes
+  2 + \ methods count
+  8 + \ first method first attribute
+  jvm_attr_size
+  assert( 35 = ) \ Code
+;
+
+\ field tests
+
+: get_fd_access_flags
+  filebuffer @ jvm_cf_fields_addr
+  jvm_fd_access_flags
+  assert( 9 = )
+;
+
+: get_fd_name_idx
+  filebuffer @ jvm_cf_fields_addr
+  jvm_fd_name_idx
+  assert( 8 = )
+;
+
+: get_fd_desc_idx
+  filebuffer @ jvm_cf_fields_addr
+  jvm_fd_desc_idx
+  assert( 9 = )
+;
+
+: get_fd_attr_count
+  filebuffer @ jvm_cf_fields_addr
+  jvm_fd_attr_count
+  assert( 0 = )
+;
+
+: get_fd_size
+  filebuffer @ jvm_cf_fields_addr
+  jvm_fd_size
+  assert( 8 = )
+;
+
+\ method tests
+
+: get_md_access_flags
+  filebuffer @ jvm_cf_methods_addr
+  jvm_md_access_flags
+  assert( 1 = )
+;
+
+: get_md_name_idx
+  filebuffer @ jvm_cf_methods_addr
+  jvm_md_name_idx
+  assert( 12 = )
+;
+
+: get_md_desc_idx
+  filebuffer @ jvm_cf_methods_addr
+  jvm_md_desc_idx
+  assert( 13 = )
+;
+
+: get_md_attr_count
+  filebuffer @ jvm_cf_methods_addr
+  jvm_md_attr_count
+  assert( 1 = )
+;
+
+: get_md_size
+  filebuffer @ jvm_cf_methods_addr
+  jvm_md_size
+  assert( 43 = )
+;
+
 cmp_utf8_test
 constpool_idx_test
+
 get_tag_test
 get_class_name_idx_test
 get_string_idx_test
@@ -232,5 +451,46 @@ get_float_bytes_test
 get_long_bytes_test
 get_double_bytes_test
 get_utf8_test
+
+load_class_file
+\ filebuffer @ is the address of the classfile buffer
+get_cf_magic_test
+get_cf_minor_test
+get_cf_major_test
+get_cf_constpool_count_test
+get_cf_constpool_addr_test
+get_cf_access_flags_addr_test
+get_cf_access_flags_test
+get_cf_this_class_test
+get_cf_super_class_test
+get_cf_interface_count_test
+get_cf_interface_addr_test
+get_cf_fields_count_addr_test
+get_cf_fields_addr_test
+get_cf_fields_size_test
+get_cf_methods_count_addr_test
+get_cf_methods_count_test
+get_cf_methods_addr_test
+get_cf_methods_size_test
+get_cf_attr_count_addr_test
+get_cf_attr_count_test
+get_cf_attr_addr_test
+get_cf_attr_size_test
+
+get_attr_name_index
+get_attr_length
+get_attr_size
+
+get_fd_access_flags
+get_fd_name_idx
+get_fd_desc_idx
+get_fd_attr_count
+get_fd_size
+
+get_md_access_flags
+get_md_name_idx
+get_md_desc_idx
+get_md_attr_count
+get_md_size
 
 bye

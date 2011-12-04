@@ -72,6 +72,20 @@ variable classfile
   or or or
 ;
 
+: jvm_uw@ ( addr - u2) \ read big endian from memory (2 bytes)
+\ FIXME might be better to load 16 bit and manipulate it
+  dup c@ 8 lshift swap 
+  1 + c@ or 
+;
+
+: jvm_ul@ ( addr - u4) \ read big endian from memory (4 bytes)
+\ FIXME might be better to load 32 bit and manipulate it
+  dup c@ 24 lshift swap 
+  dup 1 + c@ 16 lshift swap 
+  dup 2 + c@  8 lshift swap 
+  3 + c@ or or or  
+;
+
 \ Constant Pool Entry access words
 
 : jvm_cp_tag ( addr -- tag) \ get the tag of a given constant pool entry
@@ -80,19 +94,16 @@ variable classfile
 
 \ class
 : jvm_cp_class_name_idx ( addr -- idx) \ get the name index of a class constant pool entry
-  dup 1 + c@ 8 lshift swap 
-  2 + c@ or 
+  1 + jvm_uw@
 ; 
 
 \ fieldref
 : jvm_cp_fieldref_class_idx ( addr -- idx) \ get the class index of a fieldref constant pool entry
-  dup 1 + c@ 8 lshift swap 
-  2 + c@ or 
+  1 + jvm_uw@
 ; 
 
 : jvm_cp_fieldref_nametype_idx ( addr -- idx) \ get the class index of a fieldref constant pool entry
-  dup 3 + c@ 8 lshift swap 
-  5 + c@ or 
+  3 + jvm_uw@
 ; 
 
 \ methodref
@@ -113,6 +124,19 @@ variable classfile
   POSTPONE jvm_cp_fieldref_nametype_idx 
 ; immediate
 
+\ string
+: jvm_cp_string_idx ( addr -- idx) \ get the string index of a string constant pool entry
+  1 + jvm_uw@
+; 
+
+\ integer
+: jvm_cp_integer_bytes ( addr -- n ) \ get the bytes of a integer constant pool entry
+  1 + jvm_ul@
+;
+\ integer
+: jvm_cp_float_bytes ( addr -- n ) \ get the bytes of a integer constant pool entry
+  POSTPONE jvm_cp_integer_bytes
+;
 
 : jvm_constpool_type_size { addr } ( a-addr - n2 ) \ get the size of an entry in the const table
   addr jvm_cp_tag

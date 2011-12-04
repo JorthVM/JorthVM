@@ -1,5 +1,22 @@
 require ../jvm/classfile.fs
 
+: big_endian_load_test
+  8 allocate throw
+  dup 0x01020304 swap l! 
+  dup 4 + 0xf4f3f2f1 swap l! 
+  dup jvm_uw@
+  assert( 0x0403 = )
+
+  dup jvm_ul@
+  assert( 0x04030201 = )
+  
+  dup 3 + jvm_uw@
+  assert( 0x01f1 = )
+  
+  dup 2 + jvm_ul@
+  assert( 0x0201f1f2 = )
+;
+
 \ test utf8 compare
 : cmp_utf8_test 
   \ NOTE: this is somehow cumbersome but
@@ -62,6 +79,21 @@ require ../jvm/classfile.fs
   assert( 2 = )
 ;
 
+: get_string_idx_test 
+  12 allocate throw
+  dup      0x0200 swap w! \ u2 constant pool count
+  dup 2  + 0x08 swap c! \ u1 tag (string) 
+  dup 3  + 0x0200 swap w! \ u2 name idx
+  dup 5  + 0x01 swap c! \ u1 tag (utf8)
+  dup 6  + 0x0400 swap w! \ u2 length
+  dup 8  + 0x74747474 swap l! \ tttt
+
+  2 + \ get the start of the const pool
+  jvm_cp_string_idx
+  assert( 2 = )
+;
+
+
 : ref_getter_test
   32 allocate throw
   dup      0x0700 swap w! \ u2 constant pool count
@@ -108,12 +140,13 @@ require ../jvm/classfile.fs
   assert( 6 = )
 
   drop
-
 ;
 
 cmp_utf8_test
 constpool_idx_test
 get_tag_test
 get_class_name_idx_test
+get_string_idx_test
+ref_getter_test
 
 bye

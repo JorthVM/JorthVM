@@ -4,12 +4,13 @@ include ../jvm/jvm.fs
 jvm_init
 
 \ bipush test program
-create program_bipush 
-0xFF102A10 , 
+create program_bipush 4 cells allot
+0x102a10ff program_bipush l!-be
 
 \ sipush test program
-create program_sipush 
-0xFFFF112A2A11 , 
+create program_sipush 6 cells allot
+0x112a2a11 program_sipush l!-be
+0xffff program_sipush 4 + w!-be
 
 : test_bipush
   program_bipush jvm_set_pc

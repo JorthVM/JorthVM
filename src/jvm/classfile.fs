@@ -50,39 +50,60 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 
 \ big endian load stuff
 
+: ?bigendian ( -- true/false )
+  [ 4 cells allocate throw
+  dup 0xdeadbeef swap !
+  dup c@ 0xde = swap
+  free throw ] literal
+;
+
+: ?littleendian ( -- true/false )
+  [ ?bigendian invert ] literal
+;
+
 : jvm_swap_u2 ( u1 - u2 ) \ little endian to big endian (2 byte)
 \ FIXME there must be something more efficient oO
 \ FIXME use jvm_uw@ instead if possible
-  dup 0xff and 8 lshift swap  
-  0xff00 and 8 rshift
-  or
+  ?littleendian IF
+    dup 0xff and 8 lshift swap
+    0xff00 and 8 rshift
+    or
+  THEN
 ;
 
 : jvm_swap_u4 ( u1 - u2 ) \ little endian to big endian (4 byte)
 \ FIXME there must be something more efficient oO
 \ FIXME use jvm_ul@ instead if possible
-  dup 0xff and 24 lshift swap  
-  dup 0xff00 and 8 lshift swap
-  dup 0xff0000 and 8 rshift swap
-  0xff000000 and 24 rshift
-  or or or
+  ?littleendian IF
+    dup 0xff and 24 lshift swap
+    dup 0xff00 and 8 lshift swap
+    dup 0xff0000 and 8 rshift swap
+    0xff000000 and 24 rshift
+    or or or
+  THEN
 ;
 
-
+\ big endian access
 : jvm_uw@ ( addr - u2) \ read big endian from memory (2 bytes)
-\ FIXME might be better to load 16 bit and manipulate it
-  dup c@ 8 lshift swap 
-  1 + c@ or 
+  w@ jvm_swap_u2
 ;
 
 : jvm_ul@ ( addr - u4) \ read big endian from memory (4 bytes)
-\ FIXME might be better to load 32 bit and manipulate it
-  dup c@ 24 lshift swap 
-  dup 1 + c@ 16 lshift swap 
-  dup 2 + c@  8 lshift swap 
-  3 + c@ or or or  
+  l@ jvm_swap_u4
 ;
 
+: w!-be
+  ?bigendian IF w! ELSE
+  swap jvm_swap_u2 swap w! THEN
+;
+
+: l!-be
+  ?bigendian IF l! ELSE
+  swap jvm_swap_u4 swap l! THEN
+;
+
+: w@-be jvm_uw@ ;
+: l@-be jvm_ul@ ;
 
 
 \ -----------------------------------------------------------------------------

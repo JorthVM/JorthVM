@@ -1,7 +1,7 @@
 require ../jvm/jvm.fs
 
-create program 
-0x04030201 , 
+create program 4 cells allot
+0x01020304 program l!-be
 program jvm_set_pc
 
 \ test fetch_instruction

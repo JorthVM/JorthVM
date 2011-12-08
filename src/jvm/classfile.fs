@@ -132,7 +132,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   POSTPONE jvm_cp_fieldref_class_idx 
 ; immediate
 
-: jvm_cp_methodref_nametype_idx ( addr -- idx) \ get the class index of a methodref constant pool entry
+: jvm_cp_methodref_nametype_idx ( addr -- idx) \ get the nametype index of a methodref constant pool entry
   POSTPONE jvm_cp_fieldref_nametype_idx 
 ; immediate
 
@@ -141,7 +141,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   POSTPONE jvm_cp_fieldref_class_idx 
 ; immediate
 
-: jvm_cp_interfacemethodref_nametype_idx ( addr -- idx) \ get the class index of a methodref constant pool entry
+: jvm_cp_interfacemethodref_nametype_idx ( addr -- idx) \ get the nametype index of a methodref constant pool entry
   POSTPONE jvm_cp_fieldref_nametype_idx 
 ; immediate
 
@@ -625,16 +625,29 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   drop
 ;
 
+: jvm_constpool_print_nametype { const-addr nt-addr -- } 
+  \ const-addr: address pool address 
+  \ nt-addr: address of the name type constant pool entry
+  nt-addr
+  space ." Name: " 0x22 emit 
+  jvm_cp_nametype_name_idx \ get name idx
+  const-addr 
+  swap jvm_constpool_print_utf8_idx
+  0x22 emit space \ 0x22 = "
+  
+  nt-addr
+  space ."  Desc: " 0x22 emit 
+  jvm_cp_nametype_desc_idx \ get name idx
+  const-addr
+  swap jvm_constpool_print_utf8_idx
+  0x22 emit space \ 0x22 = "
+;
+
 \ -----------------------------------------------------------------------------
 \ -----------------------------------------------------------------------------
 : jvm_print_classfile { addr -- }
 \ addr stores the start address of the memory where the file is stored
 \ first 4  bytes should be 0xCAFEBABE
-\ after the info of an element has been printed, the top of the stack
-\ contains the address of the next data field. the only exception to this is 
-\ if the next filed is the array of a count/array pair. in this case after
-\ printing the count the top of the stack contains the next address and the count 
-\ e.g. ( addr1 n - addr2)
   \ u4 magic;
   ." Magic:  " 
   addr jvm_cf_magic hex. CR
@@ -663,8 +676,26 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
     1 OF  \ if utf8 string, print it!
       space 0x22 emit jvm_constpool_print_utf8 0x22 emit space \ 0x22 = "
     ENDOF
+    10 OF \ MethodRef
+      jvm_cp_methodref_nametype_idx  \ get nametype idx
+      addr jvm_cf_constpool_addr \ get const pool address
+      swap jvm_constpool_idx \ get nametype addr
+      addr jvm_cf_constpool_addr \ get const pool address
+      swap
+      jvm_constpool_print_nametype 
+    ENDOF
+    9 OF \ FieldRef
+      jvm_cp_fieldref_nametype_idx  \ get nametype idx
+      addr jvm_cf_constpool_addr \ get const pool address
+      swap jvm_constpool_idx \ get nametype addr
+      addr jvm_cf_constpool_addr \ get const pool address
+      swap
+      jvm_constpool_print_nametype 
+    ENDOF
     12 OF \ NameAndType
-      drop \ constpool entry address      
+      addr jvm_cf_constpool_addr \ get const pool address
+      swap
+      jvm_constpool_print_nametype 
     ENDOF
       drop 
     ENDCASE

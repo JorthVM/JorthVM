@@ -10,12 +10,12 @@ The Java Virtual Machine (JVM) is a stack machine.
 
 ### Instruction Set
 
-The JVM instruction set consist of about 200 instruction. Their opcodes are encoded as 8 bit 
+The JVM instruction set consists of about 200 instructions. Their opcodes are encoded as 8 bit 
 values.
 
 ### `Class` File
 
-The JVM uses socalled `class` files to store machine code as well as constants, etc..
+The JVM uses so-called `class` files to store machine code as well as constants, etc..
 
 ### Constant Pool
 
@@ -35,18 +35,18 @@ frame.
 ### Operant Stack
 
 Conceptually the operant stack is part of the current frame. In Forth JVM the Forth stack is used
-for operants were as other frame data (local variables, previous frame pointer, etc.) are 
+for operants wereas other frame data (local variables, previous frame pointer, etc.) are 
 stored on the heap.
 
 Core
 ----
 ### Implementation Details
 
-- requires a cell with of at least 32 bit (e.g. `1 cells 4 >= .` yield true `-1`)
+- requires a cell width of at least 32 bit (e.g. `1 cells 4 >= .` yield true `-1`)
 
 ### Threading Technique `jvm_next`  
 
-The main part of Forth JVM is the socalled _NEXT routine_. It repeatedly performes the following 
+The main part of Forth JVM is the so-called _NEXT routine_. It repeatedly performes the following 
 tasks:
 
 1. load the next instruction
@@ -54,7 +54,7 @@ tasks:
 3. execute the instruction
 
 There are different ways how this can be done ([ThreadedCode][]). In the current implementation of 
-the NEXT routine the socalled _call threading_ technique is used. The main disadvantage is that 
+the NEXT routine the so-called _call threading_ technique is used. The main disadvantage is that 
 (indirect) calls are used instead of indirect jumps. If jumps are used one next cycle consists of 
 the following steps:
 
@@ -71,8 +71,8 @@ If call instead of jumps are used the following steps are performed:
 4. return from the call
 5. jump back to 1.
 
-Even worse than the fact that there is one more step is that call-return creates and destroys 
-a new stack frame what decreases performance dramatically. 
+Even worse than the fact that there is one more step is, that call-return creates and destroys 
+a new stack frame which decreases performance dramatically. 
 *FIXME:** is this really the case in forth?
 
 
@@ -95,8 +95,8 @@ TODO
 Ideas
 -----
 
-- use jumps instead of calles (call threading)
-- just in time compilation? replace opcode with execution token of the instruction?
+- use jumps instead of calls (call threading)
+- just-in-time compilation? replace opcode with execution token of the instruction?
 - constant pool: wordlist migth be useful
 - somehow abuse the (g)forth kernel to execute next?!
 

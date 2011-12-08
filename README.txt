@@ -16,7 +16,7 @@ DOCUMENTATION
 
 The Forth JVM documentation is contained in _this file_ as well as in [HEADER.txt](HEADER.txt). These
 files are formated using the [markdown](http://daringfireball.net/projects/markdown/) markup language.
-HTML version of the documentation can be created by `make doc`.
+A HTML version of the documentation can be created by `make doc`.
 
 
 INSTALL

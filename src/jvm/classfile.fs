@@ -66,7 +66,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
     u1 0x00ff and 8 lshift
     u1 0xff00 and 8 rshift
     or
-  ENDIF
+  ELSE u1 ENDIF
 ;
 
 : jvm_swap_u4 { u1 -- u2 } \ little endian to big endian (4 byte)
@@ -76,7 +76,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
     u1 0x00ff0000 and 8 rshift
     u1 0xff000000 and 24 rshift
     or or or
-  ENDIF
+  ELSE u1 ENDIF
 ;
 
 \ big endian access

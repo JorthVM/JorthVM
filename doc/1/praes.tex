@@ -1,7 +1,7 @@
 \documentclass{beamer}
 \usepackage{pgfpages}
 \usepackage{hyperref}
-\usepackage[ngerman]{babel}
+\usepackage[english]{babel}
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage[utf8x]{inputenc}
@@ -18,7 +18,7 @@
 \usecolortheme{seahorse}
 \usefonttheme{professionalfonts}
 
-\title[Stackbasierte Programmiersprachen (WS2011)]{Eine Virtulle Maschine f\"ur Java Bytecode}
+\title{A Java Virtual Machine in Forth\\\small{Stack-Based Programming (WS2011)}}
 \author{Sebastian Rumpl \and Josef Eisl \and Bernhard Urban}
 
 \begin{document}
@@ -27,34 +27,81 @@
 \begin{frame}
 	\frametitle{Motivation}
 	\begin{itemize}
-		\item Java ist weit verbreitet
-		\item \texttt{gforth} bereits auf vielen Plattformen vorhanden
-		\item (mehr oder weniger) praktisch relevant
-		\pause\item because we can (hopefully)
-	\end{itemize}
-\end{frame}
-\begin{frame}
-	\frametitle{Ziele}
-	\begin{itemize}
-		\item verschiedene Techniken f\"ur Threaded Code testen
-		\item Unittests ($\Rightarrow$ Regressionstests, leichter zum
-		Experimentieren)
-		\item standard Classfiles verwenden
-		\item Want:
+		\item JavaVM is a stack-based virtual machine
+		\item Java is wide spreaded in the real world
 		\begin{itemize}
-			\item statische Methoden
-			\item Objekterzeugung
-			\item native Methoden (Forthwords?)
-			\item minimale Java Api (e.g.\ \texttt{java.lang.System})
-			\item Exception Handling
+			\item but JavaVM is not restricted to Java (e.g.\ Scala)
 		\end{itemize}
-		\item Not: Floating point, Inner Classes, Debugsupport, \dots
+		\item JavaVM is well specified % (but well, ``well'')
+		\item \texttt{gforth} already ported to many platforms
 	\end{itemize}
 \end{frame}
 \begin{frame}
-	\frametitle{Was bisher geschah\dots}
+	\frametitle{JavaVM General}
+	\begin{itemize}
+		\item stack-based language, mostly typed instructions (e.g.\
+		\texttt{int}, \texttt{float}, \texttt{references}, \dots)
+		\item 32-bit based (i.e.\ \texttt{long} uses two entries on the stack)
+		\item about 200 instructions $\Rightarrow$ one byte for opcode
+		\item immediates encoded inside the program memory
+		\item one data stack is used, similiar to Forth
+		\item executables stored in so-called ``class files'' which includes:
+		\begin{itemize}
+			\item constant pool (e.g.\ strings, type information, \dots)
+			\item code segment for each method
+			\item \dots
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+\begin{frame}
+	\frametitle{Execution Cycle of a VM Instruction}
+	\begin{itemize}
+		\item \textbf{Fetch}: read one byte from instruction pointer
+		\item \textbf{Decode}: load execution token from table
+		\item \textbf{Execute}: execute it
+		\item also called \texttt{NEXT} routine
+		\item $\Rightarrow$ at the moment we use ``call threading''
+	\end{itemize}
+\end{frame}
+\begin{frame}
+	\frametitle{Goals}
+	\begin{itemize}
+		\item using standard classfiles (so we can use \texttt{javac})
+		\item playing with various techniques for \emph{Threaded Code}
+		\item using unittests, in order to make experimenting easier
+		\pause
+		\item want: 100\% compilance
+		\pause
+		\item want (serious):
+		\begin{itemize}
+			\item static methods
+			\item object creation
+			\item native methods (Forth words?)
+			\item a minimal Java API (e.g.\ \texttt{java.lang.System})
+			\item (simple) exception handling (i.e.\ without \texttt{finally})
+		\end{itemize}
+		\item not: floating point, inner classes, debugging support, UTF8, threads, \dots
+	\end{itemize}
+\end{frame}
+\begin{frame}
+	\frametitle{Challenges}
+	\begin{itemize}
+		\item dynamic loading of classes
+		\item inheritance
+		\item endianness
+		\item UTF8 (we'll ignore it for now)
+		\item Java API (GNU Classpath?), native calls
+	\end{itemize}
+\end{frame}
+\begin{frame}
+	\frametitle{Already implemented}
+	\begin{itemize}
+		\item classfile parsing
+		\item core of execution (\texttt{NEXT})
+		\item some instructions (like 10 or so\dots)
+	\end{itemize}
 	\begin{center}
-		demo
+		\pause demo
 	\end{center}
 \end{frame}
 \end{document}

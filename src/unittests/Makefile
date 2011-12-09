@@ -6,5 +6,5 @@ FORTH_OPT=--clear-dictionary
 test: $(UNITTESTS)
 
 %.fs.test: %.fs
-	$(FORTH) $(FORTH_OPT) $<
+	$(FORTH) $(FORTH_OPT) $< -e bye
   

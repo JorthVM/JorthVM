@@ -18,5 +18,3 @@ program jvm_set_pc
 ;
 
 fetch_instruction-test
-
-bye

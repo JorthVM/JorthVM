@@ -62,5 +62,3 @@ test_bipush
 test_sipush
 test_dup
 test_iadd
-
-bye

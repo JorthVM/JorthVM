@@ -497,5 +497,3 @@ get_md_name_idx
 get_md_desc_idx
 get_md_attr_count
 get_md_size
-
-bye

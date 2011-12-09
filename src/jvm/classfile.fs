@@ -51,7 +51,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 \ big endian load stuff
 
 : ?bigendian ( -- true/false )
-  [ 4 cells allocate throw
+  [ 4 allocate throw
   dup 0xdeadbeef swap !
   dup c@ 0xde = swap
   free throw ] literal
@@ -61,26 +61,22 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   [ ?bigendian invert ] literal
 ;
 
-: jvm_swap_u2 ( u1 - u2 ) \ little endian to big endian (2 byte)
-\ FIXME there must be something more efficient oO
-\ FIXME use jvm_uw@ instead if possible
+: jvm_swap_u2 { u1 -- u2 } \ little endian to big endian (2 byte)
   ?littleendian IF
-    dup 0xff and 8 lshift swap
-    0xff00 and 8 rshift
+    u1 0x00ff and 8 lshift
+    u1 0xff00 and 8 rshift
     or
-  THEN
+  ENDIF
 ;
 
-: jvm_swap_u4 ( u1 - u2 ) \ little endian to big endian (4 byte)
-\ FIXME there must be something more efficient oO
-\ FIXME use jvm_ul@ instead if possible
+: jvm_swap_u4 { u1 -- u2 } \ little endian to big endian (4 byte)
   ?littleendian IF
-    dup 0xff and 24 lshift swap
-    dup 0xff00 and 8 lshift swap
-    dup 0xff0000 and 8 rshift swap
-    0xff000000 and 24 rshift
+    u1 0x000000ff and 24 lshift
+    u1 0x0000ff00 and 8 lshift
+    u1 0x00ff0000 and 8 rshift
+    u1 0xff000000 and 24 rshift
     or or or
-  THEN
+  ENDIF
 ;
 
 \ big endian access
@@ -92,14 +88,19 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   l@ jvm_swap_u4
 ;
 
+
+\ TODO: is there a way without having two words?
 : w!-be
-  ?bigendian IF w! ELSE
-  swap jvm_swap_u2 swap w! THEN
-;
+  ?littleendian IF POSTPONE swap POSTPONE jvm_swap_u2 POSTPONE swap ENDIF
+  POSTPONE w!
+; immediate
+
+: w!-be w!-be ;
 
 : l!-be
+  \ FIXME: for performance, it's better to check for endianness just once (see above)
   ?bigendian IF l! ELSE
-  swap jvm_swap_u4 swap l! THEN
+  swap jvm_swap_u4 swap l! ENDIF
 ;
 
 : w@-be jvm_uw@ ;
@@ -115,12 +116,12 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 
 \ class
 : jvm_cp_class_name_idx ( addr -- idx) \ get the name index of a class constant pool entry
-  1 + jvm_uw@
+  1+ jvm_uw@
 ; 
 
 \ fieldref
 : jvm_cp_fieldref_class_idx ( addr -- idx) \ get the class index of a fieldref constant pool entry
-  1 + jvm_uw@
+  1+ jvm_uw@
 ; 
 
 : jvm_cp_fieldref_nametype_idx ( addr -- idx) \ get the class index of a fieldref constant pool entry
@@ -147,24 +148,24 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 
 \ string
 : jvm_cp_string_idx ( addr -- idx) \ get the string index of a string constant pool entry
-  1 + jvm_uw@
+  1+ jvm_uw@
 ; 
 
 \ integer
 : jvm_cp_integer_bytes ( addr -- n ) \ get the bytes of an integer constant pool entry
-  1 + jvm_ul@
+  1+ jvm_ul@
 ;
 
 \ float
 : jvm_cp_float_bytes ( addr -- n ) \ get the bytes of a float constant pool entry
 \ FIXME should we use the float stack?
-  1 + jvm_ul@
+  1+ jvm_ul@
 ;
 
 \ long
 : jvm_cp_long_bytes ( addr -- n2 n1 ) \ get the bytes of a long constant pool entry 
 \ (n2 high 32 bit, n1 low 32 bit)
-  dup 1 + jvm_ul@ swap
+  dup 1+ jvm_ul@ swap
   5 + jvm_ul@
 ;
 
@@ -172,13 +173,13 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 : jvm_cp_double_bytes ( addr -- n2 n1 ) \ get the bytes of a double constant pool entry 
 \ (n2 high 32 bit, n1 low 32 bit)
 \ FIXME should we use the float stack?
-  dup 1 + jvm_ul@ swap
+  dup 1+ jvm_ul@ swap
   5 + jvm_ul@
 ;
 
 \ name type
 : jvm_cp_nametype_name_idx ( addr -- idx) \ get the name index of a nametype constant pool entry
-  1 + jvm_uw@
+  1+ jvm_uw@
 ; 
 
 : jvm_cp_nametype_desc_idx ( addr -- idx) \ get the descriptor index of a nametype constant pool entry
@@ -187,7 +188,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 
 \ Utf8
 : jvm_cp_utf8_length ( addr -- n) \ get the length of the data of a utf8 constant pool entry
-  1 + jvm_uw@
+  1+ jvm_uw@
 ; 
 
 : jvm_cp_utf8_ref ( addr1 -- addr2) \ get the reference of the data of a utf8 constant pool entry
@@ -196,7 +197,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 
 : jvm_cp_utf8_c-ref ( addr1 -- addr2 n) \ get the counted reference of the data of a utf8 constant pool entry
   dup jvm_cp_utf8_ref swap
-  1 + jvm_uw@
+  1+ jvm_uw@
 ;  
 
 

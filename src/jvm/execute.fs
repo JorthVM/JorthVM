@@ -42,11 +42,9 @@
   jvm_fetch_instruction \ load byte
   dup 0x80 and \ sign ext
   if 
-    -1 8 lshift or 
-    \ NOTE -1 8 lshift cant be replaced by a constant because the cell width (and thus
-    \ the representation of -1) is not known apriori
+    [ -1 8 lshift ] literal or
   endif 
-; \ FIXME improve?!
+;
 
 \ caload 	34 		arrayref, index -- value 	load a char from an array
 

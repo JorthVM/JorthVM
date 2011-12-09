@@ -2,10 +2,10 @@ include jvm/jvm.fs  \ include the jvm
 
 jvm_init            \ initialize the jvm
 
-create program 5 cells allot
-0x102a5960 program l!-be \ bipush 42, dup, iadd (bipush=0x10)
-0xca program 4 + c!      \ breakpoint
-program jvm_set_pc  \ set jvm program counter to program
-                    \ (first opcode 0x10)
+: RunDemo ( -- )
+   s" testfiles/Main.class" jvm_read_classfile drop
+   \ filebuffer @ jvm_print_classfile  
+   filebuffer @ 278 + jvm_set_pc  \ TODO set jvm program counter to program
+   jvm_run 
+;
 
-\ jvm_run             \ start the execution

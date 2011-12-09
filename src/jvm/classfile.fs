@@ -31,16 +31,23 @@ variable jvm_p_fields_addr \ stores the pointer to the first field
 variable jvm_p_methods_addr \ stores the pointer to the first field
 variable jvm_p_attributes_addr \ stores the pointer to the first field
 
+variable jvm_p_static_fields \ stores the pointer static fields
+
 : jvm_read_classfile ( c-addr u1 - u2 ) \ return the size of the file (in bytes)
   r/o open-file throw 
   dup classfile !            ( wfileid - wfileid ) \ store file id (wfileid)
-  dup file-size throw throw  ( wfileid - wfileid u u ) \ uncatched exception ??? 
+  dup file-size throw throw  ( wfileid - wfileid u u ) \ FIXME uncatched exception ??? 
   dup
   allocate throw             ( wfileid u u - wfileid u a-addr )
   dup filebuffer !
   swap rot                   ( wfileid u a-addr - c-addr u wfileid )
   read-file throw            ( c-addr u wfileid - u2 )
   classfile @ close-file throw
+  \ FIXME fixme
+  0x100 allocate throw 
+  jvm_p_static_fields 
+  !
+  jvm_p_static_fields @ 0x100 erase
 ;
 
 
@@ -871,7 +878,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 ;
 
 : Usage ( -- )
-   s" ../testfiles/Test.class" jvm_read_classfile .
+   s" ../testfiles/Main.class" jvm_read_classfile .
    filebuffer @ jvm_print_classfile  
 ;
 

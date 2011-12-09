@@ -174,6 +174,15 @@
 \ getfield 	b4 	2: index1, index2 	objectref -- value 	get a field value of an object objectref, where the field is identified by field reference in the constant pool index (index1 << 8 + index2)
 
 \ getstatic 	b2 	2: index1, index2 	-- value 	get a static field value of a class, where the field is identified by field reference in the constant pool index (index1 << 8 + index2)
+: jvm_op_getstatic 
+  jvm_fetch_instruction \ load byte
+  8 lshift
+  jvm_fetch_instruction \ load byte
+  or
+  cells
+  jvm_p_static_fields @ + l@
+  \ FIXME use @ instead?!
+;
 
 \ goto 	a7 	2: branchbyte1, branchbyte2 	[no change] 	goes to another instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
 
@@ -203,16 +212,22 @@
 \ iconst_m1 	02 		-- -1 	load the int value -1 onto the stack
 
 \ iconst_0 	03 		-- 0 	load the int value 0 onto the stack
+: jvm_op_iconst_0 0 ;
 
 \ iconst_1 	04 		-- 1 	load the int value 1 onto the stack
+: jvm_op_iconst_1 1 ;
 
 \ iconst_2 	05 		-- 2 	load the int value 2 onto the stack
+: jvm_op_iconst_2 2 ;
 
 \ iconst_3 	06 		-- 3 	load the int value 3 onto the stack
+: jvm_op_iconst_3 3 ;
 
 \ iconst_4 	07 		-- 4 	load the int value 4 onto the stack
+: jvm_op_iconst_4 4 ;
 
 \ iconst_5 	08 		-- 5 	load the int value 5 onto the stack
+: jvm_op_iconst_5 5 ;
 
 \ idiv 	6c 		value1, value2 -- result 	divide two integers
 
@@ -261,6 +276,7 @@
 \ iload_3 	1d 		-- value 	load an int value from local variable 3
 
 \ imul 	68 		value1, value2 -- result 	multiply two integers
+: jvm_op_imul * ;
 
 \ ineg 	74 		value -- result 	negate int
 
@@ -396,6 +412,15 @@
 \ putfield 	b5 	2: indexbyte1, indexbyte2 	objectref, value -- 	set field to value in an object objectref, where the field is identified by a field reference index in constant pool (indexbyte1 << 8 + indexbyte2)
 
 \ putstatic 	b3 	2: indexbyte1, indexbyte2 	value -- 	set static field to value in a class, where the field is identified by a field reference index in constant pool (indexbyte1 << 8 + indexbyte2)
+: jvm_op_putstatic 
+  jvm_fetch_instruction \ load byte
+  8 lshift
+  jvm_fetch_instruction \ load byte
+  or
+  cells
+  jvm_p_static_fields @ + l!
+  \ FIXME use ! instead?!
+;
 
 \ ret 	a9 	1: index 	[No change] 	continue execution from address taken from a local variable #index (the asymmetry with jsr is intentional)
 
@@ -424,7 +449,8 @@
 
 \ breakpoint 	ca 			reserved for breakpoints in Java debuggers; should not appear in any class file
 : jvm_op_breakpoint 
- CR S" Data Stack: " type CR .s CR 
+ CR ." Data Stack: " CR .s CR 
+ CR ." Static Fields: " CR jvm_p_static_fields @ 0x100 dump CR \ FIXME hardcoded 
  s" JVM breakpoint" exception throw 
  ;
 
@@ -438,9 +464,20 @@
 
 : jvm_init_ops ( -- )
 ['] jvm_op_nop 0x00 jvm_set_op
+['] jvm_op_iconst_0 0x03 jvm_set_op
+['] jvm_op_iconst_1 0x04 jvm_set_op
+['] jvm_op_iconst_2 0x05 jvm_set_op
+['] jvm_op_iconst_3 0x06 jvm_set_op
+['] jvm_op_iconst_4 0x07 jvm_set_op
+['] jvm_op_iconst_5 0x08 jvm_set_op
 ['] jvm_op_bipush 0x10 jvm_set_op
 ['] jvm_op_sipush 0x11 jvm_set_op
 ['] jvm_op_dup 0x59 jvm_set_op
 ['] jvm_op_iadd 0x60 jvm_set_op
-['] jvm_op_breakpoint 0xCA jvm_set_op
+['] jvm_op_imul 0x68 jvm_set_op
+['] jvm_op_getstatic 0xb2 jvm_set_op
+['] jvm_op_putstatic 0xb3 jvm_set_op
+['] jvm_op_breakpoint 0xca jvm_set_op
+['] jvm_op_breakpoint 0xb1 jvm_set_op \ FIXME 
 ;
+

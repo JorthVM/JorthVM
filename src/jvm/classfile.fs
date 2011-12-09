@@ -69,21 +69,21 @@ variable jvm_p_static_fields \ stores the pointer static fields
 ;
 
 : jvm_swap_u2 { u1 -- u2 } \ little endian to big endian (2 byte)
-  ?littleendian IF
+  [ ?littleendian ] [IF]
     u1 0x00ff and 8 lshift
     u1 0xff00 and 8 rshift
     or
-  ELSE u1 ENDIF
+  [ELSE] u1 [ENDIF]
 ;
 
 : jvm_swap_u4 { u1 -- u2 } \ little endian to big endian (4 byte)
-  ?littleendian IF
+  [ ?littleendian ] [IF]
     u1 0x000000ff and 24 lshift
     u1 0x0000ff00 and 8 lshift
     u1 0x00ff0000 and 8 rshift
     u1 0xff000000 and 24 rshift
     or or or
-  ELSE u1 ENDIF
+  [ELSE] u1 [ENDIF]
 ;
 
 \ big endian access
@@ -96,18 +96,14 @@ variable jvm_p_static_fields \ stores the pointer static fields
 ;
 
 
-\ TODO: is there a way without having two words?
 : w!-be
-  ?littleendian IF POSTPONE swap POSTPONE jvm_swap_u2 POSTPONE swap ENDIF
-  POSTPONE w!
-; immediate
-
-: w!-be w!-be ;
+  [ ?littleendian ] [IF] swap jvm_swap_u2 swap [ENDIF]
+  w!
+;
 
 : l!-be
-  \ FIXME: for performance, it's better to check for endianness just once (see above)
-  ?bigendian IF l! ELSE
-  swap jvm_swap_u4 swap l! ENDIF
+  [ ?littleendian ] [IF] swap jvm_swap_u4 swap [ENDIF]
+  l!
 ;
 
 : w@-be jvm_uw@ ;

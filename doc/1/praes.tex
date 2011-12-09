@@ -1,0 +1,60 @@
+\documentclass{beamer}
+\usepackage{pgfpages}
+\usepackage{hyperref}
+\usepackage[ngerman]{babel}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage[utf8x]{inputenc}
+\usepackage{verbatim}
+
+% no navigation icons
+\setbeamertemplate{navigation symbols}{}
+\usetheme{Copenhagen}
+%gets rid of bottom navigation bars
+\setbeamertemplate{footline}[page number]{}
+
+%gets rid of navigation symbols
+\setbeamertemplate{navigation symbols}{}
+\usecolortheme{seahorse}
+\usefonttheme{professionalfonts}
+
+\title[Stackbasierte Programmiersprachen (WS2011)]{Eine Virtulle Maschine f\"ur Java Bytecode}
+\author{Sebastian Rupl \and Josef Eisl \and Bernhard Urban}
+
+\begin{document}
+\frame{\titlepage}
+%%%%%%
+\begin{frame}
+	\frametitle{Motivation}
+	\begin{itemize}
+		\item Java ist weit verbreitet
+		\item \texttt{gforth} bereits auf vielen Plattformen vorhanden
+		\item (mehr oder weniger) praktisch relevant
+		\pause\item because we can (hopefully)
+	\end{itemize}
+\end{frame}
+\begin{frame}
+	\frametitle{Ziele}
+	\begin{itemize}
+		\item verschiedene Techniken f\"ur Threaded Code testen
+		\item Unittests ($\Rightarrow$ Regressionstests, leichter zum
+		Experimentieren)
+		\item standard Classfiles verwenden
+		\item Want:
+		\begin{itemize}
+			\item statische Methoden
+			\item Objekterzeugung
+			\item native Methoden (Forthwords?)
+			\item minimale Java Api (e.g.\ \texttt{java.lang.System})
+			\item Exception Handling
+		\end{itemize}
+		\item Not: Floating point, Inner Classes, Debugsupport, \dots
+	\end{itemize}
+\end{frame}
+\begin{frame}
+	\frametitle{Was bisher geschah\dots}
+	\begin{center}
+		demo
+	\end{center}
+\end{frame}
+\end{document}

@@ -279,12 +279,12 @@ require ../jvm/classfile.fs
 ;
 
 : get_cf_interface_count_test
-  filebuffer @ jvm_cf_interface_count
+  filebuffer @ jvm_cf_interfaces_count
   assert( 1 = )
 ;
 
 : get_cf_interface_addr_test
-  filebuffer @ jvm_cf_interface_addr
+  filebuffer @ jvm_cf_interfaces_addr
   assert( filebuffer @ 235 + = )
 ;
 

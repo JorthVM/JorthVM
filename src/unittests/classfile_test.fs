@@ -370,6 +370,15 @@ require ../jvm/classfile.fs
   assert( 29 = ) \ Code
 ;
 
+: get_attr_info_addr
+  filebuffer @ jvm_cf_fields_addr
+  8 + 8 + \ 2 field, no attributes
+  2 + \ methods count
+  8 + \ first method first attribute
+  dup jvm_attr_info_addr
+  assert( swap 6 + = )
+;
+
 : get_attr_size
   filebuffer @ jvm_cf_fields_addr
   8 + 8 + \ 2 field, no attributes
@@ -469,6 +478,16 @@ require ../jvm/classfile.fs
   assert( filebuffer @ jvm_cf_attr_count_addr = )
 ;
 
+: get_md_get_code_attr_test
+  filebuffer @ 
+  dup 
+  s" test" s" (I)I" 
+  jvm_get_method_by_nametype
+  assert( ) \ assert found
+  jvm_md_get_code_attr
+  assert( filebuffer @ 322 + = )
+;
+
 
 \ --------------------------------------------------------------
 
@@ -514,6 +533,7 @@ get_cf_attr_size_test
 
 get_attr_name_index
 get_attr_length
+get_attr_info_addr
 get_attr_size
 
 get_fd_access_flags
@@ -529,3 +549,4 @@ get_md_attr_count
 get_md_size
 
 get_method_by_nametype_test
+get_md_get_code_attr_test

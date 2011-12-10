@@ -219,10 +219,23 @@ variable jvm_p_static_fields \ stores the pointer static fields
   2 POSTPONE literal POSTPONE + POSTPONE jvm_ul@
 ; immediate
 
+\ TODO : test me
+: jvm_attr_info_addr ( addr - addr2) \ returns the start address of the info section 
+  6 POSTPONE literal POSTPONE + 
+; immediate
+
 : jvm_attr_size ( addr - n) \ returns the attribute size (header + data) 
   POSTPONE jvm_attr_length 6 POSTPONE literal POSTPONE +
 ; immediate
 
+
+\ -----------------------------------------------------------------------------
+\ Code Attribute stuff
+
+\ TODO test me
+: jvm_code_attr_code_addr ( addr ) 
+  14 POSTPONE literal POSTPONE +
+; immediate
 
 
 
@@ -916,12 +929,34 @@ variable jvm_p_static_fields \ stores the pointer static fields
 \  POSTPONE jvm_cp_utf8_c-ref
 \ ; immediate  
 
+\ TODO : move somewhere else
+: jvm_md_get_code_attr { cf-addr md-addr -- code-addr }
+  md-addr jvm_md_attr
+  md-addr jvm_md_attr_count
+  ( addr count -- )
+    0 ?DO 
+      ( addr )
+      dup jvm_attr_name_idx
+      cf-addr jvm_cf_constpool_addr swap 
+      jvm_constpool_idx
+      s" Code" 
+      jvm_constpool_cmp_utf8 
+      IF
+        dup \ dup address 
+        jvm_code_attr_code_addr swap
+      ENDIF
+      dup jvm_attr_size + 
+    LOOP
+    drop \ drop last address
+;
+
 
 \ TODO : move somewhere else
 : jvm_get_method_by_nametype { cf-addr c-addr-name n-name c-addr-desc n-desc -- md-addr b } \ get the address of a method entry
 \ by a name and type (desc) pair
 \ returns the address and a flag that indicates if the method has been found
 \ if the method hasn't been found md-addr is the address of the attr_count field
+\ FIXME clean up: this code is a mess
   true
   true
   cf-addr jvm_cf_attr_count_addr \ first address after methods area 
@@ -970,7 +1005,6 @@ variable jvm_p_static_fields \ stores the pointer static fields
   swap \ exception flag top of stack
   invert \ and turn it into a found flag
 ;
-
 
 
 

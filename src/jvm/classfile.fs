@@ -303,7 +303,7 @@ variable jvm_p_static_fields \ stores the pointer static fields
 \ Class File Entry access words
 \ NOTE addr is the start of the file buffer
 
-: jvm_cf_magic ( addr - u) \ returns the magic word (hopefully 0xCAFBABE)
+: jvm_cf_magic ( addr - u) \ returns the magic word (hopefully 0xCAFEBABE)
   POSTPONE jvm_ul@
 ; immediate
 
@@ -311,13 +311,15 @@ variable jvm_p_static_fields \ stores the pointer static fields
   4 + jvm_uw@
 ;
 
-: jvm_cf_major_version ( addr - u) \ returns the minor version
+: jvm_cf_major_version ( addr - u) \ returns the major version
   6 + jvm_uw@
 ;
 
-: jvm_cf_constpool_count ( addr - u) \ returns number of entries in the constant pool
-\ NOTE this is somehow strange. actually there are constant_pool_count-1 entries numbered
-\ from 1 to constant_pool_count-1. whatever
+: jvm_cf_constpool_count ( addr - u) \ returns number of entries+1 in the constant pool
+\ NOTE The value of the constant_pool_count item is equal to the number of entries in
+\ the constant_pool table plus one. A constant_pool index is considered valid if it i
+\ greater than zero and less than constant_pool_count, with the exception for constants
+\ of type long and double noted in §4.4.5.
   8 + jvm_uw@
 ;
 

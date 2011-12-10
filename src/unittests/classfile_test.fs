@@ -443,6 +443,36 @@ require ../jvm/classfile.fs
   assert( 43 = )
 ;
 
+: get_method_by_nametype_test
+  filebuffer @ 
+  s" test" s" (I)I" 
+  jvm_get_method_by_nametype
+  assert( ) \ assert found
+  assert( filebuffer @ 300 + = )
+
+  filebuffer @ 
+  s" test" s" ()I"
+  jvm_get_method_by_nametype
+  assert( invert ) \ assert found
+  assert( filebuffer @ jvm_cf_attr_count_addr = )
+
+  filebuffer @ 
+  s" test2" s" (I)I"
+  jvm_get_method_by_nametype
+  assert( invert ) \ assert found
+  assert( filebuffer @ jvm_cf_attr_count_addr = )
+  
+  filebuffer @ 
+  s" test2" s" ()I"
+  jvm_get_method_by_nametype
+  assert( invert ) \ assert found
+  assert( filebuffer @ jvm_cf_attr_count_addr = )
+;
+
+
+\ --------------------------------------------------------------
+
+
 big_endian_load_test
 cmp_utf8_test
 constpool_idx_test
@@ -497,3 +527,5 @@ get_md_name_idx
 get_md_desc_idx
 get_md_attr_count
 get_md_size
+
+get_method_by_nametype_test

@@ -206,7 +206,6 @@ variable jvm_p_static_fields \ stores the pointer static fields
 
 
 
-
 \ -----------------------------------------------------------------------------
 \ Attribute Entry access words
 \ NOTE addr is the start of the attribute!
@@ -910,6 +909,70 @@ variable jvm_p_static_fields \ stores the pointer static fields
   LOOP
   drop \ drop last address
 ;
+
+\ TODO : move somewhere else
+\ : jvm_cp_utf8_c-ref_by_idx ( cp-addr idx -- addr2 n) \ get the counted reference of the data of a utf8 constant pool entry
+\  POSTPONE jvm_constpool_idx
+\  POSTPONE jvm_cp_utf8_c-ref
+\ ; immediate  
+
+
+\ TODO : move somewhere else
+: jvm_get_method_by_nametype { cf-addr c-addr-name n-name c-addr-desc n-desc -- md-addr b } \ get the address of a method entry
+\ by a name and type (desc) pair
+\ returns the address and a flag that indicates if the method has been found
+\ if the method hasn't been found md-addr is the address of the attr_count field
+  true
+  true
+  cf-addr jvm_cf_attr_count_addr \ first address after methods area 
+  cf-addr jvm_cf_methods_addr \ first method address
+  BEGIN
+    ( !found !found attr-addr next-addr -- )
+    2dup >
+    3 roll and
+  WHILE
+    ( !found attr-addr curr-addr) \ next-addr is not cur-addr
+    2 roll drop \ drop found flag
+
+    \ cf-addr jvm_cf_constpool_addr \ get start of the constpool
+    \ over jvm_md_name_idx 
+    \ jvm_constpool_print_utf8_idx
+     
+    ( attr-addr cur-addr)
+    cf-addr jvm_cf_constpool_addr \ get start of the constpool
+    over jvm_md_name_idx 
+    jvm_constpool_idx \ get address of the utf8 string
+    c-addr-name n-name \ input name
+    jvm_constpool_cmp_utf8 \ compare
+    IF
+      ( attr-addr cur-addr)
+      cf-addr jvm_cf_constpool_addr \ get start of the constpool
+      over jvm_md_desc_idx 
+      jvm_constpool_idx \ get address of the utf8 string
+      c-addr-desc n-desc \ input desc
+      jvm_constpool_cmp_utf8 \ compare
+      invert \ if found we stop executing the loop
+    ELSE
+      true
+    ENDIF
+    ( !name attr-addr cur-addr !match)
+    \ FIXME begin ugly 
+    -rot     \ insert the flag 
+    2 pick   \ get it back
+    -rot     \ and insert it again
+    2 pick   \ get it back
+    \ FIXME end ugly
+    IF 
+      dup jvm_md_size +
+    ENDIF
+  REPEAT
+  nip \ drop attr-addr
+  swap \ exception flag top of stack
+  invert \ and turn it into a found flag
+;
+
+
+
 
 : jvm_print_classfile { addr -- } \ addr stores the start address of the memory where the file is stored
   ." ===================="

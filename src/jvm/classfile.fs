@@ -311,7 +311,7 @@ variable jvm_p_static_fields \ stores the pointer static fields
 ;
 
 : jvm_md_print_access_flags { flags -- }
-  flags hex. ." :"
+  flags hex. ." is"
   flags 0x0001 and IF ."  ACC_PUBLIC"       ENDIF \ Declared public; may be accessed from outside its package.
   flags 0x0002 and IF ."  ACC_PRIVATE"      ENDIF \ Declared private; accessible only within the defining class.
   flags 0x0004 and IF ."  ACC_PROTECTED"    ENDIF \ Declared protected; may be accessed within subclasses.
@@ -412,18 +412,18 @@ variable jvm_p_static_fields \ stores the pointer static fields
   jvm_uw@
 ;
 
-: jvm_cf_interface_count ( addr - n) \ returns number of interfaces
+: jvm_cf_interfaces_count ( addr - n) \ returns number of interfaces
   jvm_cf_access_flags_addr 6 +
   jvm_uw@
 ;
 
-: jvm_cf_interface_addr ( addr - addr2) \ returns address of the first interface field
+: jvm_cf_interfaces_addr ( addr - addr2) \ returns address of the first interface field
   jvm_cf_access_flags_addr 8 +
 ; 
 
 : jvm_cf_fields_count_addr ( addr - addr2) \ returns address of the fields_count field
-  dup jvm_cf_interface_count 2 * \ idx size u2
-  swap jvm_cf_interface_addr +
+  dup jvm_cf_interfaces_count 2 * \ idx size u2
+  swap jvm_cf_interfaces_addr +
 ;
 
 : jvm_cf_fields_count ( addr - n) \ returns fields_count
@@ -660,22 +660,22 @@ variable jvm_p_static_fields \ stores the pointer static fields
   \ const-addr: address pool address 
   \ nt-addr: address of the name type constant pool entry
   nt-addr
-  space ." Name: " 0x22 emit 
+  space ." Name: " [CHAR] " emit 
   jvm_cp_nametype_name_idx \ get name idx
   const-addr 
   swap jvm_constpool_print_utf8_idx
-  0x22 emit space \ 0x22 = "
+  [CHAR] " emit space
   
   nt-addr
-  space ."  Desc: " 0x22 emit 
+  space ."  Desc: " [CHAR] " emit 
   jvm_cp_nametype_desc_idx \ get name idx
   const-addr
   swap jvm_constpool_print_utf8_idx
-  0x22 emit space \ 0x22 = "
+  [CHAR] " emit space
 ;
 
 : jvm_cf_print_access_flags { flags -- }
-  flags hex. ." :"
+  flags hex. ." is"
   flags 0x0001 and IF ."  ACC_PUBLIC"    ENDIF \ Declared public; may be accessed from outside its package.
   flags 0x0010 and IF ."  ACC_FINAL"     ENDIF \ Declared final; no subclasses allowed.
   flags 0x0020 and IF ."  ACC_SUPER"     ENDIF \ Treat superclass methods specially when invoked by the invokespecial instruction.
@@ -686,37 +686,34 @@ variable jvm_p_static_fields \ stores the pointer static fields
 
 \ -----------------------------------------------------------------------------
 \ -----------------------------------------------------------------------------
-: jvm_print_classfile { addr -- }
-\ addr stores the start address of the memory where the file is stored
-  CR ." ====================" CR
-  \ first 4  bytes should be 0xCAFEBABE
-  \ u4 magic;
-  ." Magic:  " 
-  addr jvm_cf_magic hex. CR
+: jvm_cf_magic_print ( addr -- )
+\ first 4 bytes should be 0xCAFEBABE
+  ." Magic: "
+  jvm_cf_magic hex. CR
+;
 
-  \ u2 minor_version;
-  ." Minor:  " 
-  addr jvm_cf_minor_version hex. CR
+: jvm_cf_version_print ( addr -- )
+  ." Version: "
+  dup jvm_cf_minor_version 1 u.r [CHAR] . emit jvm_cf_major_version . CR
+;
 
-  \ u2 major_version;
-  ." Major:  " 
-  addr jvm_cf_major_version hex. CR
-  
-  \ u2 constant_pool_count;
-  ." Constant Pool count:  " 
-  addr jvm_cf_constpool_count dup . CR \ store count
-  addr jvm_cf_constpool_addr swap 
+: jvm_cf_constpool_count_print ( addr -- )
+  ." Constant Pool count: "
+  jvm_cf_constpool_count . CR
+;
 
-  \ cp_info constant_pool[constant_pool_count-1];
+: jvm_cf_constpool_print { addr -- }
+  addr jvm_cf_constpool_addr
+  addr jvm_cf_constpool_count
   1 ?DO
-    ." [ " addr jvm_cf_constpool_count 1- i padding spaces i . ." ] "
+    ." [ " i addr jvm_cf_constpool_count 1- decimal_places .r ."  ] "
     dup jvm_constpool_type_name type  
     dup \ addr, used in the case statement
     dup jvm_cp_tag \ read tag
     CASE
     ( addr1 - ) \ addr1: address of the constpool entry
     1 OF  \ if utf8 string, print it!
-      space 0x22 emit jvm_constpool_print_utf8 0x22 emit space \ 0x22 = "
+      space [CHAR] " emit jvm_constpool_print_utf8 [CHAR] " emit space
     ENDOF
     10 OF \ MethodRef
       jvm_cp_methodref_nametype_idx  \ get nametype idx
@@ -745,35 +742,43 @@ variable jvm_p_static_fields \ stores the pointer static fields
     dup jvm_constpool_type_size dup . +
     CR
   LOOP
-  drop \ what a waist
+  drop \ what a waste
+;
+
+: jvm_cf_access_flags_print ( addr -- )
+  ." Access Flags (Class): "
+  jvm_cf_access_flags { flags -- }
+  flags hex. ." is"
+  flags 0x0001 and IF ."  ACC_PUBLIC"    ENDIF \ Declared public; may be accessed from outside its package.
+  flags 0x0010 and IF ."  ACC_FINAL"     ENDIF \ Declared final; no subclasses allowed.
+  flags 0x0020 and IF ."  ACC_SUPER"     ENDIF \ Treat superclass methods specially when invoked by the invokespecial instruction.
+  flags 0x0200 and IF ."  ACC_INTERFACE" ENDIF \ Is an interface, not a class.
+  flags 0x0400 and IF ."  ACC_ABSTRACT"  ENDIF \ Declared abstract; may not be instantiated.
   CR
+;
 
-  \ u2 access_flags;
-  ." Access_Flags (Class): "
-  addr jvm_cf_access_flags jvm_cf_print_access_flags
-
-  \ u2 this_class;
+: jvm_cf_this_class_print { addr -- }
+  ." This Class: "
   addr jvm_cf_constpool_addr \ get start of the constpool
-  addr jvm_cf_this_class 
-  ." this class:  " 
+  addr jvm_cf_this_class
   jvm_constpool_print_classname_idx CR
-  
-  \ u2 super_class;
+;
+
+: jvm_cf_super_class_print { addr -- }
+  ." Super Class: " 
   addr jvm_cf_constpool_addr \ get start of the constpool
   addr jvm_cf_super_class 
-  ." super class:  " 
-  jvm_constpool_print_classname_idx CR
-  
+  jvm_constpool_print_classname_idx CR 
+;
 
+: jvm_cf_interfaces_count_print ( addr -- )
+  ." Interfaces Count: "
+  jvm_cf_interfaces_count . CR
+;
 
-  \ u2 interfaces_count;
-  addr jvm_cf_interface_count 
-  ." Interfaces count:  " 
-  dup . CR \ store count
-  
-  addr jvm_cf_interface_addr swap
-
-  \ u2 interfaces[interfaces_count];
+: jvm_cf_interfaces_print { addr -- }
+  addr jvm_cf_interfaces_addr
+  addr jvm_cf_interfaces_count
   0 ?DO
     addr jvm_cf_constpool_addr \ get start of the constpool
     over \ get addr  
@@ -783,20 +788,18 @@ variable jvm_p_static_fields \ stores the pointer static fields
     2 + 
   LOOP
   drop \ don't need the address
-  CR
+;
 
+: jvm_cf_fields_count_print ( addr -- )
+  ." Fields Count: "
+  jvm_cf_fields_count . CR
+;
 
-  \ u2 fields_count;
+: jvm_cf_fields_print { addr -- }
+  addr jvm_cf_fields_addr
   addr jvm_cf_fields_count
-  ." Fields count:  "  
-  dup . CR \ store count
-
-  addr jvm_cf_fields_addr swap
-
-  \ field_info fields[fields_count];
   0 ?DO
-    \ print field idx
-    ." Field[ " i . ." ] " CR
+    ." Field[ " i . ." ] " CR \ print field idx
 
     dup 
     jvm_fd_access_flags
@@ -804,18 +807,18 @@ variable jvm_p_static_fields \ stores the pointer static fields
 
     addr jvm_cf_constpool_addr \ get start of the constpool
     over jvm_fd_name_idx
-    ." name_index:  "
+    ." name_index: "
     jvm_constpool_print_utf8_idx CR
     
     addr jvm_cf_constpool_addr \ get start of the constpool
     over jvm_fd_desc_idx
-    ." decriptor_index:  " 
+    ." decriptor_index: " 
     jvm_constpool_print_utf8_idx CR
     
     
     dup \ save a-addr  
     jvm_fd_attr_count 
-    ." attributes counts:  " 
+    ." attributes counts: " 
     dup . CR
     swap jvm_fd_attr swap
 
@@ -832,20 +835,18 @@ variable jvm_p_static_fields \ stores the pointer static fields
 
   LOOP
   drop \ addr2
-  CR
+;
 
-  \ u2 methods_count;
+: jvm_cf_methods_count_print ( addr -- )
+  ." Methods Count: "
+  jvm_cf_methods_count . CR
+;
+
+: jvm_cf_methods_print { addr -- }
+  addr jvm_cf_methods_addr
   addr jvm_cf_methods_count
-  ." Methodes count:  "  
-  dup . CR \ store count
-
-  addr jvm_cf_methods_addr 
-  swap
-
-  \ method_info methods[methods_count];
   0 ?DO
-    \ print field idx
-    ." Method[ " i . ." ] " CR
+    ." Method[ " i . ." ] " CR \ print field idx
 
     dup \ save a-addr  
     jvm_md_access_flags
@@ -891,17 +892,16 @@ variable jvm_p_static_fields \ stores the pointer static fields
 
   LOOP
   drop
-  CR
+;
 
+: jvm_cf_attr_count_print ( addr -- )
+  ." Attributes Count (Class): "
+  jvm_cf_attr_count . CR
+;
 
-  \ u2 attributes_count;
-  addr jvm_cf_attr_count 
-  ." class attributes counts:  " 
-  dup . CR
-
-  addr jvm_cf_attr_addr 
-  swap 
-  \ attribute_info attributes[attributes_count];
+: jvm_cf_attr_print { addr -- }
+  addr jvm_cf_attr_addr
+  addr jvm_cf_attr_count
   ( addr count -- )
   0 ?DO 
     ( const-addr addr1 -- addr2 )
@@ -909,7 +909,34 @@ variable jvm_p_static_fields \ stores the pointer static fields
     jvm_constpool_print_attr
   LOOP
   drop \ drop last address
+;
+
+: jvm_print_classfile { addr -- } \ addr stores the start address of the memory where the file is stored
   ." ===================="
+  CR
+  addr jvm_cf_magic_print            \ u4 magic
+  addr jvm_cf_version_print          \ u2 minor_version, u2 major_version
+  CR
+  addr jvm_cf_constpool_count_print  \ u2 constant_pool_count
+  addr jvm_cf_constpool_print        \ cp_info constant_pool[constant_pool_count-1]
+  CR
+  addr jvm_cf_access_flags_print     \ u2 access_flags
+  addr jvm_cf_this_class_print       \ u2 this_class
+  addr jvm_cf_super_class_print      \ u2 super_class
+  CR
+  addr jvm_cf_interfaces_count_print \ u2 interfaces_count
+  addr jvm_cf_interfaces_print       \ u2 interfaces[interfaces_count]
+  CR
+  addr jvm_cf_fields_count_print     \ u2 fields_count
+  addr jvm_cf_fields_print           \ field_info fields[fields_count]
+  CR
+  addr jvm_cf_methods_count_print    \ u2 methods_count
+  addr jvm_cf_methods_print          \ method_info methods[methods_count]
+  CR
+  addr jvm_cf_attr_count_print       \ u2 attributes_count
+  addr jvm_cf_attr_print             \ attribute_info attributes[attributes_count]
+  ." ===================="
+  CR
 ;
 
 : Usage ( -- )

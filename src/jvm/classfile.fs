@@ -1,6 +1,6 @@
 \ this file implements functionality that is needed to read class files
 
-
+include util.fs
 
 \   ClassFile {
 \       u4 magic;
@@ -653,7 +653,8 @@ variable jvm_p_static_fields \ stores the pointer static fields
 \ -----------------------------------------------------------------------------
 : jvm_print_classfile { addr -- }
 \ addr stores the start address of the memory where the file is stored
-\ first 4  bytes should be 0xCAFEBABE
+  CR ." ====================" CR
+  \ first 4  bytes should be 0xCAFEBABE
   \ u4 magic;
   ." Magic:  " 
   addr jvm_cf_magic hex. CR
@@ -673,7 +674,7 @@ variable jvm_p_static_fields \ stores the pointer static fields
 
   \ cp_info constant_pool[constant_pool_count-1];
   1 ?DO
-    ." [" i . ." ] "
+    ." [ " addr jvm_cf_constpool_count 1- i padding spaces i . ." ] "
     dup jvm_constpool_type_name type  
     dup \ addr, used in the case statement
     dup jvm_cp_tag \ read tag
@@ -873,6 +874,7 @@ variable jvm_p_static_fields \ stores the pointer static fields
     jvm_constpool_print_attr
   LOOP
   drop \ drop last address
+  ." ===================="
 ;
 
 : Usage ( -- )

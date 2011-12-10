@@ -7,9 +7,3 @@
   repeat
   drop
 ;
-
-: padding { u1 u2 -- u3 }
-  u1 decimal_places
-  u2 decimal_places
-  -
-;

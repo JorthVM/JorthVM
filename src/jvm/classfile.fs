@@ -262,6 +262,18 @@ variable jvm_p_static_fields \ stores the pointer static fields
   swap -
 ;
 
+: jvm_fd_print_access_flags { flags -- }
+  flags hex. ." :"
+  flags 0x0001 and IF ."  ACC_PUBLIC"    ENDIF \ Declared public; may be accessed from outside its package.
+  flags 0x0002 and IF ."  ACC_PRIVATE"   ENDIF \ Declared private; usable only within the defining class.
+  flags 0x0004 and IF ."  ACC_PROTECTED" ENDIF \ Declared protected; may be accessed within subclasses.
+  flags 0x0008 and IF ."  ACC_STATIC"    ENDIF \ Declared static.
+  flags 0x0010 and IF ."  ACC_FINAL"     ENDIF \ Declared final; no further assignment after initialization.
+  flags 0x0040 and IF ."  ACC_VOLATILE"  ENDIF \ Declared volatile; cannot be cached.
+  flags 0x0080 and IF ."  ACC_TRANSIENT" ENDIF \ Declared transient; not written or read by a persistent object manager.
+  CR
+;
+
 \ -----------------------------------------------------------------------------
 \ Method Entry access words
 \ NOTE addr is the start of the method!
@@ -298,6 +310,19 @@ variable jvm_p_static_fields \ stores the pointer static fields
   swap -
 ;
 
+: jvm_md_print_access_flags { flags -- }
+  flags hex. ." :"
+  flags 0x0001 and IF ."  ACC_PUBLIC"       ENDIF \ Declared public; may be accessed from outside its package.
+  flags 0x0002 and IF ."  ACC_PRIVATE"      ENDIF \ Declared private; accessible only within the defining class.
+  flags 0x0004 and IF ."  ACC_PROTECTED"    ENDIF \ Declared protected; may be accessed within subclasses.
+  flags 0x0008 and IF ."  ACC_STATIC"       ENDIF \ Declared static.
+  flags 0x0010 and IF ."  ACC_FINAL"        ENDIF \ Declared final; may not be overridden.
+  flags 0x0020 and IF ."  ACC_SYNCHRONIZED" ENDIF \ Declared synchronized; invocation is wrapped in a monitor lock.
+  flags 0x0100 and IF ."  ACC_NATIVE"       ENDIF \ Declared native; implemented in a language other than Java.
+  flags 0x0400 and IF ."  ACC_ABSTRACT"     ENDIF \ Declared abstract; no implementation is provided.
+  flags 0x0800 and IF ."  ACC_STRICT"       ENDIF \ Declared strictfp; floating-point mode is FP-strict
+  CR
+;
 
 \ -----------------------------------------------------------------------------
 \ Class File Entry access words
@@ -649,6 +674,16 @@ variable jvm_p_static_fields \ stores the pointer static fields
   0x22 emit space \ 0x22 = "
 ;
 
+: jvm_cf_print_access_flags { flags -- }
+  flags hex. ." :"
+  flags 0x0001 and IF ."  ACC_PUBLIC"    ENDIF \ Declared public; may be accessed from outside its package.
+  flags 0x0010 and IF ."  ACC_FINAL"     ENDIF \ Declared final; no subclasses allowed.
+  flags 0x0020 and IF ."  ACC_SUPER"     ENDIF \ Treat superclass methods specially when invoked by the invokespecial instruction.
+  flags 0x0200 and IF ."  ACC_INTERFACE" ENDIF \ Is an interface, not a class.
+  flags 0x0400 and IF ."  ACC_ABSTRACT"  ENDIF \ Declared abstract; may not be instantiated.
+  CR
+;
+
 \ -----------------------------------------------------------------------------
 \ -----------------------------------------------------------------------------
 : jvm_print_classfile { addr -- }
@@ -714,8 +749,8 @@ variable jvm_p_static_fields \ stores the pointer static fields
   CR
 
   \ u2 access_flags;
-  ." Access_Flags (Class):  " 
-  addr jvm_cf_access_flags hex. CR
+  ." Access_Flags (Class): "
+  addr jvm_cf_access_flags jvm_cf_print_access_flags
 
   \ u2 this_class;
   addr jvm_cf_constpool_addr \ get start of the constpool
@@ -765,7 +800,7 @@ variable jvm_p_static_fields \ stores the pointer static fields
 
     dup 
     jvm_fd_access_flags
-    ." access flags:  " hex. CR
+    ." access flags: " jvm_fd_print_access_flags
 
     addr jvm_cf_constpool_addr \ get start of the constpool
     over jvm_fd_name_idx
@@ -814,7 +849,7 @@ variable jvm_p_static_fields \ stores the pointer static fields
 
     dup \ save a-addr  
     jvm_md_access_flags
-    ." access flags:  " hex. CR
+    ." access flags: " jvm_md_print_access_flags
     
     addr jvm_cf_constpool_addr \ get start of the constpool
     over jvm_md_name_idx

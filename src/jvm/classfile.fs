@@ -1,6 +1,6 @@
 \ this file implements functionality that is needed to read class files
 
-include util.fs
+require util.fs
 
 \   ClassFile {
 \       u4 magic;

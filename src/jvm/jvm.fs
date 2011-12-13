@@ -1,14 +1,13 @@
-include decode.fs
-include fetch.fs
-include frame.fs
-include classfile.fs
+require decode.fs
+require fetch.fs
+require frame.fs
+require classfile.fs
 
 \ register operation
-include execute.fs
+require execute.fs
 
 : jvm_init
-  jvm_init_op_tbl
-  jvm_init_ops
+\ does nothing atm
 ;
 
 : jvm_next

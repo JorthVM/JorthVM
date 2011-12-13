@@ -1,3 +1,4 @@
+require decode.fs
 
 : jvm_fetch_instruction ( ... -- opcode ... )
   POSTPONE jvm_pc POSTPONE @ \ load pc 

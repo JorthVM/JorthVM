@@ -1,445 +1,879 @@
-
-\ aaload 	32 		arrayref, index -- value 	load onto the stack a reference from an array
-
-\ aastore 	53 		arrayref, index, value -- 	store into a reference in an array
-
-\ aconst_null 	01 		-- null 	push a null reference onto the stack
-
-\ aload 	19 	1: index 	-- objectref 	load a reference onto the stack from a local variable #index
-
-\ aload_0 	2a 		-- objectref 	load a reference onto the stack from local variable 0
-
-\ aload_1 	2b 		-- objectref 	load a reference onto the stack from local variable 1
-
-\ aload_2 	2c 		-- objectref 	load a reference onto the stack from local variable 2
-
-\ aload_3 	2d 		-- objectref 	load a reference onto the stack from local variable 3
-
-\ anewarray 	bd 	2: indexbyte1, indexbyte2 	count -- arrayref 	create a new array of references of length count and component type identified by the class reference index (indexbyte1 << 8 + indexbyte2) in the constant pool
-
-\ areturn 	b0 		objectref -- [empty] 	return a reference from a method
-
-\ arraylength 	be 		arrayref -- length 	get the length of an array
-
-\ astore 	3a 	1: index 	objectref -- 	store a reference into a local variable #index
-
-\ astore_0 	4b 		objectref -- 	store a reference into local variable 0
-
-\ astore_1 	4c 		objectref -- 	store a reference into local variable 1
-
-\ astore_2 	4d 		objectref -- 	store a reference into local variable 2
-
-\ astore_3 	4e 		objectref -- 	store a reference into local variable 3
-
-\ athrow 	bf 		objectref -- [empty], objectref 	throws an error or exception (notice that the rest of the stack is cleared, leaving only a reference to the Throwable)
-
-\ baload 	33 		arrayref, index -- value 	load a byte or Boolean value from an array
-
-\ bastore 	54 		arrayref, index, value -- 	store a byte or Boolean value into an array
-
-\ bipush 	10 	1: byte 	-- value 	push a byte onto the stack as an integer value
-: jvm_op_bipush 
-  jvm_fetch_instruction \ load byte
-  dup 0x80 and \ sign ext
-  if 
-    [ -1 8 lshift ] literal or
-  endif 
-;
-
-\ caload 	34 		arrayref, index -- value 	load a char from an array
-
-\ castore 	55 		arrayref, index, value -- 	store a char into an array
-
-\ checkcast 	c0 	2: indexbyte1, indexbyte2 	objectref -- objectref 	checks whether an objectref is of a certain type, the class reference of which is in the constant pool at index (indexbyte1 << 8 + indexbyte2)
-
-\ d2f 	90 		value -- result 	convert a double to a float
-
-\ d2i 	8e 		value -- result 	convert a double to an int
-
-\ d2l 	8f 		value -- result 	convert a double to a long
-
-\ dadd 	63 		value1, value2 -- result 	add two doubles
-
-\ daload 	31 		arrayref, index -- value 	load a double from an array
-
-\ dastore 	52 		arrayref, index, value -- 	store a double into an array
-
-\ dcmpg 	98 		value1, value2 -- result 	compare two doubles
-
-\ dcmpl 	97 		value1, value2 -- result 	compare two doubles
-
-\ dconst_0 	0e 		-- 0.0 	push the constant 0.0 onto the stack
-
-\ dconst_1 	0f 		-- 1.0 	push the constant 1.0 onto the stack
-
-\ ddiv 	6f 		value1, value2 -- result 	divide two doubles
-
-\ dload 	18 	1: index 	-- value 	load a double value from a local variable #index
-
-\ dload_0 	26 		-- value 	load a double from local variable 0
-
-\ dload_1 	27 		-- value 	load a double from local variable 1
-
-\ dload_2 	28 		-- value 	load a double from local variable 2
-
-\ dload_3 	29 		-- value 	load a double from local variable 3
-
-\ dmul 	6b 		value1, value2 -- result 	multiply two doubles
-
-\ dneg 	77 		value -- result 	negate a double
-
-\ drem 	73 		value1, value2 -- result 	get the remainder from a division between two doubles
-
-\ dreturn 	af 		value -- [empty] 	return a double from a method
-
-\ dstore 	39 	1: index 	value -- 	store a double value into a local variable #index
-
-\ dstore_0 	47 		value -- 	store a double into local variable 0
-
-\ dstore_1 	48 		value -- 	store a double into local variable 1
-
-\ dstore_2 	49 		value -- 	store a double into local variable 2
-
-\ dstore_3 	4a 		value -- 	store a double into local variable 3
-
-\ dsub 	67 		value1, value2 -- result 	subtract a double from another
-
-\ dup 	59 		value -- value, value 	duplicate the value on top of the stack
-: jvm_op_dup dup ;
-
-\ dup_x1 	5a 		value2, value1 -- value1, value2, value1 	insert a copy of the top value into the stack two values from the top
-
-\ dup_x2 	5b 		value3, value2, value1 -- value1, value3, value2, value1 	insert a copy of the top value into the stack two (if value2 is double or long it takes up the entry of value3, too) or three values (if value2 is neither double nor long) from the top
-
-\ dup2 	5c 		{value2, value1} -- {value2, value1}, {value2, value1} 	duplicate top two stack words (two values, if value1 is not double nor long; a single value, if value1 is double or long)
-
-\ dup2_x1 	5d 		value3, {value2, value1} -- {value2, value1}, value3, {value2, value1} 	duplicate two words and insert beneath third word (see explanation above)
-
-\ dup2_x2 	5e 		{value4, value3}, {value2, value1} -- {value2, value1}, {value4, value3}, {value2, value1} 	duplicate two words and insert beneath fourth word
-
-\ f2d 	8d 		value -- result 	convert a float to a double
-
-\ f2i 	8b 		value -- result 	convert a float to an int
-
-\ f2l 	8c 		value -- result 	convert a float to a long
-
-\ fadd 	62 		value1, value2 -- result 	add two floats
-
-\ faload 	30 		arrayref, index -- value 	load a float from an array
-
-\ fastore 	51 		arrayref, index, value -- 	store a float in an array
-
-\ fcmpg 	96 		value1, value2 -- result 	compare two floats
-
-\ fcmpl 	95 		value1, value2 -- result 	compare two floats
-
-\ fconst_0 	0b 		-- 0.0f 	push 0.0f on the stack
-
-\ fconst_1 	0c 		-- 1.0f 	push 1.0f on the stack
-
-\ fconst_2 	0d 		-- 2.0f 	push 2.0f on the stack
-
-\ fdiv 	6e 		value1, value2 -- result 	divide two floats
-
-\ fload 	17 	1: index 	-- value 	load a float value from a local variable #index
-
-\ fload_0 	22 		-- value 	load a float value from local variable 0
-
-\ fload_1 	23 		-- value 	load a float value from local variable 1
-
-\ fload_2 	24 		-- value 	load a float value from local variable 2
-
-\ fload_3 	25 		-- value 	load a float value from local variable 3
-
-\ fmul 	6a 		value1, value2 -- result 	multiply two floats
-
-\ fneg 	76 		value -- result 	negate a float
-
-\ frem 	72 		value1, value2 -- result 	get the remainder from a division between two floats
-
-\ freturn 	ae 		value -- [empty] 	return a float
-
-\ fstore 	38 	1: index 	value -- 	store a float value into a local variable #index
-
-\ fstore_0 	43 		value -- 	store a float value into local variable 0
-
-\ fstore_1 	44 		value -- 	store a float value into local variable 1
-
-\ fstore_2 	45 		value -- 	store a float value into local variable 2
-
-\ fstore_3 	46 		value -- 	store a float value into local variable 3
-
-\ fsub 	66 		value1, value2 -- result 	subtract two floats
-
-\ getfield 	b4 	2: index1, index2 	objectref -- value 	get a field value of an object objectref, where the field is identified by field reference in the constant pool index (index1 << 8 + index2)
-
-\ getstatic 	b2 	2: index1, index2 	-- value 	get a static field value of a class, where the field is identified by field reference in the constant pool index (index1 << 8 + index2)
-: jvm_op_getstatic 
-  jvm_fetch_instruction \ load byte
-  8 lshift
-  jvm_fetch_instruction \ load byte
-  or
-  cells
-  jvm_p_static_fields @ + l@
-  \ FIXME use @ instead?!
-;
-
-\ goto 	a7 	2: branchbyte1, branchbyte2 	[no change] 	goes to another instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ goto_w 	c8 	4: branchbyte1, branchbyte2, branchbyte3, branchbyte4 	[no change] 	goes to another instruction at branchoffset (signed int constructed from unsigned bytes branchbyte1 << 24 + branchbyte2 << 16 + branchbyte3 << 8 + branchbyte4)
-
-\ i2b 	91 		value -- result 	convert an int into a byte
-
-\ i2c 	92 		value -- result 	convert an int into a character
-
-\ i2d 	87 		value -- result 	convert an int into a double
-
-\ i2f 	86 		value -- result 	convert an int into a float
-
-\ i2l 	85 		value -- result 	convert an int into a long
-
-\ i2s 	93 		value -- result 	convert an int into a short
-
-\ iadd 	60 		value1, value2 -- result 	add two ints
-: jvm_op_iadd + ;
-
-\ iaload 	2e 		arrayref, index -- value 	load an int from an array
-
-\ iand 	7e 		value1, value2 -- result 	perform a bitwise and on two integers
-
-\ iastore 	4f 		arrayref, index, value -- 	store an int into an array
-
-\ iconst_m1 	02 		-- -1 	load the int value -1 onto the stack
-
-\ iconst_0 	03 		-- 0 	load the int value 0 onto the stack
-: jvm_op_iconst_0 0 ;
-
-\ iconst_1 	04 		-- 1 	load the int value 1 onto the stack
-: jvm_op_iconst_1 1 ;
-
-\ iconst_2 	05 		-- 2 	load the int value 2 onto the stack
-: jvm_op_iconst_2 2 ;
-
-\ iconst_3 	06 		-- 3 	load the int value 3 onto the stack
-: jvm_op_iconst_3 3 ;
-
-\ iconst_4 	07 		-- 4 	load the int value 4 onto the stack
-: jvm_op_iconst_4 4 ;
-
-\ iconst_5 	08 		-- 5 	load the int value 5 onto the stack
-: jvm_op_iconst_5 5 ;
-
-\ idiv 	6c 		value1, value2 -- result 	divide two integers
-
-\ if_acmpeq 	a5 	2: branchbyte1, branchbyte2 	value1, value2 -- 	if references are equal, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ if_acmpne 	a6 	2: branchbyte1, branchbyte2 	value1, value2 -- 	if references are not equal, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ if_icmpeq 	9f 	2: branchbyte1, branchbyte2 	value1, value2 -- 	if ints are equal, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ if_icmpne 	a0 	2: branchbyte1, branchbyte2 	value1, value2 -- 	if ints are not equal, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ if_icmplt 	a1 	2: branchbyte1, branchbyte2 	value1, value2 -- 	if value1 is less than value2, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ if_icmpge 	a2 	2: branchbyte1, branchbyte2 	value1, value2 -- 	if value1 is greater than or equal to value2, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ if_icmpgt 	a3 	2: branchbyte1, branchbyte2 	value1, value2 -- 	if value1 is greater than value2, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ if_icmple 	a4 	2: branchbyte1, branchbyte2 	value1, value2 -- 	if value1 is less than or equal to value2, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ ifeq 	99 	2: branchbyte1, branchbyte2 	value -- 	if value is 0, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ ifne 	9a 	2: branchbyte1, branchbyte2 	value -- 	if value is not 0, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ iflt 	9b 	2: branchbyte1, branchbyte2 	value -- 	if value is less than 0, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ ifge 	9c 	2: branchbyte1, branchbyte2 	value -- 	if value is greater than or equal to 0, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ ifgt 	9d 	2: branchbyte1, branchbyte2 	value -- 	if value is greater than 0, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ ifle 	9e 	2: branchbyte1, branchbyte2 	value -- 	if value is less than or equal to 0, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ ifnonnull 	c7 	2: branchbyte1, branchbyte2 	value -- 	if value is not null, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ ifnull 	c6 	2: branchbyte1, branchbyte2 	value -- 	if value is null, branch to instruction at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
-
-\ iinc 	84 	2: index, const 	[No change] 	increment local variable #index by signed byte const
-
-\ iload 	15 	1: index 	-- value 	load an int value from a local variable #index
-
-\ iload_0 	1a 		-- value 	load an int value from local variable 0
-
-\ iload_1 	1b 		-- value 	load an int value from local variable 1
-
-\ iload_2 	1c 		-- value 	load an int value from local variable 2
-
-\ iload_3 	1d 		-- value 	load an int value from local variable 3
-
-\ imul 	68 		value1, value2 -- result 	multiply two integers
-: jvm_op_imul * ;
-
-\ ineg 	74 		value -- result 	negate int
-
-\ instanceof 	c1 	2: indexbyte1, indexbyte2 	objectref -- result 	determines if an object objectref is of a given type, identified by class reference index in constant pool (indexbyte1 << 8 + indexbyte2)
-
-\ invokedynamic 	ba 	4: indexbyte1, indexbyte2, 0, 0 	[arg1, [arg2 ...]] -- 	invokes a dynamic method identified by method reference index in constant pool (indexbyte1 << 8 + indexbyte2)
-
-\ invokeinterface 	b9 	4: indexbyte1, indexbyte2, count, 0 	objectref, [arg1, arg2, ...] -- 	invokes an interface method on object objectref, where the interface method is identified by method reference index in constant pool (indexbyte1 << 8 + indexbyte2)
-
-\ invokespecial 	b7 	2: indexbyte1, indexbyte2 	objectref, [arg1, arg2, ...] -- 	invoke instance method on object objectref, where the method is identified by method reference index in constant pool (indexbyte1 << 8 + indexbyte2)
-
-\ invokestatic 	b8 	2: indexbyte1, indexbyte2 	[arg1, arg2, ...] -- 	invoke a static method, where the method is identified by method reference index in constant pool (indexbyte1 << 8 + indexbyte2)
-
-\ invokevirtual 	b6 	2: indexbyte1, indexbyte2 	objectref, [arg1, arg2, ...] -- 	invoke virtual method on object objectref, where the method is identified by method reference index in constant pool (indexbyte1 << 8 + indexbyte2)
-
-\ ior 	80 		value1, value2 -- result 	bitwise int or
-
-\ irem 	70 		value1, value2 -- result 	logical int remainder
-
-\ ireturn 	ac 		value -- [empty] 	return an integer from a method
-
-\ ishl 	78 		value1, value2 -- result 	int shift left
-
-\ ishr 	7a 		value1, value2 -- result 	int arithmetic shift right
-
-\ istore 	36 	1: index 	value -- 	store int value into variable #index
-
-\ istore_0 	3b 		value -- 	store int value into variable 0
-
-\ istore_1 	3c 		value -- 	store int value into variable 1
-
-\ istore_2 	3d 		value -- 	store int value into variable 2
-
-\ istore_3 	3e 		value -- 	store int value into variable 3
-
-\ isub 	64 		value1, value2 -- result 	int subtract
-
-\ iushr 	7c 		value1, value2 -- result 	int logical shift right
-
-\ ixor 	82 		value1, value2 -- result 	int xor
-
-\ jsr 	a8 	2: branchbyte1, branchbyte2 	-- address 	jump to subroutine at branchoffset (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2) and place the return address on the stack
-
-\ jsr_w 	c9 	4: branchbyte1, branchbyte2, branchbyte3, branchbyte4 	-- address 	jump to subroutine at branchoffset (signed int constructed from unsigned bytes branchbyte1 << 24 + branchbyte2 << 16 + branchbyte3 << 8 + branchbyte4) and place the return address on the stack
-
-\ l2d 	8a 		value -- result 	convert a long to a double
-
-\ l2f 	89 		value -- result 	convert a long to a float
-
-\ l2i 	88 		value -- result 	convert a long to a int
-
-\ ladd 	61 		value1, value2 -- result 	add two longs
-
-\ laload 	2f 		arrayref, index -- value 	load a long from an array
-
-\ land 	7f 		value1, value2 -- result 	bitwise and of two longs
-
-\ lastore 	50 		arrayref, index, value -- 	store a long to an array
-
-\ lcmp 	94 		value1, value2 -- result 	compare two longs values
-
-\ lconst_0 	09 		-- 0L 	push the long 0 onto the stack
-
-\ lconst_1 	0a 		-- 1L 	push the long 1 onto the stack
-
-\ ldc 	12 	1: index 	-- value 	push a constant #index from a constant pool (String, int or float) onto the stack
-
-\ ldc_w 	13 	2: indexbyte1, indexbyte2 	-- value 	push a constant #index from a constant pool (String, int or float) onto the stack (wide index is constructed as indexbyte1 << 8 + indexbyte2)
-
-\ ldc2_w 	14 	2: indexbyte1, indexbyte2 	-- value 	push a constant #index from a constant pool (double or long) onto the stack (wide index is constructed as indexbyte1 << 8 + indexbyte2)
-
-\ ldiv 	6d 		value1, value2 -- result 	divide two longs
-
-\ lload 	16 	1: index 	-- value 	load a long value from a local variable #index
-
-\ lload_0 	1e 		-- value 	load a long value from a local variable 0
-
-\ lload_1 	1f 		-- value 	load a long value from a local variable 1
-
-\ lload_2 	20 		-- value 	load a long value from a local variable 2
-
-\ lload_3 	21 		-- value 	load a long value from a local variable 3
-
-\ lmul 	69 		value1, value2 -- result 	multiply two longs
-
-\ lneg 	75 		value -- result 	negate a long
-
-\ lookupswitch 	ab 	4+: <0-3 bytes padding>, defaultbyte1, defaultbyte2, defaultbyte3, defaultbyte4, npairs1, npairs2, npairs3, npairs4, match-offset pairs... 	key -- 	a target address is looked up from a table using a key and execution continues from the instruction at that address
-
-\ lor 	81 		value1, value2 -- result 	bitwise or of two longs
-
-\ lrem 	71 		value1, value2 -- result 	remainder of division of two longs
-
-\ lreturn 	ad 		value -- [empty] 	return a long value
-
-\ lshl 	79 		value1, value2 -- result 	bitwise shift left of a long value1 by value2 positions
-
-\ lshr 	7b 		value1, value2 -- result 	bitwise shift right of a long value1 by value2 positions
-
-\ lstore 	37 	1: index 	value -- 	store a long value in a local variable #index
-
-\ lstore_0 	3f 		value -- 	store a long value in a local variable 0
-
-\ lstore_1 	40 		value -- 	store a long value in a local variable 1
-
-\ lstore_2 	41 		value -- 	store a long value in a local variable 2
-
-\ lstore_3 	42 		value -- 	store a long value in a local variable 3
-
-\ lsub 	65 		value1, value2 -- result 	subtract two longs
-
-\ lushr 	7d 		value1, value2 -- result 	bitwise shift right of a long value1 by value2 positions, unsigned
-
-\ lxor 	83 		value1, value2 -- result 	bitwise exclusive or of two longs
-
-\ monitorenter 	c2 		objectref -- 	enter monitor for object ("grab the lock" - start of synchronized() section)
-
-\ monitorexit 	c3 		objectref -- 	exit monitor for object ("release the lock" - end of synchronized() section)
-
-\ multianewarray 	c5 	3: indexbyte1, indexbyte2, dimensions 	count1, [count2,...] -- arrayref 	create a new array of dimensions dimensions with elements of type identified by class reference in constant pool index (indexbyte1 << 8 + indexbyte2); the sizes of each dimension is identified by count1, [count2, etc.]
-
-\ new 	bb 	2: indexbyte1, indexbyte2 	-- objectref 	create new object of type identified by class reference in constant pool index (indexbyte1 << 8 + indexbyte2)
-
-\ newarray 	bc 	1: atype 	count -- arrayref 	create new array with count elements of primitive type identified by atype
-
-\ nop 	00 		[No change] 	perform no operation
-: jvm_op_nop ;
-
-\ pop 	57 		value -- 	discard the top value on the stack
-
-\ pop2 	58 		{value2, value1} -- 	discard the top two values on the stack (or one value, if it is a double or long)
-
-\ putfield 	b5 	2: indexbyte1, indexbyte2 	objectref, value -- 	set field to value in an object objectref, where the field is identified by a field reference index in constant pool (indexbyte1 << 8 + indexbyte2)
-
-\ putstatic 	b3 	2: indexbyte1, indexbyte2 	value -- 	set static field to value in a class, where the field is identified by a field reference index in constant pool (indexbyte1 << 8 + indexbyte2)
-: jvm_op_putstatic 
-  jvm_fetch_instruction \ load byte
-  8 lshift
-  jvm_fetch_instruction \ load byte
-  or
-  cells
-  jvm_p_static_fields @ + l!
-  \ FIXME use ! instead?!
-;
-
-\ ret 	a9 	1: index 	[No change] 	continue execution from address taken from a local variable #index (the asymmetry with jsr is intentional)
-
-\ return 	b1 		-- [empty] 	return void from method
-
-\ saload 	35 		arrayref, index -- value 	load short from array
-
-\ sastore 	56 		arrayref, index, value -- 	store short to array
-
-\ sipush 	11 	2: byte1, byte2 	-- value 	push a short onto the stack
-: jvm_op_sipush 
-  jvm_op_bipush \ fetch high byte and sign ext
-  8 lshift 
-  jvm_fetch_instruction or \ fetch low byte
-; 
-
-\ swap 	5f 		value2, value1 -- value1, value2 	swaps two top words on the stack (note that value1 and value2 must not be double or long)
-
-\ tableswitch 	aa 	4+: [0-3 bytes padding], defaultbyte1, defaultbyte2, defaultbyte3, defaultbyte4, lowbyte1, lowbyte2, lowbyte3, lowbyte4, highbyte1, highbyte2, highbyte3, highbyte4, jump offsets... 	index -- 	continue execution from an address in the table at offset index
+require fetch.fs
+
+0x32 \ aaload ( arrayref, index -- value )
+\ load onto the stack a reference from an array
+>[ ]<
+
+0x53 \ aastore ( arrayref, index, value -- )
+\ store into a reference in an array
+>[ ]<
+
+0x01 \ aconst_null ( -- null )
+\ push a null reference onto the stack
+>[ ]<
+
+0x19 \ aload 1[index] ( -- objectref )
+\ load a reference onto the stack from a local variable #index
+>[ ]<
+
+0x2A \ aload_0 ( -- objectref )
+\ load a reference onto the stack from local variable 0
+>[ ]<
+
+0x2B \ aload_1 ( -- objectref )
+\ load a reference onto the stack from local variable 1
+>[ ]<
+
+0x2C \ aload_2 ( -- objectref )
+\ load a reference onto the stack from local variable 2
+>[ ]<
+
+0x2D \ aload_3 ( -- objectref )
+\ load a reference onto the stack from local variable 3
+>[ ]<
+
+0xBD \ anewarray  2[indexbyte1, indexbyte2] ( count -- arrayref )
+\ create a new array of references of length count and component type
+\ identified by the class reference index (indexbyte1 << 8 + indexbyte2)
+\ in the constant pool
+>[ ]<
+
+0xB0 \ areturn ( objectref -- [empty] )
+\ return a reference from a method
+>[ ]<
+
+0xBE \ arraylength ( arrayref -- length )
+\ get the length of an array
+>[ ]<
+
+0x3A \ astore 1[index] ( objectref -- )
+\ store a reference into a local variable #index
+>[ ]<
+
+0x4B \ astore_0 ( objectref -- )
+\ store a reference into local variable 0
+>[ ]<
+
+0x4C \ astore_1 ( objectref -- )
+\ store a reference into local variable 1
+>[ ]<
+
+0x4D \ astore_2 ( objectref -- )
+\ store a reference into local variable 2
+>[ ]<
+
+0x4E \ astore_3 ( objectref -- )
+\ store a reference into local variable 3
+>[ ]<
+
+0xBF \ athrow ( objectref -- [empty], objectref )
+\ throws an error or exception (notice that the rest of the stack is cleared,
+\ leaving only a reference to the Throwable)
+>[ ]<
+
+0x33 \ baload ( arrayref, index -- value )
+\ load a byte or Boolean value from an array
+>[ ]<
+
+0x54 \ bastore ( arrayref, index, value -- )
+\ store a byte or Boolean value into an array
+>[ ]<
+
+0x10 \ bipush 1[byte] ( -- value )
+\ push a byte onto the stack as an integer value
+>[ jvm_fetch_instruction \ load byte
+   dup 0x80 and \ sign ext
+   if
+     [ -1 8 lshift ] literal or
+   endif
+]<
+
+0x34 \ caload ( arrayref, index -- value )
+\ load a char from an array
+>[ ]<
+
+0x55 \ castore ( arrayref, index, value -- )
+\ store a char into an array
+>[ ]<
+
+0xC0 \ checkcast 2[indexbyte1, indexbyte2] ( objectref -- objectref )
+\ checks whether an objectref is of a certain type, the class reference of
+\ which is in the constant pool at index (indexbyte1 << 8 + indexbyte2)
+>[ ]<
+
+0x90 \ d2f ( value -- result )
+\ convert a double to a float
+>[ ]<
+
+0x8E \ d2i ( value -- result )
+\ convert a double to an int
+>[ ]<
+
+0x8F \ d2l ( value -- result )
+\ convert a double to a long
+>[ ]<
+
+0x63 \ dadd ( value1, value2 -- result )
+\ add two doubles
+>[ ]<
+
+0x31 \ daload ( arrayref, index -- value )
+\ load a double from an array
+>[ ]<
+
+0x52 \ dastore ( arrayref, index, value -- )
+\ store a double into an array
+>[ ]<
+
+0x98 \ dcmpg ( value1, value2 -- result )
+\ compare two doubles
+>[ ]<
+
+0x97 \ dcmpl ( value1, value2 -- result )
+\ compare two doubles
+>[ ]<
+
+0x0E \ dconst_0 ( -- 0.0 )
+\ push the constant 0.0 onto the stack
+>[ ]<
+
+0x0F \ dconst_1 ( -- 1.0 )
+\ push the constant 1.0 onto the stack
+>[ ]<
+
+0x6F \ ddiv ( value1, value2 -- result )
+\ divide two doubles
+>[ ]<
+
+0x18 \ dload 1[index] ( -- value )
+\ load a double value from a local variable #index
+>[ ]<
+
+0x26 \ dload_0 ( -- value )
+\ load a double from local variable 0
+>[ ]<
+
+0x27 \ dload_1 ( -- value )
+\ load a double from local variable 1
+>[ ]<
+
+0x28 \ dload_2 ( -- value )
+\ load a double from local variable 2
+>[ ]<
+
+0x29 \ dload_3 ( -- value )
+\ load a double from local variable 3
+>[ ]<
+
+0x6B \ dmul ( value1, value2 -- result )
+\ multiply two doubles
+>[ ]<
+
+0x77 \ dneg ( value -- result )
+\ negate a double
+>[ ]<
+
+0x73 \ drem ( value1, value2 -- result )
+\ get the remainder from a division between two doubles
+>[ ]<
+
+0xAF \ dreturn ( value -- [empty] )
+\ return a double from a method
+>[ ]<
+
+0x39 \ dstore 1[index] ( value -- )
+\ store a double value into a local variable #index
+>[ ]<
+
+0x47 \ dstore_0 ( value -- )
+\ store a double into local variable 0
+>[ ]<
+
+0x48 \ dstore_1 ( value -- )
+\ store a double into local variable 1
+>[ ]<
+
+0x49 \ dstore_2 ( value -- )
+\ store a double into local variable 2
+>[ ]<
+
+0x4A \ dstore_3 ( value -- )
+\ store a double into local variable 3
+>[ ]<
+
+0x67 \ dsub ( value1, value2 -- result )
+\ subtract a double from another
+>[ ]<
+
+0x59 \ dup ( value -- value, value )
+\ duplicate the value on top of the stack
+>[ dup ]<
+
+0x5A \ dup_x1 ( value2, value1 -- value1, value2, value1 )
+\ insert a copy of the top value into the stack two values from the top
+>[ ]<
+
+0x5B \ dup_x2 ( value3, value2, value1 -- value1, value3, value2, value1 )
+\ insert a copy of the top value into the stack two (if value2 is double or
+\ long it takes up the entry of value3, too) or three values (if value2 is
+\ neither double nor long) from the top
+>[ ]<
+
+0x5C \ dup2 ( {value2, value1} -- {value2, value1}, {value2, value1} )
+\ duplicate top two stack words (two values, if value1 is not double nor long;
+\ a single value, if value1 is double or long)
+>[ ]<
+
+0x5D \ dup2_x1 ( value3, {value2, value1} -- {value2, value1}, value3, {value2, value1} )
+\ duplicate two words and insert beneath third word (see explanation above)
+>[ ]<
+
+0x5E \ dup2_x2 ( {value4, value3}, {value2, value1} -- {value2, value1}, {value4, value3}, {value2, value1} )
+\ duplicate two words and insert beneath fourth word
+>[ ]<
+
+0x8D \ f2d ( value -- result )
+\ convert a float to a double
+>[ ]<
+
+0x8B \ f2i ( value -- result )
+\ convert a float to an int
+>[ ]<
+
+0x8C \ f2l ( value -- result )
+\ convert a float to a long
+>[ ]<
+
+0x62 \ fadd ( value1, value2 -- result )
+\ add two floats
+>[ ]<
+
+0x30 \ faload ( arrayref, index -- value )
+\ load a float from an array
+>[ ]<
+
+0x51 \ fastore ( arrayref, index, value -- )
+\ store a float in an array
+>[ ]<
+
+0x96 \ fcmpg ( value1, value2 -- result )
+\ compare two floats
+>[ ]<
+
+0x95 \ fcmpl ( value1, value2 -- result )
+\ compare two floats
+>[ ]<
+
+0x0B \ fconst_0 ( -- 0.0f )
+\ push 0.0f on the stack
+>[ ]<
+
+0x0C \ fconst_1 ( -- 1.0f )
+\ push 1.0f on the stack
+>[ ]<
+
+0x0D \ fconst_2 ( -- 2.0f )
+\ push 2.0f on the stack
+>[ ]<
+
+0x6E \ fdiv ( value1, value2 -- result )
+\ divide two floats
+>[ ]<
+
+0x17 \ fload ( 1: index 	-- value )
+\ load a float value from a local variable #index
+>[ ]<
+
+0x22 \ fload_0 ( -- value )
+\ load a float value from local variable 0
+>[ ]<
+
+0x23 \ fload_1 ( -- value )
+\ load a float value from local variable 1
+>[ ]<
+
+0x24 \ fload_2 ( -- value )
+\ load a float value from local variable 2
+>[ ]<
+
+0x25 \ fload_3 ( -- value )
+\ load a float value from local variable 3
+>[ ]<
+
+0x6A \ fmul ( value1, value2 -- result )
+\ multiply two floats
+>[ ]<
+
+0x76 \ fneg ( value -- result )
+\ negate a float
+>[ ]<
+
+0x72 \ frem ( value1, value2 -- result )
+\ get the remainder from a division between two floats
+>[ ]<
+
+0xAE \ freturn ( value -- [empty] )
+\ return a float
+>[ ]<
+
+0x38 \ fstore 1[index] ( value -- )
+\ store a float value into a local variable #index
+>[ ]<
+
+0x43 \ fstore_0 ( value -- )
+\ store a float value into local variable 0
+>[ ]<
+
+0x44 \ fstore_1 ( value -- )
+\ store a float value into local variable 1
+>[ ]<
+
+0x45 \ fstore_2 ( value -- )
+\ store a float value into local variable 2
+>[ ]<
+
+0x46 \ fstore_3 ( value -- )
+\ store a float value into local variable 3
+>[ ]<
+
+0x66 \ fsub ( value1, value2 -- result )
+\ subtract two floats
+>[ ]<
+
+0xB4 \ getfield 2[index1, index2] ( objectref -- value )
+\ get a field value of an object objectref, where the field is identified by
+\ field reference in the constant pool index (index1 << 8 + index2)
+>[ ]<
+
+0xB2 \ getstatic 2[index1, index2] ( -- value )
+\ get a static field value of a class, where the field is identified by field
+\ reference in the constant pool index (index1 << 8 + index2)
+>[ jvm_fetch_instruction \ load byte
+   8 lshift
+   jvm_fetch_instruction \ load byte
+   or
+   cells
+   jvm_p_static_fields @ + l@
+   \ FIXME use @ instead?!
+]<
+
+0xA7 \ goto 2[branchbyte1, branchbyte2] ( -- )
+\ goes to another instruction at branchoffset (signed short constructed from
+\ unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0xC8 \ goto_w 4[branchbyte1, branchbyte2, branchbyte3, branchbyte4] ( -- )
+\ goes to another instruction at branchoffset (signed int constructed from
+\ unsigned bytes branchbyte1 << 24 + branchbyte2 << 16 + branchbyte3 << 8 + branchbyte4)
+>[ ]<
+
+0x91 \ i2b ( value -- result )
+\ convert an int into a byte
+>[ ]<
+
+0x92 \ i2c ( value -- result )
+\ convert an int into a character
+>[ ]<
+
+0x87 \ i2d ( value -- result )
+\ convert an int into a double
+>[ ]<
+
+0x86 \ i2f ( value -- result )
+\ convert an int into a float
+>[ ]<
+
+0x85 \ i2l ( value -- result )
+\ convert an int into a long
+>[ ]<
+
+0x93 \ i2s ( value -- result )
+\ convert an int into a short
+>[ ]<
+
+0x60 \ iadd ( value1, value2 -- result )
+\ add two ints
+>[ + ]<
+
+0x2E \ iaload ( arrayref, index -- value )
+\ load an int from an array
+>[ ]<
+
+0x7E \ iand ( value1, value2 -- result )
+\ perform a bitwise and on two integers
+>[ ]<
+
+0x4F \ iastore ( arrayref, index, value -- )
+\ store an int into an array
+>[ ]<
+
+0x02 \ iconst_m1  ( -- -1 )
+\ load the int value -1 onto the stack
+>[ ]<
+
+0x03 \ iconst_3 ( -- 0 )
+\ load the int value 0 onto the stack
+>[ 0 ]<
+
+0x04 \ iconst_1 ( -- 1 )
+\ load the int value 1 onto the stack
+>[ 1 ]<
+
+0x05 \ iconst_2 ( -- 2 )
+\ load the int value 2 onto the stack
+>[ 2 ]<
+
+0x06 \ iconst_3 ( -- 3 )
+\ load the int value 3 onto the stack
+>[ 3 ]<
+
+0x07 \ iconst_4 ( -- 4 )
+\ load the int value 4 onto the stack
+>[ 4 ]<
+
+0x08 \ iconst_5 ( -- 5 )
+\ load the int value 5 onto the stack
+>[ 5 ]<
+
+0x6C \ idiv ( value1, value2 -- result )
+\ divide two integers
+>[ ]<
+
+0xA5 \ if_acmpeq 2[branchbyte1, branchbyte2] ( value1, value2 -- )
+\ if references are equal, branch to instruction at branchoffset (signed short
+\ constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0xA6 \ if_acmpne 2[branchbyte1, branchbyte2] ( value1, value2 -- )
+\ if references are not equal, branch to instruction at branchoffset (signed
+\ short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0x9F \ if_icmpeq 2[branchbyte1, branchbyte2] ( value1, value2 -- )
+\ if ints are equal, branch to instruction at branchoffset (signed short
+\ constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0xA0 \ if_icmpne 2[branchbyte1, branchbyte2] ( value1, value2 -- )
+\ if ints are not equal, branch to instruction at branchoffset (signed short
+\ constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0xA1 \ if_icmplt 2[branchbyte1, branchbyte2] ( value1, value2 -- )
+\ if value1 is less than value2, branch to instruction at branchoffset (signed
+\ short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0xA2 \ if_icmpge 2[branchbyte1, branchbyte2] ( value1, value2 -- )
+\ if value1 is greater than or equal to value2, branch to instruction at
+\ branchoffset (signed short constructed from unsigned bytes
+\ branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0xA3 \ if_icmpgt 2[branchbyte1, branchbyte2] ( value1, value2 -- )
+\ if value1 is greater than value2, branch to instruction at branchoffset
+\ (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0xA4 \ if_icmple 2[branchbyte1, branchbyte2] ( value1, value2 -- )
+\ if value1 is less than or equal to value2, branch to instruction at
+\ branchoffset (signed short constructed from unsigned bytes
+\ branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0x99 \ ifeq 2[branchbyte1, branchbyte2] ( value -- )
+\ if value is 0, branch to instruction at branchoffset (signed short
+\ constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0x9A \ ifne 2[branchbyte1, branchbyte2] ( value -- )
+\ if value is not 0, branch to instruction at branchoffset (signed short
+\ constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0x9B \ iflt 2[branchbyte1, branchbyte2] ( value -- )
+\ if value is less than 0, branch to instruction at branchoffset (signed short
+\ constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0x9C \ ifge 2[branchbyte1, branchbyte2] ( value -- )
+\ if value is greater than or equal to 0, branch to instruction at
+\ branchoffset (signed short constructed from unsigned bytes
+\ branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0x9D \ ifgt 2[branchbyte1, branchbyte2] ( value -- )
+\ if value is greater than 0, branch to instruction at branchoffset (signed
+\ short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0x9E \ ifle 2[branchbyte1, branchbyte2] ( value -- )
+\ if value is less than or equal to 0, branch to instruction at branchoffset
+\ (signed short constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0xC7 \ ifnonnull 2[branchbyte1, branchbyte2] ( value -- )
+\ if value is not null, branch to instruction at branchoffset (signed short
+\ constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0xC6 \ ifnull 2[branchbyte1, branchbyte2] ( value -- )
+\ if value is null, branch to instruction at branchoffset (signed short
+\ constructed from unsigned bytes branchbyte1 << 8 + branchbyte2)
+>[ ]<
+
+0x84 \ iinc 2[index, const] ( -- )
+\ increment local variable #index by signed byte const
+>[ ]<
+
+0x15 \ iload 1[index] ( -- value )
+\ load an int value from a local variable #index
+>[ ]<
+
+0x1A \ iload_0 ( -- value )
+\ load an int value from local variable 0
+>[ ]<
+
+0x1B \ iload_1 ( -- value )
+\ load an int value from local variable 1
+>[ ]<
+
+0x1C \ iload_2 ( -- value )
+\ load an int value from local variable 2
+>[ ]<
+
+0x1D \ iload_3 ( -- value )
+\ load an int value from local variable 3
+>[ ]<
+
+0x68 \ imul ( value1, value2 -- result )
+\ multiply two integers
+>[ * ]<
+
+0x74 \ ineg ( value -- result )
+\ negate int
+>[ ]<
+
+0xC1 \ instanceof 2[indexbyte1, indexbyte2] ( objectref -- result )
+\ determines if an object objectref is of a given type, identified by class
+\ reference index in constant pool (indexbyte1 << 8 + indexbyte2)
+>[ ]<
+
+0xBA \ invokedynamic 4[indexbyte1, indexbyte2, 0, 0] ( [arg1, [arg2 ...]] -- )
+\ invokes a dynamic method identified by method reference index in constant
+\ pool (indexbyte1 << 8 + indexbyte2)
+>[ ]<
+
+0xB9 \ invokeinterface 4[indexbyte1, indexbyte2, count, 0] ( objectref, [arg1, arg2, ...] -- )
+\ invokes an interface method on object objectref, where the interface method
+\ is identified by method reference index in constant pool (indexbyte1 << 8 + indexbyte2)
+>[ ]<
+
+0xB7 \ invokespecial 2[indexbyte1, indexbyte2] ( objectref, [arg1, arg2, ...] -- )
+\ invoke instance method on object objectref, where the method is identified
+\ by method reference index in constant pool (indexbyte1 << 8 + indexbyte2)
+>[ ]<
+
+0xB8 \ invokestatic 2[indexbyte1, indexbyte2] ( [arg1, arg2, ...] -- )
+\ invoke a static method, where the method is identified by method reference
+\ index in constant pool (indexbyte1 << 8 + indexbyte2)
+>[ ]<
+
+0xB6 \ invokevirtual 2[indexbyte1, indexbyte2] ( objectref, [arg1, arg2, ...] -- )
+\ invoke virtual method on object objectref, where the method is identified by
+\ method reference index in constant pool (indexbyte1 << 8 + indexbyte2)
+>[ ]<
+
+0x80 \ ior ( value1, value2 -- result )
+\ bitwise int or
+>[ ]<
+
+0x70 \ irem ( value1, value2 -- result )
+\ logical int remainder
+>[ ]<
+
+0xAC \ ireturn ( value -- [empty] )
+\ return an integer from a method
+>[ ]<
+
+0x78 \ ishl ( value1, value2 -- result )
+\ int shift left
+>[ ]<
+
+0x7A \ ishr ( value1, value2 -- result )
+\ int arithmetic shift right
+>[ ]<
+
+0x36 \ istore 1[index] ( value -- )
+\ store int value into variable #index
+>[ ]<
+
+0x3B \ istore_0 ( value -- )
+\ store int value into variable 0
+>[ ]<
+
+0x3C \ istore_1 ( value -- )
+\ store int value into variable 1
+>[ ]<
+
+0x3D \ istore_2 ( value -- )
+\ store int value into variable 2
+>[ ]<
+
+0x3E \ istore_3 ( value -- )
+\ store int value into variable 3
+>[ ]<
+
+0x64 \ isub ( value1, value2 -- result )
+\ int subtract
+>[ ]<
+
+0x7C \ iushr ( value1, value2 -- result )
+\ int logical shift right
+>[ ]<
+
+0x82 \ ixor ( value1, value2 -- result )
+\ int xor
+>[ ]<
+
+0xA8 \ jsr 2[branchbyte1, branchbyte2] ( -- address )
+\ jump to subroutine at branchoffset (signed short constructed from unsigned
+\ bytes branchbyte1 << 8 + branchbyte2) and place the return address on the stack
+>[ ]<
+
+0xC9 \ jsr_w 4[branchbyte1, branchbyte2, branchbyte3, branchbyte4] ( -- address )
+\ jump to subroutine at branchoffset (signed int constructed from unsigned
+\ bytes branchbyte1 << 24 + branchbyte2 << 16 + branchbyte3 << 8 + branchbyte4)
+\ and place the return address on the stack
+>[ ]<
+
+0x8A \ l2d ( value -- result )
+\ convert a long to a double
+>[ ]<
+
+0x89 \ l2f ( value -- result )
+\ convert a long to a float
+>[ ]<
+
+0x88 \ l2i ( value -- result )
+\ convert a long to a int
+>[ ]<
+
+0x61 \ ladd ( value1, value2 -- result )
+\ add two longs
+>[ ]<
+
+0x2F \ laload ( arrayref, index -- value )
+\ load a long from an array
+>[ ]<
+
+0x7F \ land ( value1, value2 -- result )
+\ bitwise and of two longs
+>[ ]<
+
+0x50 \ lastore ( arrayref, index, value -- )
+\ store a long to an array
+>[ ]<
+
+0x94 \ lcmp ( value1, value2 -- result )
+\ compare two longs values
+>[ ]<
+
+0x09 \ lconst_0 ( -- 0L )
+\ push the long 0 onto the stack
+>[ ]<
+
+0x0A \ lconst_1 ( -- 1L )
+\ push the long 1 onto the stack
+>[ ]<
+
+0x12 \ ldc 1[index] ( -- value )
+\ push a constant #index from a constant pool (String, int or float) onto the stack
+>[ ]<
+
+0x13 \ ldc_w 2[indexbyte1, indexbyte2] ( -- value )
+\ push a constant #index from a constant pool (String, int or float) onto the
+\ stack (wide index is constructed as indexbyte1 << 8 + indexbyte2)
+>[ ]<
+
+0x14 \ ldc2_w 2[indexbyte1, indexbyte2] ( -- value )
+\ push a constant #index from a constant pool (double or long) onto the stack
+\ (wide index is constructed as indexbyte1 << 8 + indexbyte2)
+>[ ]<
+
+0x6D \ ldiv ( value1, value2 -- result )
+\ divide two longs
+>[ ]<
+
+0x16 \ lload 1[index] ( -- value )
+\ load a long value from a local variable #index
+>[ ]<
+
+0x1E \ lload_0 ( -- value )
+\ load a long value from a local variable 0
+>[ ]<
+
+0x1F \ lload_1 ( -- value )
+\ load a long value from a local variable 1
+>[ ]<
+
+0x20 \ lload_2 ( -- value )
+\ load a long value from a local variable 2
+>[ ]<
+
+0x21 \ lload_3 ( -- value )
+\ load a long value from a local variable 3
+>[ ]<
+
+0x69 \ lmul ( value1, value2 -- result )
+\ multiply two longs
+>[ ]<
+
+0x75 \ lneg ( value -- result )
+\ negate a long
+>[ ]<
+
+0xAB \ lookupswitch 4+[<0-3 bytes padding>, defaultbyte1, defaultbyte2, defaultbyte3, defaultbyte4, npairs1, npairs2, npairs3, npairs4, match-offset pairs...] ( key -- )
+\ a target address is looked up from a table using a key and execution
+\ continues from the instruction at that address
+>[ ]<
+
+0x81 \ lor ( value1, value2 -- result )
+\ bitwise or of two longs
+>[ ]<
+
+0x71 \ lrem ( value1, value2 -- result )
+\ remainder of division of two longs
+>[ ]<
+
+0xAD \ lreturn ( value -- [empty] )
+\ return a long value
+>[ ]<
+
+0x79 \ lshl ( value1, value2 -- result )
+\ bitwise shift left of a long value1 by value2 positions
+>[ ]<
+
+0x7B \ lshr ( value1, value2 -- result )
+\ bitwise shift right of a long value1 by value2 positions
+>[ ]<
+
+0x37 \ lstore 1[index] ( value -- )
+\ store a long value in a local variable #index
+>[ ]<
+
+0x3F \ lstore_0 ( value -- )
+\ store a long value in a local variable 0
+>[ ]<
+
+0x40 \ lstore_1 ( value -- )
+\ store a long value in a local variable 1
+>[ ]<
+
+0x41 \ lstore_2 ( value -- )
+\ store a long value in a local variable 2
+>[ ]<
+
+0x42 \ lstore_3 ( value -- )
+\ store a long value in a local variable 3
+>[ ]<
+
+0x65 \ lsub ( value1, value2 -- result )
+\ subtract two longs
+>[ ]<
+
+0x7D \ lushr ( value1, value2 -- result )
+\ bitwise shift right of a long value1 by value2 positions, unsigned
+>[ ]<
+
+0x83 \ lxor ( value1, value2 -- result )
+\ bitwise exclusive or of two longs
+>[ ]<
+
+0xC2 \ monitorenter ( objectref -- )
+\ enter monitor for object ("grab the lock" - start of synchronized() section)
+>[ ]<
+
+0xC3 \ monitorexit ( objectref -- )
+\ exit monitor for object ("release the lock" - end of synchronized() section)
+>[ ]<
+
+0xC5 \ multianewarray 3[indexbyte1, indexbyte2, dimensions] ( count1, [count2,...] -- arrayref )
+\ create a new array of dimensions dimensions with elements of type identified
+\ by class reference in constant pool index (indexbyte1 << 8 + indexbyte2);
+\ the sizes of each dimension is identified by count1, [count2, etc.]
+>[ ]<
+
+0xBB \ new 2[indexbyte1, indexbyte2] ( -- objectref )
+\ create new object of type identified by class reference in constant pool
+\ index (indexbyte1 << 8 + indexbyte2)
+>[ ]<
+
+0xBC \ newarray 1[atype] ( count -- arrayref )
+\ create new array with count elements of primitive type identified by atype
+>[ ]<
+
+0x00 \ nop ( -- )
+\ perform no operation
+>[ ]<
+
+0x57 \ pop ( value -- )
+\ discard the top value on the stack
+>[ ]<
+
+0x58 \ pop2 ( {value2, value1} -- )
+\ discard the top two values on the stack (or one value, if it is a double or long)
+>[ ]<
+
+0xB5 \ putfield 2[indexbyte1, indexbyte2] ( objectref, value -- )
+\ set field to value in an object objectref, where the field is identified by
+\ a field reference index in constant pool (indexbyte1 << 8 + indexbyte2)
+>[ ]<
+
+0xB3 \ putstatic 2[indexbyte1, indexbyte2] ( value -- )
+\ set static field to value in a class, where the field is identified by a
+\ field reference index in constant pool (indexbyte1 << 8 + indexbyte2)
+>[ jvm_fetch_instruction \ load byte
+   8 lshift
+   jvm_fetch_instruction \ load byte
+   or
+   cells
+   jvm_p_static_fields @ + l!
+   \ FIXME use ! instead?!
+]<
+
+0xA9 \ ret 1[index] ( -- )
+\ continue execution from address taken from a local variable #index
+\ (the asymmetry with jsr is intentional)
+>[ ]<
+
+0xB1 \ return ( -- [empty] )
+\ return void from method
+>[ <[ 0xCA ]> ]< \ FIXME breakpoint
+
+0x35 \ saload ( arrayref, index -- value )
+\ load short from array
+>[ ]<
+
+0x56 \ sastore ( arrayref, index, value -- )
+\ store short to array
+>[ ]<
+
+0x11 \ sipush 2[byte1, byte2] ( -- value )
+\ push a short onto the stack
+>[ <[ 0x10 ]> \ jvm_op_bipush \ fetch high byte and sign ext
+   8 lshift
+   jvm_fetch_instruction or \ fetch low byte
+]<
+
+0x5F \ swap ( value2, value1 -- value1, value2 )
+\ swaps two top words on the stack (note that value1 and value2 must not be
+\ double or long)
+>[ ]<
+
+0xAA \ tableswitch 4+[[0-3 bytes padding], defaultbyte1, defaultbyte2, defaultbyte3, defaultbyte4, lowbyte1, lowbyte2, lowbyte3, lowbyte4, highbyte1, highbyte2, highbyte3, highbyte4, jump offsets... ( index -- )
+\ continue execution from an address in the table at offset index
+>[ ]<
 
 \ wide 	c4 	3/5: opcode, indexbyte1, indexbyte2
 
@@ -447,37 +881,24 @@
 
 \ iinc, indexbyte1, indexbyte2, countbyte1, countbyte2 	[same as for corresponding instructions] 	execute opcode, where opcode is either iload, fload, aload, lload, dload, istore, fstore, astore, lstore, dstore, or ret, but assume the index is 16 bit; or execute iinc, where the index is 16 bits and the constant to increment by is a signed 16 bit short
 
-\ breakpoint 	ca 			reserved for breakpoints in Java debuggers; should not appear in any class file
-: jvm_op_breakpoint 
- CR ." Data Stack: " CR .s CR 
- CR ." Static Fields: " CR jvm_p_static_fields @ 0x100 dump CR \ FIXME hardcoded 
- s" JVM breakpoint" exception throw 
- ;
+0xCA \ breakpoint ( ??? )
+\ reserved for breakpoints in Java debuggers;
+\ should not appear in any class file
+>[ CR ." Data Stack: " CR .s CR
+   CR ." Static Fields: " CR jvm_p_static_fields @ 0x100 dump CR \ FIXME hardcoded
+   s" JVM breakpoint" exception throw
+]<
 
-\ impdep1 	fe 			reserved for implementation-dependent operations within debuggers; should not appear in any class file
+0xFE \ impdep1
+\ reserved for implementation-dependent operations within debuggers;
+\ should not appear in any class file
+>[ ]<
 
-\ impdep2 	ff 			reserved for implementation-dependent operations within debuggers; should not appear in any class file
+0xFF \ impdep2
+\ reserved for implementation-dependent operations within debuggers;
+\ should not appear in any class file
+>[ ]<
 
+\ FIXME what do?
 \ (no name) 	cb-fd 			these values are currently unassigned for opcodes and are reserved for future use
-
-
-
-: jvm_init_ops ( -- )
-['] jvm_op_nop 0x00 jvm_set_op
-['] jvm_op_iconst_0 0x03 jvm_set_op
-['] jvm_op_iconst_1 0x04 jvm_set_op
-['] jvm_op_iconst_2 0x05 jvm_set_op
-['] jvm_op_iconst_3 0x06 jvm_set_op
-['] jvm_op_iconst_4 0x07 jvm_set_op
-['] jvm_op_iconst_5 0x08 jvm_set_op
-['] jvm_op_bipush 0x10 jvm_set_op
-['] jvm_op_sipush 0x11 jvm_set_op
-['] jvm_op_dup 0x59 jvm_set_op
-['] jvm_op_iadd 0x60 jvm_set_op
-['] jvm_op_imul 0x68 jvm_set_op
-['] jvm_op_getstatic 0xb2 jvm_set_op
-['] jvm_op_putstatic 0xb3 jvm_set_op
-['] jvm_op_breakpoint 0xca jvm_set_op
-['] jvm_op_breakpoint 0xb1 jvm_set_op \ FIXME 
-;
 

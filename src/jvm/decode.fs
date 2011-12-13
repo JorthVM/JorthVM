@@ -1,47 +1,49 @@
-\ create lookuptable
 
-: jvm_op_unsupported s" This Opcode is not (yet) supported" exception throw ;
+\ -------------------------------------------------------- \
+\ OPCODE TABLE                                             \
+\ -------------------------------------------------------- \
 
-\ opcode table size
-variable jvm_opcodetbl_size
+256 CONSTANT jvm_opcode_count
 
-\ opcode table
-variable jvm_opcodetbl 
+CREATE jvm_opcode_table jvm_opcode_count cells allot
 
-\ program counter
-variable jvm_pc_start
-variable jvm_pc
-
-: jvm_set_op ( ... xt opcode - )
-  cells jvm_opcodetbl @ + ! \ calculate opcode-addr and store xt
+\ `0x42 >[ bye ]<' stores xt of bye at offset 0x42 of the opcode-table
+: >[
+  cells jvm_opcode_table + :noname
 ;
 
-: jvm_execute (  ... opcode - ... [result of operation] )
-  POSTPONE cells POSTPONE jvm_opcodetbl POSTPONE @ POSTPONE + POSTPONE @ POSTPONE execute
-; immediate
+: ]<
+  POSTPONE ; swap !
+; IMMEDIATE
+
+\ `<[ 0x42 ]>' executes the xt token stored at offest 0x42 of the opcode-table
+: <[
+  jvm_opcode_table
+;
+
+: ]>
+  cells + @ EXECUTE
+;
+
+: jvm_execute { opcode -- [result of operation] }
+  <[ opcode ]>
+;
 
 \ show the implementeation of opcode
-: jvm_opcode_see ( ... opcode - ) 
-  cells jvm_opcodetbl @ + @ xt-see
-; 
-
-: jvm_init_op_tbl ( ... - ... )
-\ store opcode table size
-  256 jvm_opcodetbl_size !
-\ allocate opcode table cells
-  jvm_opcodetbl_size @ cells allocate throw \ xt for opcodes 
-  jvm_opcodetbl ! \ store table pointer
-\ set default handler
-  ['] jvm_op_unsupported
-  jvm_opcodetbl_size @ 0 +DO
-    dup i jvm_set_op
-  LOOP
-  drop
+: jvm_opcode_see ( ... opcode - )
+  cells jvm_opcode_table + @ xt-see
 ;
+
+\ -------------------------------------------------------- \
+\ PROGRAM COUNTER                                          \
+\ -------------------------------------------------------- \
+
+variable jvm_pc_start
+variable jvm_pc
 
 : jvm_set_pc ( ... addr -- ... )
   dup
   jvm_pc_start ! \ store start address
-  jvm_pc ! 
+  jvm_pc !
 ;
 

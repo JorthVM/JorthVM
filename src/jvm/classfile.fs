@@ -36,7 +36,9 @@ variable jvm_p_static_fields \ stores the pointer static fields
 : jvm_read_classfile ( c-addr u1 - u2 ) \ return the size of the file (in bytes)
   r/o open-file throw 
   dup classfile !            ( wfileid - wfileid ) \ store file id (wfileid)
-  dup file-size throw throw  ( wfileid - wfileid u u ) \ FIXME uncatched exception ??? 
+  dup file-size throw throw  ( wfileid - wfileid u u ) 
+  \ NOTE the value after the exception is the most significant part of the file size 
+  \ we throw it anyway because we dont want to deal with files that big (yet) 
   dup
   allocate throw             ( wfileid u u - wfileid u a-addr )
   dup filebuffer !

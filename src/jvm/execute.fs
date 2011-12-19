@@ -816,7 +816,7 @@ require exception.fs
 
 0x00 \ nop ( -- )
 \ perform no operation
->[ JVM_NOTIMPLEMENTED_EXCEPTION throw ]<
+>[ ]<
 
 0x57 \ pop ( value -- )
 \ discard the top value on the stack

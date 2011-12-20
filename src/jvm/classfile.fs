@@ -1,3 +1,4 @@
+\ vim: sw=2 ts=2 sta et
 \ this file implements functionality that is needed to read class files
 
 require util.fs

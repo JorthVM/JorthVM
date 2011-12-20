@@ -1,3 +1,4 @@
+\ vim: sw=2 ts=2 sta et
 require ../jvm/jvm.fs
 
 create program 4 cells allot

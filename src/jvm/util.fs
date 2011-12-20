@@ -1,3 +1,4 @@
+\ vim: sw=2 ts=2 sta et
 \ auxiliary words
 
 : decimal_places ( u1 -- u2 )

@@ -1,3 +1,4 @@
+\ vim: sw=2 ts=2 sta et
 require decode.fs
 
 : jvm_fetch_instruction ( ... -- opcode ... )

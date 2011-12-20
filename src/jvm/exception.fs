@@ -1,3 +1,4 @@
+\ vim: sw=2 ts=2 sta et
 
 \ JVM Exceptions
 s" JVM Breakpoint Exception" exception constant JVM_BREAKPOINT_EXCEPTION

@@ -1,3 +1,4 @@
+\ vim: sw=2 ts=2 sta et
 require ../jvm/classfile.fs
 
 : big_endian_load_test

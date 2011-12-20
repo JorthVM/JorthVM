@@ -38,6 +38,53 @@ Conceptually the operant stack is part of the current frame. In Forth JVM the Fo
 for operants wereas other frame data (local variables, previous frame pointer, etc.) are 
 stored on the heap.
 
+Where is my Stuff? 
+------------------
+
+_aka where all the different things are stored_
+
+### Classes
+
+### Objects
+
+### Class (`Static') Variables
+
+### Constant Pool
+
+### Instance Variables
+
+### Local Variables
+
+### Method Parameters
+
+
+Creation and Destruction
+------------------------
+
+### JVM
+
+### Thread
+
+### Classes
+
+A Class is initialazed if
+- an Instance of that class is created, or
+- a static method is invoked, or
+- a nonconstant class variable (`static' but not `final') is used or assigned.
+(See §2.17.4).
+
+During the initialization of a class the static initializer (§2.11) is executed and the static fields 
+(class variables, §2.9.2) are initialized.
+
+During the initialization of an interface the static fields are initialazed.
+
+### Instance
+
+An Instance is created when a new object of a certain class is created (e.g. with `new'). During this
+instanciation all instance variables are initialazed.
+
+### Local Variables
+
 Core
 ----
 ### Implementation Details
@@ -73,7 +120,7 @@ If call instead of jumps are used the following steps are performed:
 
 Even worse than the fact that there is one more step is, that call-return creates and destroys 
 a new stack frame which decreases performance dramatically. 
-*FIXME:** is this really the case in forth?
+*FIXME:* is this really the case in forth?
 
 
 ### Lookup Table

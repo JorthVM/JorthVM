@@ -33,8 +33,7 @@ require execute.fs
 ;
 
 : LoadAndRun ( c-addr n -- ) \ load a classfile and run public static void main(String[])
-  jvm_read_classfile drop \ drop file size
-  filebuffer @
+  jvm_read_classfile throw 
   dup \ for get code attr
   s" main" s" ([Ljava/lang/String;)V" jvm_get_method_by_nametype
   invert IF

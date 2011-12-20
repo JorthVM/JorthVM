@@ -230,8 +230,8 @@ require ../jvm/classfile.fs
 \ test classfile access stuff
 
 : load_class_file
-   s" Test.class" jvm_read_classfile 
-   assert( 405 = )
+   s" Test.class" jvm_read_classfile throw 
+   assert( filebuffer @ = )
 ;
 
 : get_cf_magic_test

@@ -8,3 +8,21 @@
   repeat
   drop
 ;
+
+: strcat { c-addr1 n1 c-addr2 n2 -- c-addr3 n3 }
+\ *G Concatenate two string and return a new counted string
+   n1 n2 + dup 
+   allocate throw 
+  ( n3 c-addr3 )
+  dup
+  n1 c-addr1 -rot
+  ( n3 c-addr3 c-addr1 c-addr3 n1 )
+  cmove
+  ( n3 c-addr3 )
+  dup n1 +
+  n2 c-addr2 -rot
+  ( n3 c-addr3 c-addr2 c-addr3+ n2 )
+  cmove
+  ( n3 c-addr3 )
+  swap
+;

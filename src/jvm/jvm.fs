@@ -10,8 +10,18 @@ require execute.fs
 \ does nothing atm
 ;
 
+: ?debug_trace true ;
+
+: show_insn ( opcode -- )
+  dup jvm_mnemonic CR type
+  jvm_mnemonic_imm 0 ?DO
+    ." , " jvm_pc @ i + c@ hex.
+  LOOP
+;
+
 : jvm_next
   POSTPONE jvm_fetch_instruction 
+  [ ?debug_trace ] [IF] POSTPONE dup POSTPONE show_insn [ENDIF]
   POSTPONE jvm_execute
 ; immediate
 

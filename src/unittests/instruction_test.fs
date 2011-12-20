@@ -3,14 +3,24 @@ include ../jvm/jvm.fs
 \ initialize jvm
 jvm_init
 
+: write-programm ( ... addr -- )
+  BEGIN depth 1 > WHILE
+    dup 1+ >r
+    depth 1- roll
+    swap c! r>
+  REPEAT
+  drop
+;
+
 \ bipush test program
-create program_bipush 4 cells allot
-0x102a10ff program_bipush l!-be
+bipush 0x2a bipush 0xff
+create program_bipush depth allot
+program_bipush write-programm
 
 \ sipush test program
-create program_sipush 6 cells allot
-0x112a2a11 program_sipush l!-be
-0xffff program_sipush 4 + w!-be
+sipush 0x2a 0x2a sipush 0xff 0xff
+create program_sipush depth allot
+program_sipush write-programm
 
 : test_bipush
   program_bipush jvm_set_pc
@@ -41,7 +51,7 @@ create program_sipush 6 cells allot
 
 : test_dup
   42  \ value
-  0x59  \ dup
+  jdup
   jvm_execute
   assert( 42 = ) 
   assert( 42 = )
@@ -49,16 +59,24 @@ create program_sipush 6 cells allot
 
 : test_iadd
   42 42
-  0x60 \ iadd
+  iadd
   jvm_execute
   assert( 84 = )
 ;
 
 : test_siadd
-  
+  \ TODO ???
+;
+
+: test_mnemonic
+  0x10 jvm_mnemonic s" bipush" compare
+  assert( invert )
+  0x10 jvm_mnemonic_imm
+  assert( 1 = )
 ;
 
 test_bipush
 test_sipush
 test_dup
 test_iadd
+test_mnemonic

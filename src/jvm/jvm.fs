@@ -3,6 +3,7 @@ require decode.fs
 require fetch.fs
 require frame.fs
 require classfile.fs
+require classloader.fs
 
 \ register operation
 require execute.fs
@@ -32,17 +33,27 @@ require execute.fs
   again
 ;
 
-: LoadAndRun ( c-addr n -- ) \ load a classfile and run public static void main(String[])
-  jvm_read_classfile throw 
-  dup \ for get code attr
-  s" main" s" ([Ljava/lang/String;)V" jvm_get_method_by_nametype
-  invert IF
-    s" public static main(String[]) not found" exception throw 
-  ENDIF
+: jvm_java ( c-addr n -- )
+  s" .class" strcat 
+  jvm_search_classpath throw
+  \ TODO Store it somehow 
+  dup 
+  s" main" s" ([Ljava/lang/String;)V" 
+  jvm_get_method_by_nametype
   \ TODO check for public and static 
+  invert IF
+    JVM_MAINNOTFOUND_EXCEPTION throw
+  ENDIF
+  
   jvm_md_get_code_attr
-
   jvm_set_pc  \ TODO hardcoded
   jvm_run 
+;
+
+: java ( "classname" -- )
+\ *G start the following class by invoking public static void main(String[])
+\ FIXME do cmd input handling (create string array etc.)
+  parse-name 
+  jvm_java
 ;
 

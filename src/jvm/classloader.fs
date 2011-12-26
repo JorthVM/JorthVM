@@ -93,31 +93,45 @@ variable jvm_classentry_list
 \ *P The class entry list is implemented as linked list. The
 \ ** next_entry pointer of the last entry is 0. 
 
-: jvm_classentry_name { addr -- c-addr n }
+ 0 cells constant jvm_classentry.string
+ 1 cells constant jvm_classentry.string_size
+ 2 cells constant jvm_classentry.classfile
+ 3 cells constant jvm_classentry.next
+ 4 cells constant jvm_classentry.size()
+
+: jvm_classentry.getName() { addr -- c-addr n }
 \ *G return the name of a class entry
-  addr @
-  addr 1 cells @
+  addr jvm_classentry.string + @
+  addr jvm_classentry.string_size + @
 ;
 
-: jvm_classentry_classfile { addr1 -- addr2 }
+: jvm_classentry.getClassfile ( addr1 -- addr2 )
 \ *G return the name of a class entry
-  addr1 2 cells @
+  jvm_classentry.classfile + @
 ;
 
-: jvm_classentry_next { addr1 -- addr2 }
+: jvm_classentry.getNext() ( addr1 -- addr2 )
 \ *G return the next classfile entryy
-  addr1 3 cells @
+  jvm_classentry.next + @
 ;
 
-: jvm_classentry_new_entry ( -- addr )
+: jvm_classentry.new() ( -- addr )
 \ *G return newly allocated memory for a classentry and append it to the end of the list
-  4 cells allocate throw
+  jvm_classentry.size() allocate throw
+  0 over jvm_classentry.next + !
   jvm_classentry_list @ dup
   0= IF
     drop dup 
     jvm_classentry_list !
   ELSE
-    drop \ FIXME 
+    BEGIN  
+    ( addr -- )
+    dup jvm_classentry.getNext()
+    0<> WHILE
+      jvm_classentry.getNext()
+    REPEAT
+    jvm_classentry.next + 
+    over -rot !
   ENDIF
 ;
 
@@ -126,7 +140,7 @@ variable jvm_classentry_list
 \ *D c-addr name of the class
 \ *D n size of the name
 \ *D addr address of the classfile buffer
-  jvm_classentry_new_entry
+  jvm_classentry.new()
   c-addr over !
   n over 1 cells + !
   addr over 2 cells + !

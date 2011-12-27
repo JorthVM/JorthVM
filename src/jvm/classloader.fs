@@ -135,23 +135,43 @@ variable jvm_classentry_list
   ENDIF
 ;
 
-: jvm_class_add { c-addr n addr - }
+: jvm_class_add { c-addr n addr -- }
 \ *G Add a class
 \ *D c-addr name of the class
 \ *D n size of the name
 \ *D addr address of the classfile buffer
   jvm_classentry.new()
-  c-addr over !
-  n over 1 cells + !
-  addr over 2 cells + !
-
+  c-addr over jvm_classentry.string + !
+  n over jvm_classentry.string_size + !
+  addr over jvm_classentry.classfile + !
+  drop
 ;
 
-: jvm_class_lookup ( c-addr n -- addr wior )
+: jvm_class_lookup { c-addr n -- addr wior }
 \ *G Find the class denoted by c-addr n and return the addr of the corresponding
 \ ** class entry. If the class is not already prepeared the jvm will search for it.
 \ ** If the class is not found at all an exception will be raised.
-  
+  jvm_classentry_list @ dup
+  0= IF
+    JVM_CLASSNOTFOUND_EXCEPTION throw
+  ELSE
+    BEGIN  
+      ( addr -- )
+      dup jvm_classentry.getName() 
+      c-addr n compare 
+      0<> IF 
+        jvm_classentry.getNext() dup 0<>
+      ELSE
+        false
+      ENDIF
+    WHILE
+    REPEAT
+    dup 
+    0= IF
+      JVM_CLASSNOTFOUND_EXCEPTION throw
+    ENDIF
+    0
+  ENDIF
 ;
 
 

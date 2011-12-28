@@ -34,8 +34,9 @@ require execute.fs
 ;
 
 : jvm_java ( c-addr n -- )
-  jvm_search_classpath throw
+  jvm_class_lookup throw
   \ FIXME Store it somehow 
+  jvm_classentry.getClassfile()
   dup 
   s" main" s" ([Ljava/lang/String;)V" 
   jvm_get_method_by_nametype

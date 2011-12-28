@@ -165,7 +165,7 @@ variable jvm_classentry_list
   addr jvm_classentry.string_size + @
 ;
 
-: jvm_classentry.getClassfile ( addr1 -- addr2 )
+: jvm_classentry.getClassfile() ( addr1 -- addr2 )
 \ *G return the name of a class entry
   jvm_classentry.classfile + @
 ;
@@ -195,12 +195,12 @@ variable jvm_classentry_list
   ENDIF
 ;
 
-: jvm_class_add { c-addr n addr -- }
+: jvm_class_add { c-addr n addr -- addr2 }
 \ *G Add a class
 \ *D c-addr name of the class
 \ *D n size of the name
 \ *D addr address of the classfile buffer
-  jvm_classentry.new()
+  jvm_classentry.new() dup
   c-addr over jvm_classentry.string + !
   n over jvm_classentry.string_size + !
   addr over jvm_classentry.classfile + !
@@ -213,7 +213,10 @@ variable jvm_classentry_list
 \ ** If the class is not found at all an exception will be raised.
   jvm_classentry_list @ dup
   0= IF
-    JVM_CLASSNOTFOUND_EXCEPTION throw
+    \ JVM_CLASSNOTFOUND_EXCEPTION throw
+    c-addr n jvm_search_classpath throw
+    c-addr n rot jvm_class_add
+    0
   ELSE
     BEGIN  
       ( addr -- )
@@ -228,10 +231,11 @@ variable jvm_classentry_list
     REPEAT
     dup 
     0= IF
-      JVM_CLASSNOTFOUND_EXCEPTION throw
+      \ JVM_CLASSNOTFOUND_EXCEPTION throw
+      c-addr n jvm_search_classpath throw
+      c-addr n rot jvm_class_add
     ENDIF
     0
   ENDIF
 ;
-
 

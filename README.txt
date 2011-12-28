@@ -27,6 +27,7 @@ Requirements
 ------------
 - Gforth
 - markdown (optional, for HTML documentation)
+- qemu-kvm-extra (ubuntu; optional, for cross testing)
 
 Compile & install
 -----------------

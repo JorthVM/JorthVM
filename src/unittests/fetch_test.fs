@@ -18,4 +18,6 @@ program jvm_set_pc
   \ TODO check stack size
 ;
 
-fetch_instruction-test
+: test
+  fetch_instruction-test
+;

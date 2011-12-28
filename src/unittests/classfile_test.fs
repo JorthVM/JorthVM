@@ -492,62 +492,64 @@ require ../jvm/classfile.fs
 
 \ --------------------------------------------------------------
 
+: test
+  big_endian_load_test
+  cmp_utf8_test
+  constpool_idx_test
 
-big_endian_load_test
-cmp_utf8_test
-constpool_idx_test
+  get_tag_test
+  get_class_name_idx_test
+  get_string_idx_test
+  ref_getter_test
+  get_integer_bytes_test
+  get_float_bytes_test
+  get_long_bytes_test
+  get_double_bytes_test
+  get_utf8_test
 
-get_tag_test
-get_class_name_idx_test
-get_string_idx_test
-ref_getter_test
-get_integer_bytes_test
-get_float_bytes_test
-get_long_bytes_test
-get_double_bytes_test
-get_utf8_test
+  load_class_file
+  \ filebuffer @ is the address of the classfile buffer
+  get_cf_magic_test
+  get_cf_minor_test
+  get_cf_major_test
+  get_cf_constpool_count_test
+  get_cf_constpool_addr_test
+  get_cf_access_flags_addr_test
+  get_cf_access_flags_test
+  get_cf_this_class_test
+  get_cf_super_class_test
+  get_cf_interface_count_test
+  get_cf_interface_addr_test
+  get_cf_fields_count_addr_test
+  get_cf_fields_addr_test
+  get_cf_fields_size_test
+  get_cf_methods_count_addr_test
+  get_cf_methods_count_test
+  get_cf_methods_addr_test
+  get_cf_methods_size_test
+  get_cf_attr_count_addr_test
+  get_cf_attr_count_test
+  get_cf_attr_addr_test
+  get_cf_attr_size_test
 
-load_class_file
-\ filebuffer @ is the address of the classfile buffer
-get_cf_magic_test
-get_cf_minor_test
-get_cf_major_test
-get_cf_constpool_count_test
-get_cf_constpool_addr_test
-get_cf_access_flags_addr_test
-get_cf_access_flags_test
-get_cf_this_class_test
-get_cf_super_class_test
-get_cf_interface_count_test
-get_cf_interface_addr_test
-get_cf_fields_count_addr_test
-get_cf_fields_addr_test
-get_cf_fields_size_test
-get_cf_methods_count_addr_test
-get_cf_methods_count_test
-get_cf_methods_addr_test
-get_cf_methods_size_test
-get_cf_attr_count_addr_test
-get_cf_attr_count_test
-get_cf_attr_addr_test
-get_cf_attr_size_test
+  get_attr_name_index
+  get_attr_length
+  get_attr_info_addr
+  get_attr_size
 
-get_attr_name_index
-get_attr_length
-get_attr_info_addr
-get_attr_size
+  get_fd_access_flags
+  get_fd_name_idx
+  get_fd_desc_idx
+  get_fd_attr_count
+  get_fd_size
 
-get_fd_access_flags
-get_fd_name_idx
-get_fd_desc_idx
-get_fd_attr_count
-get_fd_size
+  get_md_access_flags
+  get_md_name_idx
+  get_md_desc_idx
+  get_md_attr_count
+  get_md_size
 
-get_md_access_flags
-get_md_name_idx
-get_md_desc_idx
-get_md_attr_count
-get_md_size
+  get_method_by_nametype_test
+  get_md_get_code_attr_test
+;
 
-get_method_by_nametype_test
-get_md_get_code_attr_test

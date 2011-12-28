@@ -76,8 +76,10 @@ program_sipush write-programm
   assert( 1 = )
 ;
 
-test_bipush
-test_sipush
-test_dup
-test_iadd
-test_mnemonic
+: test
+  test_bipush
+  test_sipush
+  test_dup
+  test_iadd
+  test_mnemonic
+;

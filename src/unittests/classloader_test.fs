@@ -2,6 +2,7 @@
 require ../jvm/classloader.fs
 
 : classpath_add_test
+  0 jvm_classpath_list ! \ reset classpath
   s" testtest" jvm_classpath.add()
   jvm_classpath_list @ 
   jvm_classpath_entry.getName()
@@ -17,6 +18,7 @@ require ../jvm/classloader.fs
 ;
 
 : classentry_new_entry_test
+  0 jvm_classpath_list ! \ reset classpath
   assert( depth 0 = )
   jvm_classentry_list @ 
   assert( 0= )
@@ -31,6 +33,7 @@ require ../jvm/classloader.fs
 ;
 
 : class_lookup_test
+  0 jvm_classpath_list ! \ reset classpath
   s" Test1" 0 jvm_class_add 
   s" Test2" 0 jvm_class_add 
   s" Test3" 0 jvm_class_add 
@@ -65,7 +68,21 @@ require ../jvm/classloader.fs
   s" Test" jvm_search_classpath throw
   jvm_cf_magic
   assert( 0xcafebabe = )
-  \ TODO add negativ test
+
+  try
+    s" NoClass" jvm_search_classpath throw
+    -1
+  iferror
+    dup 
+    \ JVM_CLASSNOTFOUND_EXCEPTION
+    -514 \ FIXME IO error
+    = IF
+      drop
+      0
+    ENDIF
+  endif
+  endtry
+  throw
 ;
 
 : class_search_test2
@@ -79,11 +96,27 @@ require ../jvm/classloader.fs
   s" Main" jvm_search_classpath throw
   jvm_cf_magic
   assert( 0xcafebabe = )
-  \ TODO add negativ test
+  
+  try
+    s" NoClass" jvm_search_classpath throw
+    -1
+  iferror
+    dup 
+    JVM_CLASSNOTFOUND_EXCEPTION
+    = IF
+      drop
+      0
+    ENDIF
+  endif
+  endtry
+  throw
 ;
 
-classpath_add_test
-classentry_new_entry_test
-class_lookup_test
-class_search_test1
-class_search_test2
+: test
+  classpath_add_test
+  classentry_new_entry_test
+  class_lookup_test
+  class_search_test1
+  class_search_test2
+;
+

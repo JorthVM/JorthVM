@@ -15,5 +15,7 @@ require ../jvm/util.fs
   assert( str= )
 ;
 
-strcat_test
-char_replace_test
+: test
+  strcat_test
+  char_replace_test
+;

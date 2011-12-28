@@ -4,7 +4,7 @@ include jvm/jvm.fs  \ include the jvm
 jvm_init            \ initialize the jvm
 
 : RunDemo ( -- )
-  s" testfiles/" jvm_add_classpath
+  s" testfiles/" jvm_classpath.add()
   s" Main" jvm_java
 ;
 

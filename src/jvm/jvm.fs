@@ -34,11 +34,8 @@ require execute.fs
 ;
 
 : jvm_java ( c-addr n -- )
-\ TODO BEGIN outsource to lookup class
-  s" .class" strcat 
   jvm_search_classpath throw
   \ FIXME Store it somehow 
-\ TODO END
   dup 
   s" main" s" ([Ljava/lang/String;)V" 
   jvm_get_method_by_nametype

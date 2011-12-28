@@ -61,20 +61,60 @@ variable jvm_classentry_list
   0= IF
     drop
     c-addr n 
-    type
-    \ jvm_read_classfile
+    s" .class" 
+    strcat
+    2dup type CR
+    jvm_read_classfile 
+    \ TODO IO exception vs class not found exception
   ELSE
+    ." else " .s CR
+    0 swap \ dummy result
     BEGIN
+      ( addr1 addr2 -- ) 
+      \ addr1 result of read_classfile
+      \ addr2 next classpath entry
+      ." begin " .s CR
+      nip
       dup jvm_classpath_entry.getName()
       c-addr n
+      \ TODO package 
       strcat
-      \ jvm_read_classfile
-      type
+      s" .class" 
+      strcat
+      2dup type CR
+      
+      ( c-addr n -- )
+      ." pre try " .s CR
+      try
+        ." try " .s CR
+        jvm_read_classfile
+      iferror
+        drop
+        2drop
+        0
+        true
+      then
+      endtry
+      ." post try " .s CR
+      rot
+      ( -- addr )
+      
       jvm_classpath_entry.getNext() dup
-    0<> WHILE
+      ." pre while" .s CR
+      0<> rot 
+      ." pre while" .s CR
+      and
+    WHILE
     REPEAT
-    .s CR
+    drop
+    dup 
+    0= IF
+      JVM_CLASSNOTFOUND_EXCEPTION throw
+    ELSE
+      0
+    ENDIF
   ENDIF
+  .s CR
 ;
 
 : jvm_classpath.new() ( -- addr )

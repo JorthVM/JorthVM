@@ -60,7 +60,30 @@ require ../jvm/classloader.fs
   
 ;
 
+: class_search_test1
+  0 jvm_classpath_list ! \ reset classpath
+  s" Test" jvm_search_classpath throw
+  jvm_cf_magic
+  assert( 0xcafebabe = )
+  \ TODO add negativ test
+;
+
+: class_search_test2
+  0 jvm_classpath_list ! \ reset classpath
+  s" Test" jvm_search_classpath throw
+  jvm_cf_magic
+  assert( 0xcafebabe = )
+  s" ./" jvm_classpath.add()
+  s" test/" jvm_classpath.add()
+  s" ../testfiles/" jvm_classpath.add()
+  s" Main" jvm_search_classpath throw
+  jvm_cf_magic
+  assert( 0xcafebabe = )
+  \ TODO add negativ test
+;
 
 classpath_add_test
 classentry_new_entry_test
 class_lookup_test
+class_search_test1
+class_search_test2

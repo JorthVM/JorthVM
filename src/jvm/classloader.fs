@@ -31,42 +31,24 @@ variable jvm_classpath_list
 variable jvm_classentry_list
 0 jvm_classentry_list !
 
-
-: jvm_get_last_classpath_entry
-\ *G return the last classpath entry (for appending)
-\ *P TODO implement me
-  jvm_classpath_list @
-\ FIXME
-;
+0 cells constant jvm_classpath.string
+1 cells constant jvm_classpath.string_size
+2 cells constant jvm_classpath.next
+3 cells constant jvm_classpath.size()
 
 
-: jvm_add_classpath { c-addr n -- }
-\ *G Add a location to the classpath
-\ *P TODO yeah, we should actually do something oO
-  3 cells allocate throw
-  dup
-  c-addr swap !
-  dup 1 cells +
-  n swap !
-  dup 2 cells +
-  0 swap !
-\ jvm_get_last_classpath_entry
-  \ FIXME store to 
-  jvm_classpath_list !
-;
-
-: jvm_classpath_entry_next { addr1 -- addr2 }
+: jvm_classpath_entry.getNext() { addr1 -- addr2 }
 \ *G get the next classpath entry
-  addr1 2 cells + @
+  addr1 jvm_classpath.next + @
 ;
 
-: jvm_classpath_entry_get { addr -- c-addr n }
+: jvm_classpath_entry.getName() { addr -- c-addr n }
 \ *G get the string of the classpath entry
-  addr @
-  addr 1 cells + @
+  addr jvm_classpath.string + @
+  addr jvm_classpath.string_size + @
 ;
 
-: jvm_search_classpath ( c-addr n -- addr wior )
+: jvm_search_classpath { c-addr n -- addr wior }
 \ *G Search for a class file and return the address to the memory location.
 \ *P If the file is not found woir != 0
 \ *P TODO do some more advanced stuff:
@@ -75,10 +57,58 @@ variable jvm_classentry_list
 \ *B c-addr n may contain packages so search for them in sub dirs
 \ *)
 \ FIXME iterate over all classpaths
-  jvm_classpath_list @ jvm_classpath_entry_get
-  2swap
-  strcat
-  jvm_read_classfile
+  jvm_classpath_list @ dup 
+  0= IF
+    drop
+    c-addr n 
+    type
+    \ jvm_read_classfile
+  ELSE
+    BEGIN
+      dup jvm_classpath_entry.getName()
+      c-addr n
+      strcat
+      \ jvm_read_classfile
+      type
+      jvm_classpath_entry.getNext() dup
+    0<> WHILE
+    REPEAT
+    .s CR
+  ENDIF
+;
+
+: jvm_classpath.new() ( -- addr )
+\ *G return memory for a new classpath entry
+\ *P TODO implement me
+  jvm_classpath.size() allocate throw
+  dup jvm_classpath.next +
+  0 swap !
+  jvm_classpath_list dup @
+  0= IF
+    over swap !
+  ELSE
+    @
+    BEGIN
+      \ ( addr -- )
+      dup
+      jvm_classpath_entry.getNext()
+    0<> WHILE
+      jvm_classpath_entry.getNext()
+    REPEAT
+    jvm_classpath.next + 
+    over -rot
+    !
+  ENDIF
+;
+
+: jvm_classpath.add() { c-addr n -- }
+\ *G Add a location to the classpath
+\ *P TODO yeah, we should actually do something oO
+  jvm_classpath.new() 
+  dup jvm_classpath.string +
+  c-addr swap !
+  jvm_classpath.string_size +
+  n swap !
 ;
 
 \ *S Class

@@ -8,4 +8,12 @@ require ../jvm/util.fs
   assert( depth 0 = )
 ;
 
+: char_replace_test
+  s" test.test.test" [CHAR] . [CHAR] / 
+  strreplacec
+  s" test/test/test"
+  assert( str= )
+;
+
 strcat_test
+char_replace_test

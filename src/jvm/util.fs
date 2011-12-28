@@ -26,3 +26,20 @@
   ( n3 c-addr3 )
   swap
 ;
+
+: strreplacec { c-addr1 n s r -- c-addr2 n }
+  c-addr1 n 
+  BEGIN
+    dup
+  0> WHILE
+    over c@
+    s = IF
+      over r swap c!
+    ENDIF
+    1 - swap
+    1 + swap
+  REPEAT
+  2drop
+  c-addr1 n
+;
+

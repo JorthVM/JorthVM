@@ -1,4 +1,5 @@
 UNITTESTS=$(addsuffix .test, $(shell ls *.fs))
+FORTH?=gforth
 FORTH_OPT=--clear-dictionary
 
 

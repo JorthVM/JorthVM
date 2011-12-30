@@ -78,7 +78,6 @@ variable jvm_classentry_list
       strcat
       s" .class" 
       strcat
-      
       ( c-addr n -- )
       try
         jvm_read_classfile
@@ -207,15 +206,21 @@ variable jvm_classentry_list
   drop
 ;
 
+: jvm_class_link { c-addr n -- addr wior }
+  c-addr n jvm_search_classpath throw
+  c-addr n rot jvm_class_add
+  0
+;
+
 : jvm_class_lookup { c-addr n -- addr wior }
 \ *G Find the class denoted by c-addr n and return the addr of the corresponding
 \ ** class entry. If the class is not already prepeared the jvm will search for it.
 \ ** If the class is not found at all an exception will be raised.
   jvm_classentry_list @ dup
   0= IF
+    drop
     \ JVM_CLASSNOTFOUND_EXCEPTION throw
-    c-addr n jvm_search_classpath throw
-    c-addr n rot jvm_class_add
+    c-addr n jvm_class_link throw
     0
   ELSE
     BEGIN  
@@ -231,11 +236,13 @@ variable jvm_classentry_list
     REPEAT
     dup 
     0= IF
+      drop
       \ JVM_CLASSNOTFOUND_EXCEPTION throw
-      c-addr n jvm_search_classpath throw
-      c-addr n rot jvm_class_add
+      c-addr n jvm_class_link throw
+      0
+    ELSE
+      0
     ENDIF
-    0
   ENDIF
 ;
 

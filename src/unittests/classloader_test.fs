@@ -34,7 +34,7 @@ require ../jvm/classloader.fs
   assert( depth 0 = )
 ;
 
-: class_lookup_test
+: class_lookup_test1
   assert( depth 0 = )
   0 jvm_classpath_list ! \ reset classpath
   s" Test1" 0 jvm_class_add drop
@@ -64,6 +64,20 @@ require ../jvm/classloader.fs
   compare
   assert( 0= )
   
+  assert( depth 0 = )
+;
+
+: class_lookup_test2
+  assert( depth 0 = )
+  0 jvm_classpath_list ! \ reset classpath
+
+  s" Test" 2dup jvm_class_lookup throw
+  jvm_classentry.getName() 
+  compare
+  assert( 0= )
+
+
+  \ TODO negativ checks
   assert( depth 0 = )
 ;
 
@@ -123,7 +137,8 @@ require ../jvm/classloader.fs
 : test
   classpath_add_test
   classentry_new_entry_test
-  class_lookup_test
+  class_lookup_test1
+  class_lookup_test2
   class_search_test1
   class_search_test2
 ;

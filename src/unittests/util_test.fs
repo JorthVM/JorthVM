@@ -15,7 +15,28 @@ require ../jvm/util.fs
   assert( str= )
 ;
 
+: add_find_word_test
+  depth assert( 0= )
+  wordlist dup
+  42 swap
+  s" forty-two" rot
+  jvm_add_word
+  s" forty-two" drop \ not count!?
+  
+  \ negativ test
+  find
+  assert( 0= )
+  drop \ c-addr
+  
+  \ positiv test
+  s" forty-two" rot 
+  jvm_find_word throw
+  assert( 42 = )
+  depth assert( 0= )
+;
+
 : test
   strcat_test
   char_replace_test
+  add_find_word_test
 ;

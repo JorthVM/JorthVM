@@ -6,5 +6,7 @@ s" JVM Not Yet Implemented Exception" exception constant JVM_NOTIMPLEMENTED_EXCE
 s" JVM public static main(String[]) not found Exception" exception constant JVM_MAINNOTFOUND_EXCEPTION
 s" JVM class not found Exception" exception constant JVM_CLASSNOTFOUND_EXCEPTION
 
+s" JVM word not found Exception" exception constant JVM_WORDNOTFOUND_EXCEPTION
+
 \ Temporary Exceptions
 s" JVM Return Exception" exception constant JVM_RETURN_EXCEPTION

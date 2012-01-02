@@ -121,6 +121,20 @@ variable jvm_p_static_fields \ stores the pointer static fields
 \ -----------------------------------------------------------------------------
 \ Constant Pool Entry access words
 
+\ Tag constants
+
+ 7 constant CONSTANT_Class
+ 9 constant CONSTANT_Fieldref
+10 constant CONSTANT_Methodref
+11 constant CONSTANT_InterfaceMethodref
+ 8 constant CONSTANT_String
+ 3 constant CONSTANT_Integer
+ 4 constant CONSTANT_Float
+ 5 constant CONSTANT_Long
+ 6 constant CONSTANT_Double
+12 constant CONSTANT_NameAndType
+ 1 constant CONSTANT_Utf8
+
 : jvm_cp_tag ( addr -- tag) \ get the tag of a given constant pool entry
   POSTPONE c@ 
 ; immediate
@@ -532,8 +546,9 @@ variable jvm_p_static_fields \ stores the pointer static fields
     12 OF s" CONSTANT_NameAndType" ENDOF
      1 OF s" CONSTANT_Utf8" ENDOF
 \ default
-    drop 
-    s" Unknown Constant Pool Type " exception throw
+    \ drop
+    . cr
+    JVM_UNKNOWNCONSTPOOLTYPE_EXCEPTION throw
   ENDCASE
 ;
 
@@ -642,8 +657,35 @@ variable jvm_p_static_fields \ stores the pointer static fields
   dup . CR
   swap 4 + swap
   
+  ." Code (binary)" 
   2dup \ dup ( addr n )
   dump 
+  CR
+
+  2dup
+  ." <code>" CR 
+  BEGIN
+  ( addr n )
+  dup 
+  0> WHILE
+    over c@ dup 
+    ."     "
+    jvm_mnemonic type
+    jvm_mnemonic_imm 
+    dup >r          \ store imm count
+    0 ?DO
+      space over i + 1 + c@ hex.
+    LOOP
+    CR
+    r>              \ restore imm count
+    -1 ?DO
+      swap 1+ swap  \ increment addr
+      1-            \ decrement counter
+    LOOP
+  REPEAT
+  2drop
+  ." </code>" CR 
+  CR
   + \ calc new address
   
   \ u4 exception_table_length
@@ -732,10 +774,16 @@ variable jvm_p_static_fields \ stores the pointer static fields
     dup jvm_cp_tag \ read tag
     CASE
     ( addr1 - ) \ addr1: address of the constpool entry
-    1 OF  \ if utf8 string, print it!
+    CONSTANT_Utf8 OF
       space [CHAR] " emit jvm_constpool_print_utf8 [CHAR] " emit space
     ENDOF
-    10 OF \ MethodRef
+    CONSTANT_Class OF
+      addr jvm_cf_constpool_addr
+      space [CHAR] " emit 
+      swap jvm_constpool_print_classname
+      [CHAR] " emit space
+    ENDOF
+    CONSTANT_Methodref OF
       jvm_cp_methodref_nametype_idx  \ get nametype idx
       addr jvm_cf_constpool_addr \ get const pool address
       swap jvm_constpool_idx \ get nametype addr
@@ -743,7 +791,7 @@ variable jvm_p_static_fields \ stores the pointer static fields
       swap
       jvm_constpool_print_nametype 
     ENDOF
-    9 OF \ FieldRef
+    CONSTANT_Fieldref OF 
       jvm_cp_fieldref_nametype_idx  \ get nametype idx
       addr jvm_cf_constpool_addr \ get const pool address
       swap jvm_constpool_idx \ get nametype addr
@@ -751,7 +799,7 @@ variable jvm_p_static_fields \ stores the pointer static fields
       swap
       jvm_constpool_print_nametype 
     ENDOF
-    12 OF \ NameAndType
+    CONSTANT_NameAndType OF \ NameAndType
       addr jvm_cf_constpool_addr \ get const pool address
       swap
       jvm_constpool_print_nametype 

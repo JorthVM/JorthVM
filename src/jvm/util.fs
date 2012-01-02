@@ -48,16 +48,28 @@ require exception.fs
 
 : jvm_add_word ( value c-addr n wid - )
 \ *G add a name/value pair to into a specific wordlist
-  -rot
+  dup 2over
+  .s CR
   nextname 
   \ switch compilition wordlist
-  set-current
-  constant
-  definitions
+  dup set-current >order
+  variable
+  .s CR
+  -rot
+  .s CR
+  2dup type CR
+  .s CR
+  rot
+  .s CR
+  search-wordlist 
+  .s CR
+  assert( -1 = ) \ we just added it so this should hold
+  execute ! \ store value
   \ restore compilation wordlist
+  previous definitions
 ;
 
-: jvm_find_word ( c-addr n wid -- addr wior )
+: jvm_find_word_addr ( c-addr n wid -- addr wior )
 \ *G find a word and return the associated value in a specific wordlist
   search-wordlist 
   case
@@ -76,4 +88,10 @@ require exception.fs
     ( default)
     abort
   endcase
+;
+
+: jvm_find_word ( c-addr n wid -- value wior )
+\ *G find a word and return the associated value in a specific wordlist
+  jvm_find_word_addr throw
+  @ 0
 ;

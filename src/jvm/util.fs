@@ -46,23 +46,16 @@ require exception.fs
   c-addr1 n
 ;
 
-: jvm_add_word ( value c-addr n wid - )
+: jvm_add_word ( value c-addr n wid -- )
 \ *G add a name/value pair to into a specific wordlist
   dup 2over
-  .s CR
   nextname 
   \ switch compilition wordlist
   dup set-current >order
   variable
-  .s CR
   -rot
-  .s CR
-  2dup type CR
-  .s CR
   rot
-  .s CR
   search-wordlist 
-  .s CR
   assert( -1 = ) \ we just added it so this should hold
   execute ! \ store value
   \ restore compilation wordlist
@@ -70,7 +63,7 @@ require exception.fs
 ;
 
 : jvm_find_word_addr ( c-addr n wid -- addr wior )
-\ *G find a word and return the associated value in a specific wordlist
+\ *G find a word and return the associated addr in a specific wordlist
   search-wordlist 
   case
     0 of
@@ -95,3 +88,10 @@ require exception.fs
   jvm_find_word_addr throw
   @ 0
 ;
+
+: jvm_replace_word ( value c-addr n wid -- wior )
+\ *G add a name/value pair to into a specific wordlist
+  jvm_find_word_addr throw
+  ! 0
+;
+

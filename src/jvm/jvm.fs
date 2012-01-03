@@ -4,6 +4,7 @@ require fetch.fs
 require frame.fs
 require classfile.fs
 require classloader.fs
+require rtconstpool.fs
 
 \ register operation
 require execute.fs

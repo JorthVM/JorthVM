@@ -21,7 +21,7 @@ require ../jvm/util.fs
   42 swap
   s" forty-two" rot
   jvm_add_word
-  s" forty-two" drop \ not count!?
+  s" forty-two" drop \ no count!?
   
   \ negativ test
   find
@@ -35,8 +35,50 @@ require ../jvm/util.fs
   depth assert( 0= )
 ;
 
+: replace_word_test
+  depth assert( 0= )
+  wordlist dup >r
+  42 swap
+  s" forty-two" rot
+  jvm_add_word
+  
+  \ negativ test
+  s" forty-two" drop \ no count!?
+  find
+  assert( 0= )
+  drop \ c-addr
+  
+  \ positiv test
+  s" forty-two" 
+  r> dup >r                \ wid
+  jvm_find_word throw
+  assert( 42 = )
+  
+  
+  0x42 s" forty-two"
+  r> dup >r                \ wid
+  jvm_replace_word throw
+  
+  \ negativ test
+  s" forty-two" drop \ no count!?
+  find
+  assert( 0= )
+  drop \ c-addr
+
+  \ positiv test
+  s" forty-two"
+  r>                       \ wid 
+  jvm_find_word throw
+  assert( 0x42 = )
+
+  depth assert( 0= )
+
+  
+;
+
 : test
   strcat_test
   char_replace_test
   add_find_word_test
+  replace_word_test
 ;

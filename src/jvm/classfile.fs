@@ -2,6 +2,7 @@
 \ this file implements functionality that is needed to read class files
 
 require util.fs
+require decode.fs
 
 \   ClassFile {
 \       u4 magic;

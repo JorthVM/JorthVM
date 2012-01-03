@@ -67,6 +67,17 @@ require ../jvm/classfile.fs
   free throw
 ;
 
+: constpool_idx_long_test 
+  assert( depth 0 = ) 
+  s" StaticLong.class" jvm_read_classfile throw 
+  jvm_cf_constpool_addr 
+  22 
+  jvm_constpool_idx 
+  jvm_cp_tag
+  assert( CONSTANT_NameAndType = )
+  assert( depth 0 = ) 
+;
+
 : get_tag_test
   5 allocate throw
   dup      0x07 swap c! \ u1 tag
@@ -330,8 +341,11 @@ require ../jvm/classfile.fs
 ;
 
 : get_cf_attr_count_addr_test
-  filebuffer @ dup jvm_cf_attr_count_addr
+  assert( depth 0 = )
+  filebuffer @ jvm_cf_attr_count_addr
   assert( filebuffer @ 395 + = )
+  .s CR
+  assert( depth 0 = )
 ;
 
 : get_cf_attr_count_test
@@ -345,8 +359,10 @@ require ../jvm/classfile.fs
 ;
 
 : get_cf_attr_size_test
+  assert( depth 0 = )
   filebuffer @ jvm_cf_attr_size
-  assert( = 8 )
+  assert( 8 = )
+  assert( depth 0 = )
 ;
 
 
@@ -496,6 +512,8 @@ require ../jvm/classfile.fs
   big_endian_load_test
   cmp_utf8_test
   constpool_idx_test
+  \ Long and Double const values take 2 constpool entries
+  constpool_idx_long_test 
 
   get_tag_test
   get_class_name_idx_test
@@ -508,6 +526,7 @@ require ../jvm/classfile.fs
   get_utf8_test
 
   load_class_file
+
   \ filebuffer @ is the address of the classfile buffer
   get_cf_magic_test
   get_cf_minor_test

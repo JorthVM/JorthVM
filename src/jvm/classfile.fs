@@ -118,6 +118,25 @@ variable jvm_p_static_fields \ stores the pointer static fields
 : w@-be jvm_uw@ ;
 : l@-be jvm_ul@ ;
 
+\ access flags
+0x0001 constant ACC_PUBLIC      \ Classes,Fields,Methods: Declared public; may be accessed from outside its package.
+0x0002 constant ACC_PRIVATE     \ Fields,Methods: Declared private; usable only within the defining class.
+0x0004 constant ACC_PROTECTED   \ Fields,Methods: Declared protected; may be accessed within subclasses.
+0x0008 constant ACC_STATIC      \ Fields,Methods: Declared static.
+0x0010 constant ACC_FINAL       \ Fields: Declared final; no further assignment after initialization.
+                                \ Classes: Declared final; no subclasses allowed.
+                                \ Methods: Declared final; may not be overridden.
+\ WARNING: multiple semantics!
+0x0020 constant ACC_SUPER       \ Classes: Treat superclass methods specially when invoked by the invokespecial instruction.
+0x0020 constant ACC_SYNCHRONIZED \ Methods: Declared synchronized; invocation is wrapped in a monitor lock.
+
+0x0040 constant ACC_VOLATILE    \ Fields: Declared volatile; cannot be cached.
+0x0080 constant ACC_TRANSIENT   \ Fields: Declared transient; not written or read by a persistent object manager. 
+0x0100 constant ACC_NATIVE      \ Methods: Declared native; implemented in a language other than Java.
+0x0200 constant ACC_INTERFACE   \ Classes: Is an interface, not a class.
+0x0400 constant ACC_ABSTRACT 	  \ Classes: Declared abstract; may not be instantiated.
+                                \ Methods: Declared abstract; no implementation is provided.
+0x0800 constant ACC_STRICT      \ Methods: Declared strictfp; floating-point mode is FP-strict 
 
 \ -----------------------------------------------------------------------------
 \ Constant Pool Entry access words
@@ -296,6 +315,10 @@ variable jvm_p_static_fields \ stores the pointer static fields
   LOOP
   swap -
 ;
+: jvm_fd_?flags ( addr flag -- f )
+\ *G is flag set
+  swap jvm_fd_access_flags and 0<>
+;
 
 : jvm_fd_print_access_flags { flags -- }
   flags hex. ." :"
@@ -409,9 +432,43 @@ variable jvm_p_static_fields \ stores the pointer static fields
       3 + \ add u1 (tag) and u2 (length)
     ENDOF
     \ default
-    drop 
+    ." constant pool type" . CR
+    \ drop 
     s" Unknown Constant Pool Type " exception throw
   ENDCASE
+;
+
+: jvm_constpool_entries ( addr -- u )
+\ *G return number of constant pool entries are required by this tag
+\ *P See §4.4.5 (grml)
+  jvm_cp_tag
+  CASE
+  CONSTANT_Long   OF 2 ENDOF
+  CONSTANT_Double OF 2 ENDOF
+    \ default 
+    1 swap
+  ENDCASE
+  
+;
+
+: jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+\ returns address of entry with index idx from constant pool starting at address a-addr1
+  1
+  BEGIN
+    ( addr idx1 idx2 )
+    2dup 
+  > WHILE
+    ( addr idx1 idx2 )
+    rot
+    ( idx1 idx2 addr )
+    dup jvm_constpool_entries
+    ( idx1 idx2 addr n )
+    rot + swap
+    ( idx1 idx2' addr )
+    dup jvm_constpool_type_size +
+    -rot
+  REPEAT
+  2drop
 ;
 
 
@@ -419,9 +476,22 @@ variable jvm_p_static_fields \ stores the pointer static fields
   dup jvm_cf_constpool_addr swap
   jvm_cf_constpool_count
   \ cp_info constant_pool[constant_pool_count-1];
-  1 ?DO
+  1
+  BEGIN
+    ( addr idx1 idx2 )
+    2dup 
+  > WHILE
+    ( addr idx1 idx2 )
+    rot
+    ( idx1 idx2 addr )
+    dup jvm_constpool_entries
+    ( idx1 idx2 addr n )
+    rot + swap
+    ( idx1 idx2' addr )
     dup jvm_constpool_type_size +
-  LOOP
+    -rot
+  REPEAT
+  2drop
   \ dup jvm_p_access_flags_addr !
 ;
 
@@ -555,11 +625,28 @@ variable jvm_p_static_fields \ stores the pointer static fields
 
 
 \ -----------------------------------------------------------------------------
-: jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
-\ returns address of entry with index idx from constant pool starting at address a-addr1
-  1 ?DO
-    dup jvm_constpool_type_size +
-  LOOP
+\ FIXME move me!
+: jvm_cp_nametype_identifier { addr1 idx_n idx_d -- c-addr n }
+\ *G get a nametype identifier (name and desc)
+\ addr1 classfile address
+\ idx_n name index
+\ idx_d desc index
+  addr1 jvm_cf_constpool_addr idx_n jvm_constpool_idx jvm_cp_utf8_c-ref
+  s" |" 
+  strcat
+  addr1 jvm_cf_constpool_addr idx_d jvm_constpool_idx jvm_cp_utf8_c-ref
+  strcat
+;
+
+\ FIXME move me!
+: jvm_fd_identifier { addr1 addr2 -- c-addr n }
+\ *G get a field identifier (name and desc)
+\ addr1 classfile address
+\ addr2 field entry address
+  addr1 
+  addr2 jvm_fd_name_idx
+  addr2 jvm_fd_desc_idx 
+  jvm_cp_nametype_identifier
 ;
 
 : jvm_constpool_print_utf8 ( addr -- ) \ prints a utf8 string
@@ -765,26 +852,30 @@ variable jvm_p_static_fields \ stores the pointer static fields
   jvm_cf_constpool_count . CR
 ;
 
-: jvm_cf_constpool_print { addr -- }
-  addr jvm_cf_constpool_addr
-  addr jvm_cf_constpool_count
-  1 ?DO
-    ." [ " i addr jvm_cf_constpool_count 1- decimal_places .r ."  ] "
-    dup jvm_constpool_type_name type  
-    dup \ addr, used in the case statement
-    dup jvm_cp_tag \ read tag
-    CASE
+
+: jvm_cf_constpool_entry_print { addr addr_cpe -- }
+  addr_cpe jvm_cp_tag \ read tag
+  CASE
     ( addr1 - ) \ addr1: address of the constpool entry
     CONSTANT_Utf8 OF
-      space [CHAR] " emit jvm_constpool_print_utf8 [CHAR] " emit space
+      space [CHAR] " emit 
+      addr_cpe jvm_constpool_print_utf8 
+      [CHAR] " emit space
     ENDOF
     CONSTANT_Class OF
-      addr jvm_cf_constpool_addr
       space [CHAR] " emit 
-      swap jvm_constpool_print_classname
+      addr jvm_cf_constpool_addr
+      addr_cpe jvm_constpool_print_classname
       [CHAR] " emit space
     ENDOF
     CONSTANT_Methodref OF
+      ."  Class: " [CHAR] " emit 
+      addr jvm_cf_constpool_addr \ get const pool address
+      addr_cpe jvm_cp_methodref_class_idx \ get class idx
+      jvm_constpool_print_classname_idx
+      [CHAR] " emit space
+
+      addr_cpe
       jvm_cp_methodref_nametype_idx  \ get nametype idx
       addr jvm_cf_constpool_addr \ get const pool address
       swap jvm_constpool_idx \ get nametype addr
@@ -793,24 +884,74 @@ variable jvm_p_static_fields \ stores the pointer static fields
       jvm_constpool_print_nametype 
     ENDOF
     CONSTANT_Fieldref OF 
+      ."  Class: " [CHAR] " emit 
+      addr jvm_cf_constpool_addr \ get const pool address
+      addr_cpe jvm_cp_fieldref_class_idx \ get class idx
+      jvm_constpool_print_classname_idx
+      [CHAR] " emit space
+
+      addr_cpe
       jvm_cp_fieldref_nametype_idx  \ get nametype idx
       addr jvm_cf_constpool_addr \ get const pool address
+      \ ." \ get const pool address" .s CR
       swap jvm_constpool_idx \ get nametype addr
       addr jvm_cf_constpool_addr \ get const pool address
+      \ ." \ get const pool address" .s CR
       swap
       jvm_constpool_print_nametype 
     ENDOF
     CONSTANT_NameAndType OF \ NameAndType
       addr jvm_cf_constpool_addr \ get const pool address
-      swap
+      addr_cpe
       jvm_constpool_print_nametype 
     ENDOF
-      drop 
-    ENDCASE
-    ." : " 
-    dup jvm_constpool_type_size dup . +
-    CR
-  LOOP
+    CONSTANT_Long OF
+      ."  hex: "
+      addr_cpe
+      jvm_cp_long_bytes 
+      swap hex. hex.
+    ENDOF
+  ENDCASE
+;
+
+: jvm_cf_constpool_print { addr -- }
+  addr jvm_cf_constpool_addr
+  addr jvm_cf_constpool_count
+  1 BEGIN
+    ( addr idx1 idx2 )
+    2dup 
+  > WHILE
+    ( addr idx1 idx2 )
+    rot
+    ( idx1 idx2 addr )
+    
+    \ BEGIN REAL BODY
+      ( addr ) \ entry addr
+      ." [ " over addr jvm_cf_constpool_count 1- decimal_places .r ."  ] "
+      dup jvm_constpool_type_name type  
+      addr over jvm_cf_constpool_entry_print
+      ." : " 
+      dup jvm_constpool_type_size . CR
+    \ END REAL BODY
+    
+    ( idx1 idx2 addr )
+    dup jvm_constpool_entries
+    
+    ( idx1 idx2 addr n )
+    dup 
+    1 ?DO
+      ( idx1 idx2 addr n )
+      ." [ " 2 pick i + addr jvm_cf_constpool_count 1- decimal_places .r ."  ] "
+      ." (large numeric continued)" CR
+    LOOP
+    
+    ( idx1 idx2 addr n )
+    rot + swap
+    ( idx1 idx2' addr )
+    dup jvm_constpool_type_size +
+    -rot
+  REPEAT
+  2drop
   drop \ what a waste
 ;
 

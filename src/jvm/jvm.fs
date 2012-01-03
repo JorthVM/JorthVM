@@ -5,6 +5,7 @@ require frame.fs
 require classfile.fs
 require classloader.fs
 require rtconstpool.fs
+require class.fs
 
 \ register operation
 require execute.fs

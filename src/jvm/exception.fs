@@ -9,5 +9,11 @@ s" JVM class not found Exception" exception constant JVM_CLASSNOTFOUND_EXCEPTION
 s" JVM word not found Exception" exception constant JVM_WORDNOTFOUND_EXCEPTION
 s" JVM Classfile: unknown Constant Pool Type Exception" exception constant JVM_UNKNOWNCONSTPOOLTYPE_EXCEPTION
 
+\ Specified exceptions
+s" LinkerError" exception constant JVM_LINKERERROR
+s" ClassFormatError" exception constant JVM_CLASSFORMATERROR
+s" UnsupportedClassVersionError" exception constant JVM_UNSUPPORTEDCLASSVERSIONERROR
+s" NoClassDefError" exception constant JVM_NOCLASSDEFERROR
+
 \ Temporary Exceptions
 s" JVM Return Exception" exception constant JVM_RETURN_EXCEPTION

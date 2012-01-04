@@ -141,6 +141,10 @@ variable jvm_classentry_list
   n swap !
 ;
 
+
+\ FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
+\ FIXME i think this is not needed
+
 \ *S Class
 
 \ *C classentry {

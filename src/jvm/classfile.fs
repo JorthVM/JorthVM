@@ -52,10 +52,6 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 ;
 
 
-: xxx 
-." xxxxxx" .s CR
-; 
-
 \ big endian load stuff
 
 : ?bigendian ( -- true/false )

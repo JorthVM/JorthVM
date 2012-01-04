@@ -57,7 +57,6 @@ require ../jvm/class.fs
   jvm_field_2!
   jvm_field_2@
   assert( depth 2 = )
-  .s cr
   assert( 0x42 = )
   assert( 42 = )
   r> free throw

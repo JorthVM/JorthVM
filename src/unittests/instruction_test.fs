@@ -38,9 +38,7 @@ program_sipush write-programm
 
 \ no sign ext
   jvm_stack.fetchByte()
-  .s CR
   jvm_execute
-  .s CR
   assert( 0x2A2A = ) 
 \ sign ext
   jvm_stack.fetchByte()
@@ -78,18 +76,18 @@ program_sipush write-programm
 : putstatic_test
 \ NOTE this testcase also ensures that jvm_class.{getStatic()|setStatic()} 
 \ are working
+  assert( depth 0 = )
   s" ./" jvm_classpath.add()
   s" StaticInt" jvm_java
   jvm_stack.getCurrentFrame()
   jvm_frame.getClass()
   dup s" foo|I" jvm_class.getStatic() 
-  .s CR
   throw
-  .s CR
   assert( 0x42 = )
   s" bar|I" jvm_class.getStatic() throw
   assert( 0x84 = )
   
+  assert( depth 0 = )
 ;
 
 : test

@@ -344,7 +344,6 @@ require ../jvm/classfile.fs
   assert( depth 0 = )
   filebuffer @ jvm_cf_attr_count_addr
   assert( filebuffer @ 395 + = )
-  .s CR
   assert( depth 0 = )
 ;
 

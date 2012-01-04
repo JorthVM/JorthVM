@@ -133,9 +133,9 @@ require rtconstpool.fs
 
 : jvm_class.getStatic() { addr c-addr n -- value woir }
 \ *G get the value of a static field (32bit) by name
-  ." trying to get " c-addr n type  CR
+  \ ." trying to get " c-addr n type  CR
   addr c-addr n jvm_class.getFd_idx() throw
-  ." index: " dup . CR
+  \ ." index: " dup . CR
   addr swap jvm_class.getStaticIdx() 0
 ;
 
@@ -147,10 +147,10 @@ require rtconstpool.fs
 
 : jvm_class.setStatic() { addr val c-addr n -- woir }
 \ *G get the value of a static field (32bit) by name
-  ." trying to set " c-addr n type  ."  to " val . CR
+  \ ." trying to set " c-addr n type  ."  to " val . CR
   addr val 
   over c-addr n jvm_class.getFd_idx() throw \ get idx
-  ." index: " dup . CR
+  \ ." index: " dup . CR
   jvm_class.setStaticIdx() 
   0
 ;

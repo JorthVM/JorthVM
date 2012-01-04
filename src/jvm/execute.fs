@@ -357,7 +357,7 @@ require exception.fs
   8 lshift
   jvm_stack.fetchByte() \ load byte
   or
-  ." idx fetched " .s CR
+  \ ." idx fetched " .s CR
   jvm_stack.getCurrentFrame() 
   jvm_frame.getClass()
   jvm_class.getRTCP()
@@ -380,22 +380,20 @@ require exception.fs
   rot swap
   ( addr_rtcp nametype_idx addr_rtcp class_idx)
   jvm_rtcp.getClassName()
-  2dup type CR
+  \ 2dup type CR
   ( addr_rtcp nametype_idx c-addr1 n1)
   2swap
   ( c-addr1 n1 addr_rtcp nametype_idx)
   jvm_rtcp.getNameType()
   ( c-addr1 n1 c-addr2 n2)
-  2dup type CR
+  \ 2dup type CR
   ( c-addr1 n1 c-addr2 n2)
   2swap
   jvm_stack.getClass() throw
   -rot
   ( addr_cl c-addr n)
   jvm_class.getStatic() throw
-  ." got value " dup . CR
-  ( val idx )
-  ." old put static " .s CR
+  \ ." got value " dup . CR
 ]<
 
 0xA7 2 s" goto" \ 2[branchbyte1, branchbyte2] ( -- )
@@ -879,7 +877,7 @@ require exception.fs
   8 lshift
   jvm_stack.fetchByte() \ load byte
   or
-  ." idx fetched " .s CR
+  \ ." idx fetched " .s CR
   jvm_stack.getCurrentFrame() 
   jvm_frame.getClass()
   jvm_class.getRTCP()
@@ -902,13 +900,13 @@ require exception.fs
   rot swap
   ( addr_rtcp nametype_idx addr_rtcp class_idx)
   jvm_rtcp.getClassName()
-  2dup type CR
+  \ 2dup type CR
   ( addr_rtcp nametype_idx c-addr1 n1)
   2swap
   ( c-addr1 n1 addr_rtcp nametype_idx)
   jvm_rtcp.getNameType()
   ( c-addr1 n1 c-addr2 n2)
-  2dup type CR
+  \ 2dup type CR
   ( c-addr1 n1 c-addr2 n2)
   2swap
   jvm_stack.getClass() throw

@@ -127,46 +127,53 @@ jvm_stack.new() constant jvm_stack
 ; immediate
 
 : jvm_stack.run()
+  ." run() start " .s CR
   try
     begin 
       jvm_stack.next()
     again
   restore 
   endtry
+  dup CASE
+    JVM_RETURN_EXCEPTION OF 
+      drop 0 
+    ENDOF
+  ENDCASE
   ( woir )
+  throw
   \ TODO handle exceptions
   ." run() terminating " .s CR
 ;
 
 : jvm_stack.invokeInitial() { c-addr n -- wior }
 \ *G Start the execution by invoking public static void main(String[] args)
-  ." : jvm_stack.invokeInitial() { c-addr n -- wior } " .s CR
+  \ ." : jvm_stack.invokeInitial() { c-addr n -- wior } " .s CR
   assert( depth 0 = )
   c-addr n jvm_stack.getClass() throw
   dup jvm_class.getStatus()
   CASE
     ( addr_cl )
     jvm_class.STATUS:UNINIT OF
-      ." class not prepared" cr
+      \ ." class not prepared" cr
       dup
       jvm_default_loader 
       c-addr n jvm_search_classpath 
-      ." search classpath" .s cr
+      \ ." search classpath" .s cr
       throw
       jvm_class.prepare() 
-      ." class prepare" .s cr
+      \ ." class prepare" .s cr
       throw
       dup
       jvm_class.init() 
-      ." throw" .s cr
+      \ ." throw" .s cr
       throw
     ENDOF
     jvm_class.STATUS:PREPARED OF
-      ." class not initialazed" cr
+      \ ." class not initialazed" cr
       dup
       jvm_class.init() throw
     ENDOF
-      ." class already initialazed" cr
+      \ ." class already initialazed" cr
       dup
     jvm_class.STATUS:INIT OF
       \ do nothing
@@ -175,7 +182,7 @@ jvm_stack.new() constant jvm_stack
     ." Unknown class status: " dup . CR
     abort
   ENDCASE
-  ." class ready" .s cr
+  \ ." class ready" .s cr
   ( addr_cl ) \ initialized class
   
   dup 
@@ -193,15 +200,14 @@ jvm_stack.new() constant jvm_stack
   ENDIF
   
   ( addr_cl addr_cf addr_md )
-  2 pick over 0 0
-  ( addr_cl addr_cf addr_md addr_cl addr_md 0 0 )
+  rot over 0 0
+  ( addr_cf addr_md addr_cl addr_md 0 0 )
   jvm_frame.new()
 
   \ store current frame
   jvm_stack jvm_stack.currentFrame + !
   
-  ." \ get code attr " .s CR
-  ( addr_cf addr_md )
+  ( addr_md )
   jvm_md_get_code_attr
   jvm_stack.setPC()
   jvm_stack.run()

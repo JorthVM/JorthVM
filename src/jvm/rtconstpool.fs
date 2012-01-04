@@ -31,6 +31,7 @@ require classfile.fs
 
  0 cells constant jvm_rtcp.classfile
  1 cells constant jvm_rtcp.constpool_table
+ \ FIXME i think we dont need the _info stuff
  2 cells constant jvm_rtcp.class_info
  3 cells constant jvm_rtcp.fieldref_info
  4 cells constant jvm_rtcp.methodref_info
@@ -160,7 +161,7 @@ require classfile.fs
 : jvm_rtcp.new() { addr -- addr2 }
 \ *G Create a new runtime constant pool from classfile at `addr1'
   jvm_rtcp.size() allocate throw
-  dup ." new addr: " . dup ." - " hex. cr
+  \ dup ." new addr: " . dup ." - " hex. cr
   dup addr swap ( jvm_rtcp.classfile +) ! \ store classfile reference
   addr jvm_rtcp.createConstPoolTable() 
   over jvm_rtcp.constpool_table + ! 
@@ -169,12 +170,12 @@ require classfile.fs
   wordlist over jvm_rtcp.methodref_info + ! \ store methodref_info wordlist
   wordlist over jvm_rtcp.interfacemethodref_info + ! \ store interfacemethodref_info wordlist
 
-  .s CR
+  \ .s CR
   \ iterate over constpool
   addr jvm_cf_constpool_addr
   addr jvm_cf_constpool_count
   1 ?DO
-    dup jvm_constpool_type_name type  
+    \ dup jvm_constpool_type_name type  
     dup jvm_cp_tag \ read tag
     CASE
     ( addr1 addr2 - ) 
@@ -188,7 +189,7 @@ require classfile.fs
       swap 
       jvm_constpool_idx
       jvm_cp_utf8_c-ref
-      2dup space type
+      \ 2dup space type
       4 pick \ get rt constpool addr
       jvm_rtcp.getClass_info()
       jvm_add_word
@@ -197,7 +198,7 @@ require classfile.fs
     ENDOF
     \ default
     ENDCASE
-    cr
+    \ cr
     dup jvm_constpool_type_size +
   LOOP
   drop \ what a waste
@@ -208,14 +209,14 @@ require classfile.fs
   \ fill methodref_info
   
   \ fill interfacemethodref_info
-  ." Class_info" 
-  dup jvm_rtcp.getClass_info() wordlist-words CR CR
-  ." Fieldref_info" 
-  dup jvm_rtcp.getFieldref_info() wordlist-words CR CR
-  ." Methodref_info" 
-  dup jvm_rtcp.getMethodref_info() wordlist-words CR CR
-  ." Interfacemethodref_info" 
-  dup jvm_rtcp.getInterfacemethodref_info() wordlist-words CR CR
+  \ ." Class_info" 
+  \ dup jvm_rtcp.getClass_info() wordlist-words CR CR
+  \ ." Fieldref_info" 
+  \ dup jvm_rtcp.getFieldref_info() wordlist-words CR CR
+  \ ." Methodref_info" 
+  \ dup jvm_rtcp.getMethodref_info() wordlist-words CR CR
+  \ ." Interfacemethodref_info" 
+  \ dup jvm_rtcp.getInterfacemethodref_info() wordlist-words CR CR
   
-  ." end new() " .s cr
+  \ ." end new() " .s cr
 ;

@@ -75,10 +75,28 @@ program_sipush write-programm
   assert( 1 = )
 ;
 
+: putstatic_test
+\ NOTE this testcase also ensures that jvm_class.{getStatic()|setStatic()} 
+\ are working
+  s" ./" jvm_classpath.add()
+  s" StaticInt" jvm_java
+  jvm_stack.getCurrentFrame()
+  jvm_frame.getClass()
+  dup s" foo|I" jvm_class.getStatic() 
+  .s CR
+  throw
+  .s CR
+  assert( 0x42 = )
+  s" bar|I" jvm_class.getStatic() throw
+  assert( 0x84 = )
+  
+;
+
 : test
   test_bipush
   test_sipush
   test_dup
   test_iadd
   test_mnemonic
+  putstatic_test
 ;

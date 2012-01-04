@@ -112,7 +112,7 @@ require rtconstpool.fs
 \ *G get the address of the super class
   jvm_class.super + @
 ;
-
+\ FIXME change idx to offset!
 : jvm_class.getFd_idx_wid() ( addr -- wid )
 \ *G get the wordlist id for the static field index translation
   jvm_class.fd_idx + @
@@ -133,7 +133,9 @@ require rtconstpool.fs
 
 : jvm_class.getStatic() { addr c-addr n -- value woir }
 \ *G get the value of a static field (32bit) by name
+  ." trying to get " c-addr n type  CR
   addr c-addr n jvm_class.getFd_idx() throw
+  ." index: " dup . CR
   addr swap jvm_class.getStaticIdx() 0
 ;
 
@@ -146,9 +148,10 @@ require rtconstpool.fs
 : jvm_class.setStatic() { addr val c-addr n -- woir }
 \ *G get the value of a static field (32bit) by name
   ." trying to set " c-addr n type  ."  to " val . CR
-  \ addr val 
-  \ over c-addr n jvm_class.getFd_idx() throw \ get idx
-  \ jvm_class.setStaticIdx() 
+  addr val 
+  over c-addr n jvm_class.getFd_idx() throw \ get idx
+  ." index: " dup . CR
+  jvm_class.setStaticIdx() 
   0
 ;
 

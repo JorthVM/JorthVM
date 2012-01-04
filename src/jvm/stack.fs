@@ -57,6 +57,8 @@ jvm_stack.new() constant jvm_stack
   jvm_stack.pc + !
 ;
 
+
+\ FIXME change to findClass!
 : jvm_stack.getClass() { c-addr n -- addr2 woir }
 \ *G get the address of a class
   c-addr n 

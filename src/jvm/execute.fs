@@ -357,9 +357,45 @@ require exception.fs
   8 lshift
   jvm_stack.fetchByte() \ load byte
   or
-  cells
-  jvm_p_static_fields @ + l@
-  \ FIXME use @ instead?!
+  ." idx fetched " .s CR
+  jvm_stack.getCurrentFrame() 
+  jvm_frame.getClass()
+  jvm_class.getRTCP()
+  dup
+  rot
+  ( addr_rtcp addr_rtcp idx )
+  jvm_rtcp.getConstpool()
+  ( addr_rtcp addr_fd )
+  over -rot
+  ( addr_rtcp addr_rtcp addr_fd )
+  dup jvm_cp_tag assert( CONSTANT_Fieldref = )
+  ( addr_rtcp addr_rtcp addr_fieldref )
+  \ check class
+  dup 
+  ( addr_rtcp addr_rtcp addr_fieldref addr_fieldref )
+  jvm_cp_fieldref_nametype_idx 
+  swap
+  jvm_cp_fieldref_class_idx 
+  ( addr_rtcp addr_rtcp nametype_idx class_idx)
+  rot swap
+  ( addr_rtcp nametype_idx addr_rtcp class_idx)
+  jvm_rtcp.getClassName()
+  2dup type CR
+  ( addr_rtcp nametype_idx c-addr1 n1)
+  2swap
+  ( c-addr1 n1 addr_rtcp nametype_idx)
+  jvm_rtcp.getNameType()
+  ( c-addr1 n1 c-addr2 n2)
+  2dup type CR
+  ( c-addr1 n1 c-addr2 n2)
+  2swap
+  jvm_stack.getClass() throw
+  -rot
+  ( addr_cl c-addr n)
+  jvm_class.getStatic() throw
+  ." got value " dup . CR
+  ( val idx )
+  ." old put static " .s CR
 ]<
 
 0xA7 2 s" goto" \ 2[branchbyte1, branchbyte2] ( -- )
@@ -844,7 +880,6 @@ require exception.fs
   jvm_stack.fetchByte() \ load byte
   or
   ." idx fetched " .s CR
-  dup
   jvm_stack.getCurrentFrame() 
   jvm_frame.getClass()
   jvm_class.getRTCP()
@@ -879,16 +914,11 @@ require exception.fs
   jvm_stack.getClass() throw
   -rot
   ( addr_cl c-addr n)
-  4 pick \ get value
+  3 pick \ get value
   -rot
   ( addr_cl val c-addr n)
   jvm_class.setStatic() throw
-
-  ( val idx )
-  ." old put static " .s CR
-  cells
-  jvm_p_static_fields @ + l!
-  \ FIXME use ! instead?!
+  drop \ val
 ]<
 
 0xA9 1 s" ret" \ 1[index] ( -- )
@@ -900,7 +930,6 @@ require exception.fs
 \ return void from method
 ^> : <^ ; >[
   CR ." Data Stack: " CR .s CR
-  CR ." Static Fields: " CR jvm_p_static_fields @ 0x100 dump CR \ FIXME hardcoded
   JVM_RETURN_EXCEPTION throw
 ]<
 

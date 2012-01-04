@@ -33,8 +33,6 @@ variable jvm_p_fields_addr \ stores the pointer to the first field
 variable jvm_p_methods_addr \ stores the pointer to the first field
 variable jvm_p_attributes_addr \ stores the pointer to the first field
 
-variable jvm_p_static_fields \ stores the pointer static fields
-
 : jvm_read_classfile ( c-addr u1 - addr wior) 
 \ *G returns the address of the classfile buffer memory 
   r/o open-file throw 
@@ -51,12 +49,6 @@ variable jvm_p_static_fields \ stores the pointer static fields
   drop \ drop file size
   filebuffer @ 0 
   ( addr woir)
-
-  \ FIXME fixme
-  0x100 allocate throw 
-  jvm_p_static_fields 
-  !
-  jvm_p_static_fields @ 0x100 erase
 ;
 
 

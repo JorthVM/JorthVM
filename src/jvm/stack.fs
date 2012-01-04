@@ -59,7 +59,7 @@ jvm_stack.new() constant jvm_stack
 
 
 \ FIXME change to findClass!
-: jvm_stack.getClass() { c-addr n -- addr2 woir }
+: jvm_stack.findClass() { c-addr n -- addr2 woir }
 \ *G get the address of a class
   c-addr n 
   jvm_stack jvm_stack.classes + @
@@ -149,7 +149,7 @@ jvm_stack.new() constant jvm_stack
 \ *G Start the execution by invoking public static void main(String[] args)
   \ ." : jvm_stack.invokeInitial() { c-addr n -- wior } " .s CR
   assert( depth 0 = )
-  c-addr n jvm_stack.getClass() throw
+  c-addr n jvm_stack.findClass() throw
   dup jvm_class.getStatus()
   CASE
     ( addr_cl )

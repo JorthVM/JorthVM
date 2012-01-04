@@ -389,7 +389,7 @@ require exception.fs
   \ 2dup type CR
   ( c-addr1 n1 c-addr2 n2)
   2swap
-  jvm_stack.getClass() throw
+  jvm_stack.findClass() throw
   -rot
   ( addr_cl c-addr n)
   jvm_class.getStatic() throw
@@ -909,7 +909,7 @@ require exception.fs
   \ 2dup type CR
   ( c-addr1 n1 c-addr2 n2)
   2swap
-  jvm_stack.getClass() throw
+  jvm_stack.findClass() throw
   -rot
   ( addr_cl c-addr n)
   3 pick \ get value

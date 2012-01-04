@@ -148,6 +148,7 @@ jvm_stack.new() constant jvm_stack
 : jvm_stack.invokeInitial() { c-addr n -- wior }
 \ *G Start the execution by invoking public static void main(String[] args)
   \ ." : jvm_stack.invokeInitial() { c-addr n -- wior } " .s CR
+  \ FIXME we need to initialize the super class/interface as well (somewhere)
   assert( depth 0 = )
   c-addr n jvm_stack.findClass() throw
   dup jvm_class.getStatus()

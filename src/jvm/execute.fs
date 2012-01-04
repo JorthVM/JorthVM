@@ -364,7 +364,7 @@ require exception.fs
   dup
   rot
   ( addr_rtcp addr_rtcp idx )
-  jvm_rtcp.getConstpool()
+  jvm_rtcp.getConstpoolByIdx()
   ( addr_rtcp addr_fd )
   over -rot
   ( addr_rtcp addr_rtcp addr_fd )
@@ -884,7 +884,7 @@ require exception.fs
   dup
   rot
   ( addr_rtcp addr_rtcp idx )
-  jvm_rtcp.getConstpool()
+  jvm_rtcp.getConstpoolByIdx()
   ( addr_rtcp addr_fd )
   over -rot
   ( addr_rtcp addr_rtcp addr_fd )

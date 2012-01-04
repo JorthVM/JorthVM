@@ -48,7 +48,7 @@ require classfile.fs
   ( jvm_rtcp.classfile + ) @
 ;
 
-: jvm_rtcp.getConstpool() { addr idx -- addr2 }
+: jvm_rtcp.getConstpoolByIdx() { addr idx -- addr2 }
 \ *G get the address of the constant pool entry denoted by idx
 \ NOTE no sanity checks (e.g. 0 < idx < constant_pool_count)
   addr jvm_rtcp.constpool_table + @ idx 1- cells + @
@@ -57,26 +57,26 @@ require classfile.fs
 \ FIXME other name?
 : jvm_rtcp.getClassName() { addr idx -- c-addr n }
 \ *G get the qualified classname from a class idx
-  addr idx jvm_rtcp.getConstpool()
+  addr idx jvm_rtcp.getConstpoolByIdx()
   ( class_addr)
   jvm_cp_class_name_idx
   ( name_idx)
   addr swap 
   ( addr_rtcp name_idx)
-  jvm_rtcp.getConstpool()
+  jvm_rtcp.getConstpoolByIdx()
   ( addr_utf8)
   jvm_cp_utf8_c-ref
 ;
 \ FIXME other name?
 : jvm_rtcp.getNameType() { addr idx -- c-addr n }
 \ *G get the qualified NameType from a class idx
-  addr idx jvm_rtcp.getConstpool()
+  addr idx jvm_rtcp.getConstpoolByIdx()
   ( nametype_addr)
   dup jvm_cp_nametype_name_idx
   ( nametype_addr name_idx)
   addr swap 
   ( nametype addr_rtcp name_idx)
-  jvm_rtcp.getConstpool()
+  jvm_rtcp.getConstpoolByIdx()
   ( nametype addr_utf8)
   jvm_cp_utf8_c-ref
   ( nametype c-addr n)
@@ -88,7 +88,7 @@ require classfile.fs
   ( c-addr n desc_idx)
   addr swap 
   ( c-addr n addr_rtcp desc_idx)
-  jvm_rtcp.getConstpool()
+  jvm_rtcp.getConstpoolByIdx()
   ( c-addr n addr_utf8)
   jvm_cp_utf8_c-ref
   ( c-addr n c-addr2 n2)

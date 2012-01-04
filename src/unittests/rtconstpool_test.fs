@@ -27,7 +27,7 @@ include ../jvm/rtconstpool.fs
   s" Test.class" jvm_read_classfile throw 
   dup jvm_rtcp.new()
   tuck
-  1 jvm_rtcp.getConstpool() 
+  1 jvm_rtcp.getConstpoolByIdx() 
   swap jvm_cf_constpool_addr
   assert( = )
   \ TODO jvm_rtcp.getClass_info() >order

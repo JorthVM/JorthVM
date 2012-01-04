@@ -74,9 +74,12 @@ require rtconstpool.fs
 \ ========
 \ 
 \ *C jvm_class {
-\ **    addr rtcp;     \ runtime constant pool
-\ **    wid  fd_idx;   \ static field index wordlist
-\ **    addr fd_table; \ static field table
+\ **    addr status;       \ status of the class
+\ **    addr init_loader;  \ initial loader
+\ **    addr rtcp;         \ runtime constant pool
+\ **    addr super;        \ link to super class
+\ **    wid  filed_offset; \ static field offset wordlist
+\ **    addr field_table;  \ static field table
 \ **  }
 \ 
 
@@ -84,8 +87,8 @@ require rtconstpool.fs
  1 cells constant jvm_class.init_loader
  2 cells constant jvm_class.rtcp
  3 cells constant jvm_class.super
- 4 cells constant jvm_class.fd_idx
- 5 cells constant jvm_class.fd_table
+ 4 cells constant jvm_class.field_offset
+ 5 cells constant jvm_class.field_table
 
  6 cells constant jvm_class.size()
 
@@ -112,36 +115,36 @@ require rtconstpool.fs
 \ *G get the address of the super class
   jvm_class.super + @
 ;
-\ FIXME change idx to offset!
-: jvm_class.getFd_idx_wid() ( addr -- wid )
-\ *G get the wordlist id for the static field index translation
-  jvm_class.fd_idx + @
+
+: jvm_class.getField_offset_wid() ( addr -- wid )
+\ *G get the wordlist id for the static field offset translation
+  jvm_class.field_offset + @
 ;
 
-: jvm_class.getFd_idx() { addr c-addr n -- idx woir }
-\ *G get the index of a static field
-  addr jvm_class.getFd_idx_wid()
+: jvm_class.getField_offset() { addr c-addr n -- off woir }
+\ *G get the offset of a static field
+  addr jvm_class.getField_offset_wid()
   c-addr n rot
   jvm_find_word throw
   0
 ;
 
-: jvm_class.getStaticIdx() { addr idx -- value }
-\ *G get the value of a static field (32bit) by index
-  addr jvm_class.fd_table + idx cells + jvm_field_@
+: jvm_class.getStaticOffset() { addr off -- value }
+\ *G get the value of a static field (32bit) by offset
+  addr jvm_class.field_table + off cells + jvm_field_@
 ;
 
 : jvm_class.getStatic() { addr c-addr n -- value woir }
 \ *G get the value of a static field (32bit) by name
   \ ." trying to get " c-addr n type  CR
-  addr c-addr n jvm_class.getFd_idx() throw
-  \ ." index: " dup . CR
-  addr swap jvm_class.getStaticIdx() 0
+  addr c-addr n jvm_class.getField_offset() throw
+  \ ." offset: " dup . CR
+  addr swap jvm_class.getStaticOffset() 0
 ;
 
-: jvm_class.setStaticIdx() { addr val idx -- }
-\ *G set the value of a static field (32bit) by index
-  val addr jvm_class.fd_table + idx cells +
+: jvm_class.setStaticOffset() { addr val off -- }
+\ *G set the value of a static field (32bit) by offset
+  val addr jvm_class.field_table + off cells +
   jvm_field_!
 ;
 
@@ -149,21 +152,21 @@ require rtconstpool.fs
 \ *G get the value of a static field (32bit) by name
   \ ." trying to set " c-addr n type  ."  to " val . CR
   addr val 
-  over c-addr n jvm_class.getFd_idx() throw \ get idx
-  \ ." index: " dup . CR
-  jvm_class.setStaticIdx() 
+  over c-addr n jvm_class.getField_offset() throw \ get off
+  \ ." offset: " dup . CR
+  jvm_class.setStaticOffset() 
   0
 ;
 
-: jvm_class.getStatic2Idx() { addr idx -- lsb-value msb-value }
-\ *G get the value of a static field (64bit) by index
-  addr jvm_class.fd_table + idx cells + jvm_field_2@
+: jvm_class.getStatic2Offset() { addr off -- lsb-value msb-value }
+\ *G get the value of a static field (64bit) by offset
+  addr jvm_class.field_table + off cells + jvm_field_2@
 ;
 
 : jvm_class.getStatic2() { addr c-addr n -- lsb-value msb-value wior }
 \ *G get the value of a static field (64bit) by name
-  addr c-addr n jvm_class.getFd_idx() throw
-  addr swap jvm_class.getStatic2Idx() 0
+  addr c-addr n jvm_class.getField_offset() throw
+  addr swap jvm_class.getStatic2Offset() 0
 ;
 
 : jvm_class.new() ( -- addr)
@@ -173,8 +176,8 @@ require rtconstpool.fs
   jvm_class.STATUS:UNINIT over ( jvm_class.status + ) !
   \ 0 over jvm_class.init_loader + !
   \ 0 over jvm_class.rtcp + !
-  wordlist over jvm_class.fd_idx + !
-  \ 0 over jvm_class.fd_table + !
+  wordlist over jvm_class.field_offset + !
+  \ 0 over jvm_class.field_table + !
 ;
 
 : jvm_class.prepare() { addr_cl loader addr_cf -- wior }
@@ -190,28 +193,28 @@ require rtconstpool.fs
   addr_cf jvm_cf_fields_addr
   addr_cf jvm_cf_fields_count
   0 ?DO
-    ( idx addr )
-    \ idx next free index of the table
+    ( off addr )
+    \ off next free offset of the table
     \ addr address of the field entry
     dup ACC_STATIC jvm_fd_?flags IF 
       addr_cf over jvm_fd_identifier
-      ( idx addr c-addr n )
+      ( off addr c-addr n )
       addr_cf jvm_cf_constpool_addr 
-      ( idx addr c-addr n addr2 )
+      ( off addr c-addr n addr2 )
       3 pick jvm_fd_desc_idx 
-      ( idx addr c-addr n addr2 idx2 )
+      ( off addr c-addr n addr2 idx2 )
       jvm_constpool_idx
-      ( idx addr c-addr n addr3 )
+      ( off addr c-addr n addr3 )
       jvm_cp_utf8_c-ref
-      ( idx addr c-addr n c-addr2 n2 )
+      ( off addr c-addr n c-addr2 n2 )
       jvm_field_desc_size -rot
-      ( idx addr size c-addr n )
+      ( off addr size c-addr n )
       4 pick -rot
-      ( idx addr size idx c-addr n )
-      addr_cl jvm_class.getFd_idx_wid() 
-      ( idx addr size idx c-addr n wid )
+      ( off addr size off c-addr n )
+      addr_cl jvm_class.getField_offset_wid() 
+      ( off addr size off c-addr n wid )
       jvm_add_word
-      ( idx addr size )
+      ( off addr size )
       rot + swap 
     ENDIF
 
@@ -222,7 +225,7 @@ require rtconstpool.fs
   allocate throw                                         \ allocate static table memory
   \ TODO Initial values §5.4.2, 1st paragraph
 
-  addr_cl jvm_class.fd_table + !                         \ store table
+  addr_cl jvm_class.field_table + !                         \ store table
 
   jvm_class.STATUS:PREPARED addr_cl jvm_class.status + ! \ store status
   loader addr_cl jvm_class.init_loader + !               \ store loader

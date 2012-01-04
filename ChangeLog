@@ -1,0 +1,40 @@
+2012-01-04  Josef Eisl <zapster@zapster.cc>
+
+    * classfile.fs (read_classfile): WARNING: changed the behavior of jvm_read_classfile.
+    (print_classfile): added disassembly to print_classfile.
+
+    * classloader.fs: classloader.fs is (currently) used to search for classfiles and
+    managing classpaths. most important words `jvm_classpath.add()' and `jvm_search_classpath'.
+
+    * stack.fs: stack.fs is (currently) the core of the jvm. it manages runtime information 
+    like (pc, frame, classes) and is the new home of next, run, fetch, etc.. fetch.fs has been 
+    deleted. stack.fs will play an important roll in context switching (return, invoke, etc.).
+    jvm_stack is, unlike other structs (class, frame, classfile), a global structure which is 
+    accessible without a reference pointer.
+
+    * frame.fs: frame.fs contains the implementation of the jvm method frame. context switching 
+    is not yet implemented so there is not much to see right now. 
+    NOTE: jvm_stack.getCurrentFrame()->jvm_frame.getClass() gives the current class reference.
+
+    * class.fs: class.fs contains the internal class representation of the jvm. the status of 
+    a class can be `uninitialized' (the jvm knows its name), `prepared' (a suitable classfile has been
+    found and the class struct is filled with informations for the classfile), or `initialized'.
+
+    * rtconstpool.fs: rtconstpool.fs contains the runtime constant pool. for now only the classfile
+    reference and the constpool_table are really used. NOTE: for constant pool index lookups during
+    runtime getConstantPoolByIdx() should be used instead of jvm_constpool_idx from classfile.fs.
+    Warning: many words from classfile.fs use jvm_constpool_idx. you might need to reimplement 
+    some words in the jvm_rtcp context.
+
+    * execute.fs (putstatic/getstatic): static fields are already handled correctly (e.g. they are stored
+    in the internal class representation).
+
+    * unittests: all unittests now contain a : test ( .. ) ; word which is called by in the Makefile.
+    this makes debugging much more comfortable. 
+
+    * other (wordlist): stack.fs, class.fs, and rtconstpool.fs are already using wordlist for lookup
+    stuff. some helpers can be found in util.fs.
+
+    * other (style): most new files contain struct-like data structures. therefore the naming is somehow
+    similar to C structs. this is a RFC but it is already much more readable than the classfile naming hell!
+

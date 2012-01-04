@@ -29,9 +29,6 @@ require classfile.fs
 variable jvm_classpath_list
 0 jvm_classpath_list !
 
-variable jvm_classentry_list
-0 jvm_classentry_list !
-
 0 cells constant jvm_classpath.string
 1 cells constant jvm_classpath.string_size
 2 cells constant jvm_classpath.next
@@ -139,115 +136,5 @@ variable jvm_classentry_list
   c-addr swap !
   jvm_classpath.string_size +
   n swap !
-;
-
-
-\ FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
-\ FIXME i think this is not needed
-
-\ *S Class
-
-\ *C classentry {
-\ **    addr string;
-\ **    addr string_size;
-\ **    addr classfile;
-\ **    addr next_entry;
-\ **  }
-
-\ *P The class entry list is implemented as linked list. The
-\ ** next_entry pointer of the last entry is 0. 
-
- 0 cells constant jvm_classentry.string
- 1 cells constant jvm_classentry.string_size
- 2 cells constant jvm_classentry.classfile
- 3 cells constant jvm_classentry.next
- 4 cells constant jvm_classentry.size()
-
-: jvm_classentry.getName() { addr -- c-addr n }
-\ *G return the name of a class entry
-  addr jvm_classentry.string + @
-  addr jvm_classentry.string_size + @
-;
-
-: jvm_classentry.getClassfile() ( addr1 -- addr2 )
-\ *G return the name of a class entry
-  jvm_classentry.classfile + @
-;
-
-: jvm_classentry.getNext() ( addr1 -- addr2 )
-\ *G return the next classfile entryy
-  jvm_classentry.next + @
-;
-
-: jvm_classentry.new() ( -- addr )
-\ *G return newly allocated memory for a classentry and append it to the end of the list
-  jvm_classentry.size() allocate throw
-  0 over jvm_classentry.next + !
-  jvm_classentry_list @ dup
-  0= IF
-    drop dup 
-    jvm_classentry_list !
-  ELSE
-    BEGIN  
-    ( addr -- )
-    dup jvm_classentry.getNext()
-    0<> WHILE
-      jvm_classentry.getNext()
-    REPEAT
-    jvm_classentry.next + 
-    over -rot !
-  ENDIF
-;
-
-: jvm_class_add { c-addr n addr -- addr2 }
-\ *G Add a class
-\ *D c-addr name of the class
-\ *D n size of the name
-\ *D addr address of the classfile buffer
-  jvm_classentry.new() dup
-  c-addr over jvm_classentry.string + !
-  n over jvm_classentry.string_size + !
-  addr over jvm_classentry.classfile + !
-  drop
-;
-
-: jvm_class_link { c-addr n -- addr wior }
-  c-addr n jvm_search_classpath throw
-  c-addr n rot jvm_class_add
-  0
-;
-
-: jvm_class_lookup { c-addr n -- addr wior }
-\ *G Find the class denoted by c-addr n and return the addr of the corresponding
-\ ** class entry. If the class is not already prepeared the jvm will search for it.
-\ ** If the class is not found at all an exception will be raised.
-  jvm_classentry_list @ dup
-  0= IF
-    drop
-    \ JVM_CLASSNOTFOUND_EXCEPTION throw
-    c-addr n jvm_class_link throw
-    0
-  ELSE
-    BEGIN  
-      ( addr -- )
-      dup jvm_classentry.getName() 
-      c-addr n compare 
-      0<> IF 
-        jvm_classentry.getNext() dup 0<>
-      ELSE
-        false
-      ENDIF
-    WHILE
-    REPEAT
-    dup 
-    0= IF
-      drop
-      \ JVM_CLASSNOTFOUND_EXCEPTION throw
-      c-addr n jvm_class_link throw
-      0
-    ELSE
-      0
-    ENDIF
-  ENDIF
 ;
 

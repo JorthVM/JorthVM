@@ -67,16 +67,3 @@ CREATE jvm_mnemonic_table jvm_opcode_count 2* cells allot
   cells jvm_opcode_table + @ xt-see
 ;
 
-\ -------------------------------------------------------- \
-\ PROGRAM COUNTER                                          \
-\ -------------------------------------------------------- \
-
-variable jvm_pc_start
-variable jvm_pc
-
-: jvm_set_pc ( ... addr -- ... )
-  dup
-  jvm_pc_start ! \ store start address
-  jvm_pc !
-;
-

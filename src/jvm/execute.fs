@@ -1,5 +1,5 @@
 \ vim: sw=2 ts=2 sta et
-require fetch.fs
+require stack.fs
 require exception.fs
 
 0x32 0 s" aaload" \ ( arrayref, index -- value )
@@ -84,7 +84,7 @@ require exception.fs
 0x10 1 s" bipush" \ 1[byte] ( -- value )
 \ push a byte onto the stack as an integer value
 ^> : <^ ; >[
-  jvm_fetch_instruction \ load byte
+  jvm_stack.fetchByte() \ load byte
   dup 0x80 and \ sign ext
   if
   [ -1 8 lshift ] literal or
@@ -353,9 +353,9 @@ require exception.fs
 \ get a static field value of a class, where the field is identified by field
 \ reference in the constant pool index (index1 ^> 8 + index2)
 ^> : <^ ; >[
-  jvm_fetch_instruction \ load byte
+  jvm_stack.fetchByte() \ load byte
   8 lshift
-  jvm_fetch_instruction \ load byte
+  jvm_stack.fetchByte() \ load byte
   or
   cells
   jvm_p_static_fields @ + l@
@@ -839,9 +839,9 @@ require exception.fs
 \ set static field to value in a class, where the field is identified by a
 \ field reference index in constant pool (indexbyte1 ^> 8 + indexbyte2)
 ^> : <^ ; >[
-  jvm_fetch_instruction \ load byte
+  jvm_stack.fetchByte() \ load byte
   8 lshift
-  jvm_fetch_instruction \ load byte
+  jvm_stack.fetchByte() \ load byte
   or
   cells
   jvm_p_static_fields @ + l!
@@ -874,7 +874,7 @@ require exception.fs
 ^> : <^ ; >[
   <[ bipush ]> \ fetch high byte and sign ext
   8 lshift
-  jvm_fetch_instruction or \ fetch low byte
+  jvm_stack.fetchByte() or \ fetch low byte
 ]<
 
 \ FIXME workaround: s/swpa/jswap.  seperate dict?

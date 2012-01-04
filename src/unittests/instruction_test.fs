@@ -1,9 +1,6 @@
 \ vim: sw=2 ts=2 sta et
 include ../jvm/jvm.fs
 
-\ initialize jvm
-jvm_init
-
 : write-programm ( ... addr -- )
   BEGIN depth 1 > WHILE
     dup 1+ >r
@@ -24,27 +21,29 @@ create program_sipush depth allot
 program_sipush write-programm
 
 : test_bipush
-  program_bipush jvm_set_pc
+  program_bipush jvm_stack.setPC()
 
 \ no sign ext
-  jvm_fetch_instruction
+  jvm_stack.fetchByte()
   jvm_execute
   assert( 42 = ) 
 \ sign ext
-  jvm_fetch_instruction
+  jvm_stack.fetchByte()
   jvm_execute
   assert( -1 = ) 
 ;
 
 : test_sipush
-  program_sipush jvm_set_pc
+  program_sipush jvm_stack.setPC()
 
 \ no sign ext
-  jvm_fetch_instruction
+  jvm_stack.fetchByte()
+  .s CR
   jvm_execute
+  .s CR
   assert( 0x2A2A = ) 
 \ sign ext
-  jvm_fetch_instruction
+  jvm_stack.fetchByte()
   jvm_execute
   assert( -1 = ) 
 

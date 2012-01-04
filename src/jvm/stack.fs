@@ -9,33 +9,15 @@
 
 require class.fs
 require classloader.fs
-require decode.fs
-require fetch.fs
+\ require decode.fs
 require util.fs
 
  0 cells constant jvm_stack.pc
- 1 cells constant jvm_stack.classes
- 2 cells constant jvm_stack.currentFrame
+ 1 cells constant jvm_stack.pc_next
+ 2 cells constant jvm_stack.classes
+ 3 cells constant jvm_stack.currentFrame
  
- 3 cells constant jvm_stack.size()
-
-: jvm_stack.getClass() { addr1 c-addr n -- addr2 woir }
-\ *G get the address of a class
-  c-addr n 
-  addr1 jvm_stack.classes + @
-  jvm_find_word 
-  \ throw 0
-;
-
-: jvm_stack.addClass() { addr1 addr2 c-addr n -- woir }
-\ *G add a class
-\ addr1 stack addr
-\ addr2 class addr
-  addr2 c-addr n 
-  addr1 jvm_stack.classes + @
-  jvm_add_word 
-  \ throw 0
-;
+ 4 cells constant jvm_stack.size()
 
 : jvm_stack.new() ( -- addr )
 \ *G create a new JVM Stack
@@ -43,33 +25,109 @@ require util.fs
   dup jvm_stack.size() erase
 
   wordlist over jvm_stack.classes + !
-  
+;
+
+jvm_stack.new() constant jvm_stack
+\ *G this is the heart of the JVM
+
+: jvm_stack.getPC() ( -- addr_pc )
+  jvm_stack jvm_stack.pc + @
+;
+
+: jvm_stack.getPC_next() ( -- addr_pc_next )
+  jvm_stack jvm_stack.pc_next + @
+;
+
+: jvm_stack.fetchByte() ( -- byte )
+\ *G return program counter 
+   jvm_stack.getPC_next() c@
+   jvm_stack jvm_stack.pc_next + 1 swap 
+   +!
+;
+
+: jvm_stack.incPC() ( -- )
+  jvm_stack.getPC_next() \ load pc next
+  jvm_stack jvm_stack.pc + !      \ store to pc
+;
+
+: jvm_stack.setPC() ( addr -- )
+  jvm_stack 2dup
+  jvm_stack.pc_next + !
+  jvm_stack.pc + !
+;
+
+: jvm_stack.getClass() { c-addr n -- addr2 woir }
+\ *G get the address of a class
+  c-addr n 
+  jvm_stack jvm_stack.classes + @
+  jvm_find_word 
+  \ throw 0
+;
+
+: jvm_stack.addClass() { addr2 c-addr n -- woir }
+\ *G add a class
+\ addr1 stack addr
+\ addr2 class addr
+  addr2 c-addr n 
+  jvm_stack jvm_stack.classes + @
+  jvm_add_word 
+  \ throw 0
 ;
 
 : ?debug_trace true ;
 
+\ -------------------------------------------------------- \
+\ PROGRAM COUNTER                                          \
+\ -------------------------------------------------------- \
+
+\ variable jvm_pc
+
+\ : jvm_set_pc ( ... addr -- ... )
+\  dup
+\  jvm_pc !
+\ ;
+
+\ : jvm_fetch_instruction ( ... -- opcode ... )
+\  POSTPONE jvm_pc POSTPONE @ \ load pc 
+\  POSTPONE c@ \ load instruction
+\  1 POSTPONE literal POSTPONE jvm_pc POSTPONE +! \ increment pc
+\ ; immediate
+
 : show_insn ( opcode -- )
   dup jvm_mnemonic CR type
   jvm_mnemonic_imm 0 ?DO
-    ." , " jvm_pc @ i + c@ hex.
+    ." , " jvm_stack.getPC_next() i + c@ hex.
   LOOP
 ;
 
-: jvm_next
-  POSTPONE jvm_fetch_instruction 
+\ : jvm_next
+\  POSTPONE jvm_fetch_instruction 
+\  [ ?debug_trace ] [IF] POSTPONE dup POSTPONE show_insn [ENDIF]
+\  POSTPONE jvm_execute
+\ ; immediate
+
+\ : jvm_run
+\  begin 
+\    jvm_next
+\  again
+\ ;
+
+: jvm_stack.next()
+  POSTPONE jvm_stack.fetchByte() 
   [ ?debug_trace ] [IF] POSTPONE dup POSTPONE show_insn [ENDIF]
   POSTPONE jvm_execute
+  POSTPONE jvm_stack.incPC()
 ; immediate
 
-: jvm_run
+: jvm_stack.run()
   begin 
-    jvm_next
+    jvm_stack.next()
   again
 ;
 
-: jvm_stack.invokeInitial() { addr_st c-addr n -- wior }
+: jvm_stack.invokeInitial() { c-addr n -- wior }
 \ *G Start the execution by invoking public static void main(String[] args)
-  addr_st c-addr n jvm_stack.getClass() throw
+  jvm_stack c-addr n jvm_stack.getClass() throw
   dup jvm_class.getStatus()
   CASE
     ( addr_cl )
@@ -116,8 +174,11 @@ require util.fs
     JVM_MAINNOTFOUND_EXCEPTION throw
   ENDIF
   
+  \ jvm_md_get_code_attr
+  \ jvm_set_pc  \ TODO hardcoded
+  \ jvm_run 
+  
   jvm_md_get_code_attr
-  jvm_set_pc  \ TODO hardcoded
-  jvm_run 
-
+  jvm_stack.setPC()
+  jvm_stack.run()
 ;

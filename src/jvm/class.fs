@@ -137,6 +137,21 @@ require rtconstpool.fs
   addr swap jvm_class.getStaticIdx() 0
 ;
 
+: jvm_class.setStaticIdx() { addr val idx -- }
+\ *G set the value of a static field (32bit) by index
+  val addr jvm_class.fd_table + idx cells +
+  jvm_field_!
+;
+
+: jvm_class.setStatic() { addr val c-addr n -- woir }
+\ *G get the value of a static field (32bit) by name
+  ." trying to set " c-addr n type  ."  to " val . CR
+  \ addr val 
+  \ over c-addr n jvm_class.getFd_idx() throw \ get idx
+  \ jvm_class.setStaticIdx() 
+  0
+;
+
 : jvm_class.getStatic2Idx() { addr idx -- lsb-value msb-value }
 \ *G get the value of a static field (64bit) by index
   addr jvm_class.fd_table + idx cells + jvm_field_2@

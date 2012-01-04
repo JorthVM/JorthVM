@@ -11,6 +11,7 @@ require class.fs
 require classloader.fs
 \ require decode.fs
 require util.fs
+require frame.fs
 
  0 cells constant jvm_stack.pc
  1 cells constant jvm_stack.pc_next
@@ -64,9 +65,13 @@ jvm_stack.new() constant jvm_stack
   \ throw 0
 ;
 
+: jvm_stack.getCurrentFrame() ( -- addr )
+\ *G get the current frame
+  jvm_stack jvm_stack.currentFrame + @
+;
+
 : jvm_stack.addClass() { addr2 c-addr n -- woir }
 \ *G add a class
-\ addr1 stack addr
 \ addr2 class addr
   addr2 c-addr n 
   jvm_stack jvm_stack.classes + @
@@ -120,14 +125,22 @@ jvm_stack.new() constant jvm_stack
 ; immediate
 
 : jvm_stack.run()
-  begin 
-    jvm_stack.next()
-  again
+  try
+    begin 
+      jvm_stack.next()
+    again
+  restore 
+  endtry
+  ( woir )
+  \ TODO handle exceptions
+  ." run() terminating " .s CR
 ;
 
 : jvm_stack.invokeInitial() { c-addr n -- wior }
 \ *G Start the execution by invoking public static void main(String[] args)
-  jvm_stack c-addr n jvm_stack.getClass() throw
+  ." : jvm_stack.invokeInitial() { c-addr n -- wior } " .s CR
+  assert( depth 0 = )
+  c-addr n jvm_stack.getClass() throw
   dup jvm_class.getStatus()
   CASE
     ( addr_cl )
@@ -162,7 +175,10 @@ jvm_stack.new() constant jvm_stack
   ENDCASE
   ." class ready" .s cr
   ( addr_cl ) \ initialized class
-  \ dup 
+  
+  dup 
+
+  \ search method
   jvm_class.getRTCP()
   jvm_rtcp.getClassfile()
 
@@ -174,10 +190,16 @@ jvm_stack.new() constant jvm_stack
     JVM_MAINNOTFOUND_EXCEPTION throw
   ENDIF
   
-  \ jvm_md_get_code_attr
-  \ jvm_set_pc  \ TODO hardcoded
-  \ jvm_run 
+  ( addr_cl addr_cf addr_md )
+  2 pick over 0 0
+  ( addr_cl addr_cf addr_md addr_cl addr_md 0 0 )
+  jvm_frame.new()
+
+  \ store current frame
+  jvm_stack jvm_stack.currentFrame + !
   
+  ." \ get code attr " .s CR
+  ( addr_cf addr_md )
   jvm_md_get_code_attr
   jvm_stack.setPC()
   jvm_stack.run()

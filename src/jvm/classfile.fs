@@ -625,6 +625,11 @@ variable jvm_p_static_fields \ stores the pointer static fields
 
 
 \ -----------------------------------------------------------------------------
+
+: jvm_nametype_identifier { c-addr1 n1 c-addr2 n2 -- c-addr3 n3 }
+  c-addr1 n1  s" |" strcat
+  c-addr2 n2 strcat
+;
 \ FIXME move me!
 : jvm_cp_nametype_identifier { addr1 idx_n idx_d -- c-addr n }
 \ *G get a nametype identifier (name and desc)
@@ -632,10 +637,8 @@ variable jvm_p_static_fields \ stores the pointer static fields
 \ idx_n name index
 \ idx_d desc index
   addr1 jvm_cf_constpool_addr idx_n jvm_constpool_idx jvm_cp_utf8_c-ref
-  s" |" 
-  strcat
   addr1 jvm_cf_constpool_addr idx_d jvm_constpool_idx jvm_cp_utf8_c-ref
-  strcat
+  jvm_nametype_identifier
 ;
 
 \ FIXME move me!

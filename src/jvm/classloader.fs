@@ -10,6 +10,7 @@ require classfile.fs
 \ *T Class Loader
 \ ========
 
+0xCAFEBABE constant jvm_default_loader
 
 \ ========
 \ *S Classpath

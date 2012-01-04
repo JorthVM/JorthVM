@@ -128,7 +128,7 @@ require rtconstpool.fs
 
 : jvm_class.getStaticIdx() { addr idx -- value }
 \ *G get the value of a static field (32bit) by index
-  addr jvm_class.fd_table + idx cells + @
+  addr jvm_class.fd_table + idx cells + jvm_field_@
 ;
 
 : jvm_class.getStatic() { addr c-addr n -- value woir }
@@ -139,10 +139,10 @@ require rtconstpool.fs
 
 : jvm_class.getStatic2Idx() { addr idx -- lsb-value msb-value }
 \ *G get the value of a static field (64bit) by index
-  addr jvm_class.fd_table + idx cells + 2@
+  addr jvm_class.fd_table + idx cells + jvm_field_2@
 ;
 
-: jvm_class.getStatic2Name() { addr c-addr n -- lsb-value msb-value wior }
+: jvm_class.getStatic2() { addr c-addr n -- lsb-value msb-value wior }
 \ *G get the value of a static field (64bit) by name
   addr c-addr n jvm_class.getFd_idx() throw
   addr swap jvm_class.getStatic2Idx() 0
@@ -159,7 +159,7 @@ require rtconstpool.fs
   \ 0 over jvm_class.fd_table + !
 ;
 
-: jvm_class.prepare() { loader addr_cf addr_cl -- wior }
+: jvm_class.prepare() { addr_cl loader addr_cf -- wior }
 \ *G prepare a class using a classfile and a loader
 \ NOTE loader is a value to identify loaders
   
@@ -211,6 +211,9 @@ require rtconstpool.fs
   0
 ;
 
-: jvm_class.init() ( addr -- wior )
+: jvm_class.init() { addr_cl -- wior }
 \ *G initialaze class
+  \ TODO implement me
+  jvm_class.STATUS:INIT addr_cl jvm_class.status + ! \ store status
+  0
 ;

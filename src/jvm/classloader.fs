@@ -16,7 +16,7 @@ require classfile.fs
 \ *S Classpath
 \ ========
 \ 
-\ *C classpath_entry {
+\ *E classpath_entry {
 \ **    addr string;
 \ **    addr string_size;
 \ **    addr next_entry;
@@ -49,11 +49,6 @@ variable jvm_classpath_list
 : jvm_search_classpath { c-addr n -- addr wior }
 \ *G Search for a class file and return the address to the memory location.
 \ *P If the file is not found woir != 0
-\ *P TODO do some more advanced stuff:
-\ *(
-\ *B search different class paths
-\ *B c-addr n may contain packages so search for them in sub dirs
-\ *)
 \ FIXME iterate over all classpaths
   jvm_classpath_list @ dup 
   0= IF
@@ -106,7 +101,6 @@ variable jvm_classpath_list
 
 : jvm_classpath.new() ( -- addr )
 \ *G return memory for a new classpath entry
-\ *P TODO implement me
   jvm_classpath.size() allocate throw
   dup jvm_classpath.next +
   0 swap !
@@ -130,7 +124,6 @@ variable jvm_classpath_list
 
 : jvm_classpath.add() { c-addr n -- }
 \ *G Add a location to the classpath
-\ *P TODO yeah, we should actually do something oO
   jvm_classpath.new() 
   dup jvm_classpath.string +
   c-addr swap !
@@ -138,3 +131,7 @@ variable jvm_classpath_list
   n swap !
 ;
 
+
+\ ======
+\ *> ###
+\ ======

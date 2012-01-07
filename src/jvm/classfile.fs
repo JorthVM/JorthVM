@@ -1,31 +1,38 @@
 \ vim: sw=2 ts=2 sta et
 \ this file implements functionality that is needed to read class files
 
+\ ========
+\ *! classfile
+\ *T Classfile Parser
+\ ========
+
 require util.fs
 require decode.fs
 
-\   ClassFile {
-\       u4 magic;
-\       u2 minor_version;
-\       u2 major_version;
-\       u2 constant_pool_count;
-\       cp_info constant_pool[constant_pool_count-1];
-\       u2 access_flags;
-\       u2 this_class;
-\       u2 super_class;
-\       u2 interfaces_count;
-\       u2 interfaces[interfaces_count];
-\       u2 fields_count;
-\       field_info fields[fields_count];
-\       u2 methods_count;
-\       method_info methods[methods_count];
-\       u2 attributes_count;
-\       attribute_info attributes[attributes_count];
-\   }
+\ *S Java Classfile Structure
+\ *E   ClassFile {
+\ **      u4 magic;
+\ **      u2 minor_version;
+\ **      u2 major_version;
+\ **      u2 constant_pool_count;
+\ **      cp_info constant_pool[constant_pool_count-1];
+\ **      u2 access_flags;
+\ **      u2 this_class;
+\ **      u2 super_class;
+\ **      u2 interfaces_count;
+\ **      u2 interfaces[interfaces_count];
+\ **      u2 fields_count;
+\ **      field_info fields[fields_count];
+\ **      u2 methods_count;
+\ **      method_info methods[methods_count];
+\ **      u2 attributes_count;
+\ **      attribute_info attributes[attributes_count];
+\ **  }
 
-\ 0 Value fd-in
-variable filebuffer  \ stores the address of the filebuffer of the class file
-variable classfile   \ stores the wfileid of the physical classfile (not really used)
+variable filebuffer  
+\ *G stores the address of the filebuffer of the class file
+variable classfile   
+\ *G stores the wfileid of the physical classfile (not really used)
 
 \ NOTE these are not used yet
 variable jvm_p_access_flags_addr \ stores the pointer to the first address after the const pool
@@ -36,15 +43,15 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 : jvm_read_classfile ( c-addr u1 - addr wior) 
 \ *G returns the address of the classfile buffer memory 
   r/o open-file throw 
-  dup classfile !            ( wfileid - wfileid ) \ store file id (wfileid)
-  dup file-size throw throw  ( wfileid - wfileid u u ) 
+  dup classfile !            ( wfileid -- wfileid ) \ store file id (wfileid)
+  dup file-size throw throw  ( wfileid -- wfileid u u ) 
   \ NOTE the value after the exception is the most significant part of the file size 
   \ we throw it anyway because we dont want to deal with files that big (yet) 
   dup
-  allocate throw             ( wfileid u u - wfileid u a-addr )
+  allocate throw             ( wfileid u u -- wfileid u a-addr )
   dup filebuffer !
-  swap rot                   ( wfileid u a-addr - c-addr u wfileid )
-  read-file throw            ( c-addr u wfileid - u2 )
+  swap rot                   ( wfileid u a-addr -- c-addr u wfileid )
+  read-file throw            ( c-addr u wfileid -- u2 )
   classfile @ close-file throw
   drop \ drop file size
   filebuffer @ 0 
@@ -52,9 +59,11 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 ;
 
 
-\ big endian load stuff
+
+\ *S big endian load stuff
 
 : ?bigendian ( -- true/false )
+\ *G return true if we are on a big endian machine
   [ 4 allocate throw
   dup 0xdeadbeef swap !
   dup c@ 0xde = swap
@@ -83,12 +92,14 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   [ELSE] u1 [ENDIF]
 ;
 
-\ big endian access
-: jvm_uw@ ( addr - u2) \ read big endian from memory (2 bytes)
+\ *S big endian access
+: jvm_uw@ ( addr -- u2) 
+\ *G read big endian from memory (2 bytes)
   w@ jvm_swap_u2
 ;
 
-: jvm_ul@ ( addr - u4) \ read big endian from memory (4 bytes)
+: jvm_ul@ ( addr -- u4) 
+\ *G read big endian from memory (4 bytes)
   l@ jvm_swap_u4
 ;
 
@@ -127,7 +138,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 0x0800 constant ACC_STRICT      \ Methods: Declared strictfp; floating-point mode is FP-strict 
 
 \ -----------------------------------------------------------------------------
-\ Constant Pool Entry access words
+\ *S Constant Pool Entry access words
 
 \ Tag constants
 
@@ -143,17 +154,20 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 12 constant CONSTANT_NameAndType
  1 constant CONSTANT_Utf8
 
-: jvm_cp_tag ( addr -- tag) \ get the tag of a given constant pool entry
+: jvm_cp_tag ( addr -- tag) 
+\ *G get the tag of a given constant pool entry
   POSTPONE c@ 
 ; immediate
 
-\ class
-: jvm_cp_class_name_idx ( addr -- idx) \ get the name index of a class constant pool entry
+\ *N class
+: jvm_cp_class_name_idx ( addr -- idx) 
+\ *G get the name index of a class constant pool entry
   1+ jvm_uw@
 ; 
 
-\ fieldref
-: jvm_cp_fieldref_class_idx ( addr -- idx) \ get the class index of a fieldref constant pool entry
+\ *N fieldref
+: jvm_cp_fieldref_class_idx ( addr -- idx) 
+\ *G get the class index of a fieldref constant pool entry
   1+ jvm_uw@
 ; 
 
@@ -237,24 +251,24 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 
 
 \ -----------------------------------------------------------------------------
-\ Attribute Entry access words
-\ NOTE addr is the start of the attribute!
+\ *S Attribute Entry access words
+\ *P *\forth{addr} is the start of the attribute!
 
 
-: jvm_attr_name_idx ( addr - idx) \ returns the name index
+: jvm_attr_name_idx ( addr -- idx) \ returns the name index
   POSTPONE jvm_uw@
 ; immediate
 
-: jvm_attr_length ( addr - n) \ returns the attribute length
+: jvm_attr_length ( addr -- n) \ returns the attribute length
   2 POSTPONE literal POSTPONE + POSTPONE jvm_ul@
 ; immediate
 
 \ TODO : test me
-: jvm_attr_info_addr ( addr - addr2) \ returns the start address of the info section 
+: jvm_attr_info_addr ( addr -- addr2) \ returns the start address of the info section 
   6 POSTPONE literal POSTPONE + 
 ; immediate
 
-: jvm_attr_size ( addr - n) \ returns the attribute size (header + data) 
+: jvm_attr_size ( addr -- n) \ returns the attribute size (header + data) 
   POSTPONE jvm_attr_length 6 POSTPONE literal POSTPONE +
 ; immediate
 
@@ -273,27 +287,27 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 \ Field Entry access words
 \ NOTE addr is the start of the field!
 
-: jvm_fd_access_flags ( addr - flags) \ returns the access flags
+: jvm_fd_access_flags ( addr -- flags) \ returns the access flags
   POSTPONE jvm_uw@
 ; immediate
 
-: jvm_fd_name_idx ( addr - idx) \ returns the name index
+: jvm_fd_name_idx ( addr -- idx) \ returns the name index
   2 POSTPONE literal POSTPONE + POSTPONE jvm_uw@
 ; immediate
 
-: jvm_fd_desc_idx ( addr - idx) \ returns the descriptor index
+: jvm_fd_desc_idx ( addr -- idx) \ returns the descriptor index
   4 POSTPONE literal POSTPONE + POSTPONE jvm_uw@
 ; immediate
 
-: jvm_fd_attr_count ( addr - n) \ returns the attribute count
+: jvm_fd_attr_count ( addr -- n) \ returns the attribute count
   6 POSTPONE literal POSTPONE + POSTPONE jvm_uw@
 ; immediate
 
-: jvm_fd_attr ( addr - addr2) \ returns the address of the first attribute
+: jvm_fd_attr ( addr -- addr2) \ returns the address of the first attribute
   8 POSTPONE literal POSTPONE +
 ; immediate
 
-: jvm_fd_size ( addr - n) \ returns the size of the field (in bytes)
+: jvm_fd_size ( addr -- n) \ returns the size of the field (in bytes)
   dup \ store addr
   jvm_fd_attr 
   over
@@ -324,27 +338,27 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 \ Method Entry access words
 \ NOTE addr is the start of the method!
 
-: jvm_md_access_flags ( addr - flags) \ returns the access flags
+: jvm_md_access_flags ( addr -- flags) \ returns the access flags
   POSTPONE jvm_uw@
 ; immediate
 
-: jvm_md_name_idx ( addr - idx) \ returns the name index
+: jvm_md_name_idx ( addr -- idx) \ returns the name index
   2 POSTPONE literal POSTPONE + POSTPONE jvm_uw@
 ; immediate
 
-: jvm_md_desc_idx ( addr - idx) \ returns the descriptor index
+: jvm_md_desc_idx ( addr -- idx) \ returns the descriptor index
   4 POSTPONE literal POSTPONE + POSTPONE jvm_uw@
 ; immediate
 
-: jvm_md_attr_count ( addr - n) \ returns the attribute count
+: jvm_md_attr_count ( addr -- n) \ returns the attribute count
   6 POSTPONE literal POSTPONE + POSTPONE jvm_uw@
 ; immediate
 
-: jvm_md_attr ( addr - addr2) \ returns the address of the first attribute
+: jvm_md_attr ( addr -- addr2) \ returns the address of the first attribute
   8 POSTPONE literal POSTPONE +
 ; immediate
 
-: jvm_md_size ( addr - n) \ returns the size of the method (in bytes)
+: jvm_md_size ( addr -- n) \ returns the size of the method (in bytes)
   dup \ store addr
   jvm_md_attr 
   over
@@ -374,19 +388,19 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 \ Class File Entry access words
 \ NOTE addr is the start of the file buffer
 
-: jvm_cf_magic ( addr - u) \ returns the magic word (hopefully 0xCAFEBABE)
+: jvm_cf_magic ( addr -- u) \ returns the magic word (hopefully 0xCAFEBABE)
   POSTPONE jvm_ul@
 ; immediate
 
-: jvm_cf_minor_version ( addr - u) \ returns the minor version
+: jvm_cf_minor_version ( addr -- u) \ returns the minor version
   4 + jvm_uw@
 ;
 
-: jvm_cf_major_version ( addr - u) \ returns the major version
+: jvm_cf_major_version ( addr -- u) \ returns the major version
   6 + jvm_uw@
 ;
 
-: jvm_cf_constpool_count ( addr - u) \ returns number of entries+1 in the constant pool
+: jvm_cf_constpool_count ( addr -- u) \ returns number of entries+1 in the constant pool
 \ NOTE The value of the constant_pool_count item is equal to the number of entries in
 \ the constant_pool table plus one. A constant_pool index is considered valid if it i
 \ greater than zero and less than constant_pool_count, with the exception for constants
@@ -394,7 +408,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   8 + jvm_uw@
 ;
 
-: jvm_cf_constpool_addr ( addr - const-addr) \ returns start address of the constant pool
+: jvm_cf_constpool_addr ( addr -- const-addr) \ returns start address of the constant pool
 \ NOTE `jvm_cf_constpool_addr` might be longer than `10 +` but the semantics are clear and 
 \ refactoring is much easier
   10 POSTPONE literal POSTPONE +
@@ -402,7 +416,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 
 
 
-: jvm_constpool_type_size { addr } ( a-addr - n2 ) \ get the size of an entry in the const table
+: jvm_constpool_type_size { addr } ( a-addr -- n2 ) \ get the size of an entry in the const table
   addr jvm_cp_tag
   CASE
      7 OF 3 ENDOF \ CONSTANT_Class               7
@@ -472,7 +486,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 ;
 
 
-: jvm_cf_access_flags_addr ( addr - addr2) \ returns address of the access flag
+: jvm_cf_access_flags_addr ( addr -- addr2) \ returns address of the access flag
   dup jvm_cf_constpool_addr swap
   jvm_cf_constpool_count
   \ cp_info constant_pool[constant_pool_count-1];
@@ -482,102 +496,102 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   \ dup jvm_p_access_flags_addr !
 ;
 
-\ : jvm_cf_access_flags_addr ( - addr2) \ returns address of the access flag
+\ : jvm_cf_access_flags_addr ( -- addr2) \ returns address of the access flag
 \ FIXME this a very strange approach :/ maybe we can think of something smarter
 \ (word renaming maybe?)
 \  POSTPONE jvm_p_access_flags_addr POSTPONE @
 \ ; immediate
 
 
-: jvm_cf_access_flags ( addr - flag) \ returns the access flag
+: jvm_cf_access_flags ( addr -- flag) \ returns the access flag
   jvm_cf_access_flags_addr
   jvm_uw@
 ;
 
-: jvm_cf_this_class ( addr - idx) \ returns the this class index
+: jvm_cf_this_class ( addr -- idx) \ returns the this class index
   jvm_cf_access_flags_addr 2 +
   jvm_uw@
 ;
 
-: jvm_cf_super_class ( addr - idx) \ returns the super class index
+: jvm_cf_super_class ( addr -- idx) \ returns the super class index
   jvm_cf_access_flags_addr 4 +
   jvm_uw@
 ;
 
-: jvm_cf_interfaces_count ( addr - n) \ returns number of interfaces
+: jvm_cf_interfaces_count ( addr -- n) \ returns number of interfaces
   jvm_cf_access_flags_addr 6 +
   jvm_uw@
 ;
 
-: jvm_cf_interfaces_addr ( addr - addr2) \ returns address of the first interface field
+: jvm_cf_interfaces_addr ( addr -- addr2) \ returns address of the first interface field
   jvm_cf_access_flags_addr 8 +
 ; 
 
-: jvm_cf_fields_count_addr ( addr - addr2) \ returns address of the fields_count field
+: jvm_cf_fields_count_addr ( addr -- addr2) \ returns address of the fields_count field
   dup jvm_cf_interfaces_count 2 * \ idx size u2
   swap jvm_cf_interfaces_addr +
 ;
 
-: jvm_cf_fields_count ( addr - n) \ returns fields_count
+: jvm_cf_fields_count ( addr -- n) \ returns fields_count
   POSTPONE jvm_cf_fields_count_addr 
   POSTPONE jvm_uw@
 ; immediate
 
-: jvm_cf_fields_addr ( addr - addr2) \ returns address of the first field
+: jvm_cf_fields_addr ( addr -- addr2) \ returns address of the first field
   POSTPONE jvm_cf_fields_count_addr 2 POSTPONE literal POSTPONE +
 ; immediate
 
-: jvm_cf_fields_size ( addr - n) \ returns the complete size of all fields in bytes
+: jvm_cf_fields_size ( addr -- n) \ returns the complete size of all fields in bytes
   dup jvm_cf_fields_addr dup 
   rot jvm_cf_fields_count
   0 ?DO
-    \ ( addr1 - addr2 )
+    \ ( addr1 -- addr2 )
     dup jvm_fd_size +
   LOOP
   swap -
 ;
 
-: jvm_cf_methods_count_addr ( addr - addr2) \ returns address of the methods_count field
+: jvm_cf_methods_count_addr ( addr -- addr2) \ returns address of the methods_count field
   dup jvm_cf_fields_addr 
   swap jvm_cf_fields_size +
 ;
 
-: jvm_cf_methods_count ( addr - n) \ returns methods_count 
+: jvm_cf_methods_count ( addr -- n) \ returns methods_count 
   POSTPONE jvm_cf_methods_count_addr POSTPONE jvm_uw@
 ; immediate
 
-: jvm_cf_methods_addr ( addr - addr2) \ returns address of the first field
+: jvm_cf_methods_addr ( addr -- addr2) \ returns address of the first field
   POSTPONE jvm_cf_methods_count_addr 2 POSTPONE literal POSTPONE +
 ; immediate
 
-: jvm_cf_methods_size ( addr - n) \ returns the complete size of all fields in bytes
+: jvm_cf_methods_size ( addr -- n) \ returns the complete size of all fields in bytes
   dup jvm_cf_methods_addr dup 
   rot jvm_cf_methods_count
   0 ?DO
-    \ ( addr1 - addr2 )
+    \ ( addr1 -- addr2 )
     dup jvm_md_size +
   LOOP
   swap -
 ;
 
-: jvm_cf_attr_count_addr ( addr - addr2) \ returns address of the attributes_count field
+: jvm_cf_attr_count_addr ( addr -- addr2) \ returns address of the attributes_count field
   dup jvm_cf_methods_addr 
   swap jvm_cf_methods_size +
 ;
 
-: jvm_cf_attr_count ( addr - n) \ returns attributes_count 
+: jvm_cf_attr_count ( addr -- n) \ returns attributes_count 
   POSTPONE jvm_cf_attr_count_addr POSTPONE jvm_uw@
 ; immediate
 
-: jvm_cf_attr_addr ( addr - addr2) \ returns address of the first attribute
+: jvm_cf_attr_addr ( addr -- addr2) \ returns address of the first attribute
   POSTPONE jvm_cf_attr_count_addr 2 POSTPONE literal POSTPONE +
 ; immediate
 
-: jvm_cf_attr_size ( addr - n) \ returns the complete size of all attributes in bytes
+: jvm_cf_attr_size ( addr -- n) \ returns the complete size of all attributes in bytes
   dup jvm_cf_attr_addr dup 
   rot jvm_cf_attr_count
   0 ?DO
-    \ ( addr1 - addr2 )
+    \ ( addr1 -- addr2 )
     dup jvm_attr_size +
   LOOP
   swap -
@@ -589,7 +603,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 \ -----------------------------------------------------------------------------
 \ Constant Pool Entry type words
 
-: jvm_constpool_type_name ( a-addr - c-addr n ) \ get the name of an entry in the const table
+: jvm_constpool_type_name ( a-addr -- c-addr n ) \ get the name of an entry in the const table
   jvm_cp_tag
   CASE
      7 OF s" CONSTANT_Class" ENDOF
@@ -640,9 +654,9 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 ;
 
 : jvm_constpool_print_utf8 ( addr -- ) \ prints a utf8 string
-  ( e-addr - c-addr length )
+  ( e-addr -- c-addr length )
   jvm_cp_utf8_c-ref 
-  ( c-addr length - end-addr c-addr )
+  ( c-addr length -- end-addr c-addr )
   over + swap
 
   begin
@@ -683,7 +697,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 
 : jvm_constpool_print_classname_idx ( const-addr idx -- ) \ print the class name of a class idx
   POSTPONE over POSTPONE -rot ( const-addr const-addr idx)
-  POSTPONE jvm_constpool_idx ( const-addr idx - a-addr ) 
+  POSTPONE jvm_constpool_idx ( const-addr idx -- a-addr ) 
   POSTPONE jvm_constpool_print_classname 
 ; immediate
 
@@ -700,7 +714,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   jvm_uw@ \ load name idx
   \ dup hex. space
   const-addr swap \ get start of the constpool
-  jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
+  jvm_constpool_idx ( a-addr1 idx -- a-addr2 ) 
   s" attribute name:  " type 
   jvm_constpool_print_utf8 CR
   2 +
@@ -841,7 +855,6 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   ." Constant Pool count: "
   jvm_cf_constpool_count . CR
 ;
-
 
 : jvm_cf_constpool_entry_print { addr addr_cpe -- }
   addr_cpe jvm_cp_tag \ read tag
@@ -1224,4 +1237,6 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   CR
 ;
 
-
+\ ======
+\ *> ###
+\ ======

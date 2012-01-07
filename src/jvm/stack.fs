@@ -13,6 +13,14 @@ require classloader.fs
 require util.fs
 require frame.fs
 
+\ *S JVM Stack Structure
+\ *E   Stack {
+\ **      addr pc;
+\ **      addr pc_next;
+\ **      wid classes;
+\ **      Frame currentFrame;
+\ **  }
+
  0 cells constant jvm_stack.pc
  1 cells constant jvm_stack.pc_next
  2 cells constant jvm_stack.classes
@@ -276,3 +284,7 @@ jvm_stack.new() constant jvm_stack
   jvm_stack.setPC()
   jvm_stack.run()
 ;
+
+\ ======
+\ *> ###
+\ ======

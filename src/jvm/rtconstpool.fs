@@ -15,8 +15,8 @@ require classfile.fs
 \ *S Runtime Constant Pool Struct
 \ ========
 \ 
-\ *C runtime_constant_ool {
-\ **    addr classfile;
+\ *E runtime_constant_ool {
+\ **    ClassFile classfile;
 \ **    addr constpool_table;
 \ **    wid  class_info;
 \ **    wid  fieldref_info;
@@ -223,3 +223,7 @@ require classfile.fs
   
   \ ." end new() " .s cr
 ;
+
+\ ======
+\ *> ###
+\ ======

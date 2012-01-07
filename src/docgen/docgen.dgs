@@ -1,0 +1,14 @@
+\ DOCGEN.DGS - DOCGEN control file
+\ turn on DOCGEN and select personality
+
++docgen docgen_html
++TOC
++Index
+cr ." Starting HTML manual generation" cr
+
+include filelist.fs
+
+cr ." HTML Manual generation done" cr
+-docgen
+
+

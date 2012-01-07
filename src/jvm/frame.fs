@@ -7,6 +7,15 @@
 \ *T Method Frame
 \ ========
 
+\ *S Method Frame Structure
+\ *E    MethodFrame {
+\ **        Class class;
+\ **        addr_md method;
+\ **        MethodFrame dynamic_link;
+\ **        addr return_addr;
+\ **        addr local_table;
+\ **        addr exception_table;
+\ **    }
 
  0 cells constant jvm_frame.class
  1 cells constant jvm_frame.method
@@ -36,3 +45,7 @@
 \ *G get the class
   jvm_frame.class + @
 ;
+
+\ ======
+\ *> ###
+\ ======

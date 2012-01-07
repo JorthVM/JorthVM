@@ -1,4 +1,10 @@
 \ vim: sw=2 ts=2 sta et
+
+\ ========
+\ *! decode
+\ *T Instruction Decode
+\ ========
+
 \ -------------------------------------------------------- \
 \ OPCODE TABLE                                             \
 \ -------------------------------------------------------- \
@@ -67,3 +73,7 @@ CREATE jvm_mnemonic_table jvm_opcode_count 2* cells allot
   cells jvm_opcode_table + @ xt-see
 ;
 
+
+\ ======
+\ *> ###
+\ ======

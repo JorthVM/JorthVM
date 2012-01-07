@@ -238,3 +238,7 @@ require rtconstpool.fs
   jvm_class.STATUS:INIT addr_cl jvm_class.status + ! \ store status
   0
 ;
+
+\ ======
+\ *> ###
+\ ======

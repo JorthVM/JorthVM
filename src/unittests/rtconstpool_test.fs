@@ -3,7 +3,7 @@ include ../jvm/rtconstpool.fs
 
 : createConstPoolTable_test
   assert( depth 0= )
-  s" Test.class" jvm_read_classfile throw 
+  s" bin/Test.class" jvm_read_classfile throw 
   dup jvm_rtcp.createConstPoolTable()
   swap dup
   jvm_cf_constpool_addr
@@ -24,7 +24,7 @@ include ../jvm/rtconstpool.fs
 
 : rtcp_new_test
   assert( depth 0= )
-  s" Test.class" jvm_read_classfile throw 
+  s" bin/Test.class" jvm_read_classfile throw 
   dup jvm_rtcp.new()
   tuck
   1 jvm_rtcp.getConstpoolByIdx() 

@@ -77,7 +77,7 @@ program_sipush write-programm
 \ NOTE this testcase also ensures that jvm_class.{getStatic()|setStatic()} 
 \ are working
   assert( depth 0 = )
-  s" ./" jvm_classpath.add()
+  s" ../testfiles/" jvm_classpath.add()
   s" StaticInt" jvm_java
   jvm_stack.getCurrentFrame()
   jvm_frame.getClass()
@@ -90,6 +90,21 @@ program_sipush write-programm
   assert( depth 0 = )
 ;
 
+: putstatic_test2
+\ NOTE this testcase also ensures that jvm_class.{getStatic()|setStatic()} 
+\ are working
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" StaticIntOther" jvm_java
+  s" StaticIntOtherStore" jvm_stack.findClass() throw
+  dup s" foo|I" jvm_class.getStatic() 
+  throw
+  assert( 0x42 = )
+  s" bar|I" jvm_class.getStatic() throw
+  assert( 0x84 = )
+  
+  assert( depth 0 = )
+;
 : test
   test_bipush
   test_sipush
@@ -97,4 +112,5 @@ program_sipush write-programm
   test_iadd
   test_mnemonic
   putstatic_test
+  putstatic_test2
 ;

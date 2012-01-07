@@ -69,7 +69,7 @@ require ../jvm/classfile.fs
 
 : constpool_idx_long_test 
   assert( depth 0 = ) 
-  s" StaticLong.class" jvm_read_classfile throw 
+  s" bin/StaticLong.class" jvm_read_classfile throw 
   jvm_cf_constpool_addr 
   22 
   jvm_constpool_idx 
@@ -241,7 +241,7 @@ require ../jvm/classfile.fs
 \ test classfile access stuff
 
 : load_class_file
-   s" Test.class" jvm_read_classfile throw 
+   s" bin/Test.class" jvm_read_classfile throw 
    assert( filebuffer @ = )
 ;
 

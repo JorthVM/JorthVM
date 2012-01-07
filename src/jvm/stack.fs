@@ -54,7 +54,13 @@ jvm_stack.new() constant jvm_stack
    +!
 ;
 
+: jvm_stack.currentInstruction() ( -- opcode )
+\ *G return opcode of the current instruction 
+   jvm_stack.getPC() c@
+;
+
 : jvm_stack.incPC() ( -- )
+\ *G increment program counter
   jvm_stack.getPC_next() \ load pc next
   jvm_stack jvm_stack.pc + !      \ store to pc
 ;

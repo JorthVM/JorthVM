@@ -46,10 +46,10 @@ variable jvm_classpath_list
   addr jvm_classpath.string_size + @
 ;
 
+\ FIXME rename to jvm_classpath.search()
 : jvm_search_classpath { c-addr n -- addr wior }
 \ *G Search for a class file and return the address to the memory location.
 \ *P If the file is not found woir != 0
-\ FIXME iterate over all classpaths
   jvm_classpath_list @ dup 
   0= IF
     drop
@@ -124,6 +124,7 @@ variable jvm_classpath_list
 
 : jvm_classpath.add() { c-addr n -- }
 \ *G Add a location to the classpath
+\ FIXME check for slash
   jvm_classpath.new() 
   dup jvm_classpath.string +
   c-addr swap !

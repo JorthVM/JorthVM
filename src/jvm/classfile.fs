@@ -439,23 +439,35 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   
 ;
 
+: [ITERATE_CONSTPOOL] ( addr1 idx1 -- addr2 idx1 idx2 )
+\ *G iterate constant pool
+\ *D addr1 start of the constant pool
+\ *D idx1 last classpool entry (exclusive)
+  1 POSTPONE literal
+  POSTPONE BEGIN
+    ( addr idx1 idx2 )
+    POSTPONE 2dup 
+    POSTPONE > POSTPONE WHILE
+    ( addr idx1 idx2 )
+; immediate
+
+: [ITERATE_END] ( addr idx1 idx2 )
+\ *G end iterate constant pool
+    POSTPONE rot
+    ( idx1 idx2 addr )
+    POSTPONE dup POSTPONE jvm_constpool_entries
+    ( idx1 idx2 addr n )
+    POSTPONE rot POSTPONE + POSTPONE swap
+    ( idx1 idx2' addr )
+    POSTPONE dup POSTPONE jvm_constpool_type_size POSTPONE +
+    POSTPONE -rot
+    POSTPONE REPEAT
+; immediate
+
 : jvm_constpool_idx ( a-addr1 idx - a-addr2 ) 
 \ returns address of entry with index idx from constant pool starting at address a-addr1
-  1
-  BEGIN
-    ( addr idx1 idx2 )
-    2dup 
-  > WHILE
-    ( addr idx1 idx2 )
-    rot
-    ( idx1 idx2 addr )
-    dup jvm_constpool_entries
-    ( idx1 idx2 addr n )
-    rot + swap
-    ( idx1 idx2' addr )
-    dup jvm_constpool_type_size +
-    -rot
-  REPEAT
+  [ITERATE_CONSTPOOL]
+  [ITERATE_END]
   2drop
 ;
 
@@ -464,21 +476,8 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   dup jvm_cf_constpool_addr swap
   jvm_cf_constpool_count
   \ cp_info constant_pool[constant_pool_count-1];
-  1
-  BEGIN
-    ( addr idx1 idx2 )
-    2dup 
-  > WHILE
-    ( addr idx1 idx2 )
-    rot
-    ( idx1 idx2 addr )
-    dup jvm_constpool_entries
-    ( idx1 idx2 addr n )
-    rot + swap
-    ( idx1 idx2' addr )
-    dup jvm_constpool_type_size +
-    -rot
-  REPEAT
+  [ITERATE_CONSTPOOL]
+  [ITERATE_END]
   2drop
   \ dup jvm_p_access_flags_addr !
 ;

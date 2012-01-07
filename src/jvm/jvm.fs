@@ -11,8 +11,7 @@ require stack.fs
 
 : jvm_java { c-addr n -- }
   \ add class to jvm stack
-  jvm_class.new() c-addr n 
-  jvm_stack.addClass()
+  c-addr n jvm_stack.newClass()
 
   c-addr n 
   jvm_stack.invokeInitial()

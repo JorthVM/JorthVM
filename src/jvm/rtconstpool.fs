@@ -174,6 +174,7 @@ require classfile.fs
   \ iterate over constpool
   addr jvm_cf_constpool_addr
   addr jvm_cf_constpool_count
+  \ FIXME ITERATE CONSTANT POOL CORRECTLY
   1 ?DO
     \ dup jvm_constpool_type_name type  
     dup jvm_cp_tag \ read tag
@@ -189,7 +190,9 @@ require classfile.fs
       swap 
       jvm_constpool_idx
       jvm_cp_utf8_c-ref
-      \ 2dup space type
+      [CHAR] / [CHAR] . strreplacec
+      \ 2dup space type cr
+      \ 2dup jvm_stack.newClass() \ add class to stack
       4 pick \ get rt constpool addr
       jvm_rtcp.getClass_info()
       jvm_add_word

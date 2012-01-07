@@ -3,7 +3,6 @@ require ../jvm/class.fs
 
 
 : get_field_desc_size_test
-  .s
   assert( depth 0 = )
   \ TODO find better names
   s" Bblblblbl" jvm_field_desc_size assert( 1 cells = )

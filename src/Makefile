@@ -1,4 +1,3 @@
-JAVAC=javac
 FORTH=gforth
 BGFORTH=qemu-ppc -L ../ppcfs ../ppcfs/usr/bin/gforth
 MAKE=make
@@ -7,16 +6,16 @@ IMGHOST=http://wien.tomnetworks.com/jvm
 UNITTEST_DIR=unittests
 
 
-.PHONY: all unittests bigendian
+.PHONY: all unittests bigendian clean
 
-all: testfiles/Main.class
+all: testfiles/StaticIntOther.class testfiles/StaticIntOtherStore.class
 	$(FORTH) jvm-test.fs
+
+%.class: %.java
+	make -C $(dir $@) $(notdir $@)
 
 unittests: bigendian
 	FORTH="$(FORTH)" $(MAKE) -C $(UNITTEST_DIR)
-
-%.class: %.java
-	$(JAVAC) $<
 
 ppcdeb.tar.gz:
 	wget $(IMGHOST)/$@
@@ -30,3 +29,6 @@ ppcfs: ppcdeb.tar.gz ppcdeb.tar.gz.md5sum
 
 bigendian: ppcfs/
 	FORTH="$(BGFORTH)" $(MAKE) -C $(UNITTEST_DIR)
+
+clean:
+	make -C testfiles clean

@@ -7,14 +7,16 @@ UNITTEST_DIR=unittests
 
 CLASSFILES := $(subst .java,.class,$(shell ls testfiles/*.java))
 
-
-.PHONY: all unittests bigendian clean ohai
+.PHONY: all ans-check unittests bigendian clean ohai
 
 all: $(CLASSFILES)
 	$(FORTH) jvm-test.fs
 
 ohai: $(CLASSFILES)
 	$(FORTH) jvm-test.fs -e RunDemoPrintln -e bye
+
+ans-check:
+	$(FORTH) ans-report.fs jvm/jvm.fs -e "print-ans-report bye"
 
 %.class: %.java
 	make -C $(dir $@) $(notdir $@)

@@ -78,8 +78,9 @@ require rtconstpool.fs
 \ **    addr init_loader;  \ initial loader
 \ **    addr rtcp;         \ runtime constant pool
 \ **    addr super;        \ link to super class
-\ **    wid  filed_offset; \ static field offset wordlist
+\ **    wid  field_offset; \ static field offset wordlist
 \ **    addr field_table;  \ static field table
+\ **    wid  method_list;  \ method wordlist
 \ **  }
 \ 
 
@@ -89,8 +90,9 @@ require rtconstpool.fs
  3 cells constant jvm_class.super
  4 cells constant jvm_class.field_offset
  5 cells constant jvm_class.field_table
+ 6 cells constant jvm_class.method_list
 
- 6 cells constant jvm_class.size()
+ 7 cells constant jvm_class.size()
 
  1 constant jvm_class.STATUS:UNINIT
  2 constant jvm_class.STATUS:PREPARED
@@ -169,6 +171,50 @@ require rtconstpool.fs
   addr swap jvm_class.getStatic2Offset() 0
 ;
 
+: jvm_class.getMethodList() ( addr -- wid )
+  jvm_class.method_list + @
+;
+
+: jvm_class.getMethod() { addr c-addr n -- addr_md woir }
+\ *G get the address of a method entry
+  addr jvm_class.getMethodList()
+  c-addr n rot
+  jvm_find_word throw
+  0
+;
+
+: jvm_class.getMethodCodeAttr() { addr addr_md -- addr_code_attr }
+\ *G get the address of the code attribute of a method entry
+\ FIXME implement me better 
+  \ addr jvm_class.getRTCP() jvm_rtcp.getClassfile()
+  addr_md jvm_md_attr
+  addr_md jvm_md_attr_count
+  0 ?DO
+    ( addr_attr )
+    addr jvm_class.getRTCP()  
+    ( addr_attr rtcp )
+    over jvm_attr_name_idx
+    ( addr_attr rtcp name_idx )
+    jvm_rtcp.getConstpoolByIdx()
+    jvm_cp_utf8_c-ref
+    s" Code"
+    str= 
+    IF
+      dup \ dup address 
+    ENDIF
+    ( [addr_code_addr] addr_attr )
+    dup jvm_attr_size +
+  LOOP
+  drop
+;
+
+: jvm_class.getMethodCodeAttrByName() { addr c-addr n -- addr_code_attr woir }
+\ *G get the address of the code attribute of a method entry
+  addr c-addr n jvm_class.getMethod() throw
+  addr swap jvm_class.getMethodCodeAttr()
+  0
+;
+
 : jvm_class.new() ( -- addr)
 \ *G Create a new (uninitialized) class
   jvm_class.size() allocate throw
@@ -177,6 +223,7 @@ require rtconstpool.fs
   \ 0 over jvm_class.init_loader + !
   \ 0 over jvm_class.rtcp + !
   wordlist over jvm_class.field_offset + !
+  wordlist over jvm_class.method_list + !
   \ 0 over jvm_class.field_table + !
 ;
 
@@ -226,6 +273,24 @@ require rtconstpool.fs
   \ TODO Initial values §5.4.2, 1st paragraph
 
   addr_cl jvm_class.field_table + !                         \ store table
+
+  \ method
+  addr_cf jvm_cf_methods_addr
+  addr_cf jvm_cf_methods_count
+  0 ?DO
+    ( addr_md )
+    dup \ for jvm_add_word
+    dup jvm_md_name_idx
+    over jvm_md_desc_idx
+    ( addr_md addr_md name_idx desc_idx )
+    addr_cf -rot jvm_cp_nametype_identifier
+    \ 2dup ." Method: " type CR
+    addr_cl jvm_class.getMethodList() 
+    \ ." pre add word " .s CR
+    jvm_add_word
+    dup jvm_md_size +
+  LOOP
+  drop 
 
   jvm_class.STATUS:PREPARED addr_cl jvm_class.status + ! \ store status
   loader addr_cl jvm_class.init_loader + !               \ store loader

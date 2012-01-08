@@ -31,10 +31,13 @@ require classfile.fs
 
  0 cells constant jvm_rtcp.classfile
  1 cells constant jvm_rtcp.constpool_table
- \ FIXME i think we dont need the _info stuff
+ \ FIXME class_info currently no used
  2 cells constant jvm_rtcp.class_info
+ \ FIXME fieldref_info currently no used
  3 cells constant jvm_rtcp.fieldref_info
+ \ FIXME methodref_info currently no used
  4 cells constant jvm_rtcp.methodref_info
+ \ FIXME interfacemethodref_info currently no used
  5 cells constant jvm_rtcp.interfacemethodref_info
  6 cells constant jvm_rtcp.integer_info_table
  7 cells constant jvm_rtcp.float_info_table
@@ -159,7 +162,7 @@ require classfile.fs
 ;
 
 : jvm_rtcp.new() { addr -- addr2 }
-\ *G Create a new runtime constant pool from classfile at `addr1'
+\ *G Create a new runtime constant pool from classfile at `addr'
   jvm_rtcp.size() allocate throw
   \ dup ." new addr: " . dup ." - " hex. cr
   dup addr swap ( jvm_rtcp.classfile +) ! \ store classfile reference
@@ -172,39 +175,39 @@ require classfile.fs
 
   \ .s CR
   \ iterate over constpool
-  addr jvm_cf_constpool_addr
-  addr jvm_cf_constpool_count
-  \ FIXME ITERATE CONSTANT POOL CORRECTLY
-  1 ?DO
-    \ dup jvm_constpool_type_name type  
-    dup jvm_cp_tag \ read tag
-    CASE
-    ( addr1 addr2 - ) 
-    \ addr1: address of the runtime constant pool
-    \ addr2: address of the constpool entry
-    CONSTANT_Class OF
-      dup \ next pointer
-      dup \ value for wordlist
-      jvm_cp_class_name_idx
-      addr jvm_cf_constpool_addr 
-      swap 
-      jvm_constpool_idx
-      jvm_cp_utf8_c-ref
-      [CHAR] / [CHAR] . strreplacec
-      \ 2dup space type cr
-      \ 2dup jvm_stack.newClass() \ add class to stack
-      4 pick \ get rt constpool addr
-      jvm_rtcp.getClass_info()
-      jvm_add_word
-      \ FIXME for the time beeing the address of the Classinfo entry is 
-      \ added to the class_info wordlist
-    ENDOF
-    \ default
-    ENDCASE
+\  addr jvm_cf_constpool_addr
+\  addr jvm_cf_constpool_count
+\  \ FIXME ITERATE CONSTANT POOL CORRECTLY
+\  1 ?DO
+\    \ dup jvm_constpool_type_name type  
+\    dup jvm_cp_tag \ read tag
+\    CASE
+\    ( addr1 addr2 - ) 
+\    \ addr1: address of the runtime constant pool
+\    \ addr2: address of the constpool entry
+\    CONSTANT_Class OF
+\      dup \ next pointer
+\      dup \ value for wordlist
+\      jvm_cp_class_name_idx
+\      addr jvm_cf_constpool_addr 
+\      swap 
+\      jvm_constpool_idx
+\      jvm_cp_utf8_c-ref
+\      [CHAR] / [CHAR] . strreplacec
+\      \ 2dup space type cr
+\      \ 2dup jvm_stack.newClass() \ add class to stack
+\      4 pick \ get rt constpool addr
+\      jvm_rtcp.getClass_info()
+\      jvm_add_word
+\      \ FIXME for the time beeing the address of the Classinfo entry is 
+\      \ added to the class_info wordlist
+\    ENDOF
+\    \ default
+\    ENDCASE
     \ cr
-    dup jvm_constpool_type_size +
-  LOOP
-  drop \ what a waste
+\    dup jvm_constpool_type_size +
+\  LOOP
+\  drop \ what a waste
   \ fill class_info
 
   \ fill fieldref_info

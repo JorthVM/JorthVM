@@ -2,6 +2,9 @@
 \ this file contains the implementaion used for the creation and management 
 \ of jvm stack frames
 
+require class.fs
+require classfile.fs
+
 \ ========
 \ *! frame
 \ *T Method Frame
@@ -38,12 +41,31 @@
   return_addr over jvm_frame.return_addr + !
 
   \ TODO reserve local memory
+  class method jvm_class.getMethodCodeAttr()
+  ( addr_code_attr )
+
+  jvm_code_attr_max_locals 
+  ." max_locals: " dup . CR
+  allocate throw
+  \ TODO erase
+  over jvm_frame.local_table + ! 
+  
   \ TODO exception table
 ;
 
 : jvm_frame.getClass() ( addr_fm -- addr_cl )
 \ *G get the class
   jvm_frame.class + @
+;
+
+: jvm_frame.getDynamicLink() ( addr_fm1 -- addr_fm2 )
+\ *G get the class
+  jvm_frame.dynamic_link + @
+;
+
+: jvm_frame.getReturnAddr() ( addr_fm -- addr )
+\ *G get the class
+  jvm_frame.return_addr + @
 ;
 
 \ ======

@@ -192,41 +192,12 @@ jvm_stack.new() constant jvm_stack
 
 : ?debug_trace true ;
 
-\ -------------------------------------------------------- \
-\ PROGRAM COUNTER                                          \
-\ -------------------------------------------------------- \
-
-\ variable jvm_pc
-
-\ : jvm_set_pc ( ... addr -- ... )
-\  dup
-\  jvm_pc !
-\ ;
-
-\ : jvm_fetch_instruction ( ... -- opcode ... )
-\  POSTPONE jvm_pc POSTPONE @ \ load pc 
-\  POSTPONE c@ \ load instruction
-\  1 POSTPONE literal POSTPONE jvm_pc POSTPONE +! \ increment pc
-\ ; immediate
-
 : show_insn ( opcode -- )
   dup jvm_mnemonic CR type
   jvm_mnemonic_imm 0 ?DO
     ." , " jvm_stack.getPC_next() i + c@ hex.
   LOOP
 ;
-
-\ : jvm_next
-\  POSTPONE jvm_fetch_instruction 
-\  [ ?debug_trace ] [IF] POSTPONE dup POSTPONE show_insn [ENDIF]
-\  POSTPONE jvm_execute
-\ ; immediate
-
-\ : jvm_run
-\  begin 
-\    jvm_next
-\  again
-\ ;
 
 : jvm_stack.next()
   POSTPONE jvm_stack.fetchByte() 
@@ -254,41 +225,78 @@ jvm_stack.new() constant jvm_stack
   ." run() terminating " .s CR
 ;
 
+: jvm_stack.findMethod() { c-addr1 n1 c-addr2 n2 -- addr_cl addr_md wior }
+\ *G find a method return class address and method attribute address
+  c-addr1 n1 jvm_stack.findAndInitClass() throw
+  ( addr-cl )
+  dup c-addr2 n2 jvm_class.getMethod() throw
+  0
+;
+
+: jvm_stack.getNamesFromMethodRef() ( idx -- c-addr1 n1 c-addr2 n2 )
+\ *G get the class name and nametype from Methodref constant pool entry
+  jvm_stack.getCurrentFrame() 
+  jvm_frame.getClass()
+  jvm_class.getRTCP()
+  ." invokestatic " .s CR
+  dup rot jvm_rtcp.getConstpoolByIdx()
+  ( addr_rtcp addr_md )
+  dup jvm_cp_methodref_class_idx
+  ( addr_rtcp addr_md class_idx )
+  2 pick swap
+  ( addr_rtcp addr_md addr_rtcp class_idx )
+  jvm_rtcp.getClassName() 
+  ( addr_rtcp addr_md c-addr1 n1 )
+  2swap
+  ( c-addr1 n1 addr_rtcp addr_md )
+  jvm_cp_methodref_nametype_idx
+  ( c-addr1 n1 addr_rtcp md_idx )
+  jvm_rtcp.getNameType() 
+  ( c-addr1 n1 c-addr2 n2 )
+;
+
+\ FIXME handle parameters! either in jvm_frame.new() or in the invoke words!
+
 : jvm_stack.invokeInitial() { c-addr n -- wior }
 \ *G Start the execution by invoking public static void main(String[] args)
-  \ ." : jvm_stack.invokeInitial() { c-addr n -- wior } " .s CR
-  \ FIXME we need to initialize the super class/interface as well (somewhere)
-  assert( depth 0 = )
-  c-addr n jvm_stack.findAndInitClass() throw
-  \ ." class ready" .s cr
-  ( addr_cl ) \ initialized class
-  
-  dup 
+  c-addr n s" main|([Ljava/lang/String;)V"
+  jvm_stack.findMethod() throw
+  ( addr_cl addr_md )
+  2dup 0 0
+  jvm_frame.new()
+  ( addr_cl addr_md frame )
 
-  \ search method
-  jvm_class.getRTCP()
-  jvm_rtcp.getClassfile()
-
-  dup 
-  s" main" s" ([Ljava/lang/String;)V" 
-  jvm_get_method_by_nametype
-  \ TODO check for public and static 
-  invert IF
-    JVM_MAINNOTFOUND_EXCEPTION throw
-  ENDIF
+  \ store current frame
+  jvm_stack jvm_stack.currentFrame + !
   
-  ( addr_cl addr_cf addr_md )
-  rot over 0 0
-  ( addr_cf addr_md addr_cl addr_md 0 0 )
+  ( addr_cl addr_md )
+  jvm_class.getMethodCodeAttr()
+  jvm_code_attr_code_addr
+  jvm_stack.setPC()
+  jvm_stack.run()
+;
+
+: jvm_stack.invokestatic() ( idx -- wior )
+\ *G invoke a static method
+  jvm_stack.getNamesFromMethodRef()
+  2swap ." Classname: " 2dup type CR
+  2swap ." NameType: " 2dup type CR
+  jvm_stack.findMethod() throw
+  ( addr_cl addr_md )
+  2dup
+  jvm_stack.getCurrentFrame() \ dynamic link
+  jvm_stack.getPC_next() \ return address
   jvm_frame.new()
 
   \ store current frame
   jvm_stack jvm_stack.currentFrame + !
   
-  ( addr_md )
-  jvm_md_get_code_attr
+  ( addr_cl addr_md )
+  jvm_class.getMethodCodeAttr()
+  jvm_code_attr_code_addr
   jvm_stack.setPC()
-  jvm_stack.run()
+  \ FIXME this a new invokation of run() we should do this better
+  0
 ;
 
 \ ======

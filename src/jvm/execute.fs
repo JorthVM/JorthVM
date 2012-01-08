@@ -14,6 +14,8 @@ require exception.fs
   ." The following instruction not yet implemented: " 
   jvm_stack.currentInstruction()
   jvm_mnemonic type 
+  CR 
+  ." Stack: " .s 
   CR CR
   JVM_NOTIMPlEMENTED_EXCEPTION throw
 ;
@@ -632,7 +634,15 @@ require exception.fs
 0xB8 2 s" invokestatic" \ 2[indexbyte1, indexbyte2] ( [arg1, arg2, ...] -- )
 \ invoke a static method, where the method is identified by method reference
 \ index in constant pool (indexbyte1 ^> 8 + indexbyte2)
-^> : <^ ; >[ jvm_not_implemented ]<
+^> : <^ ; >[ 
+  jvm_stack.fetchByte() \ load byte
+  8 lshift
+  jvm_stack.fetchByte() \ load byte
+  or
+  \ ." idx fetched " .s CR
+  jvm_stack.invokestatic() throw
+
+]<
 
 0xB6 2 s" invokevirtual" \ 2[indexbyte1, indexbyte2] ( objectref, [arg1, arg2, ...] -- )
 \ invoke virtual method on object objectref, where the method is identified by
@@ -943,8 +953,20 @@ require exception.fs
 0xB1 0 s" return" \ ( -- [empty] )
 \ return void from method
 ^> : <^ ; >[
-  CR ." Data Stack: " CR .s CR
-  JVM_RETURN_EXCEPTION throw
+  jvm_stack.getCurrentFrame()
+  jvm_frame.getDynamicLink()
+  0= IF
+    CR ." Data Stack: " CR .s CR
+    \ return from main
+    JVM_RETURN_EXCEPTION throw
+  ELSE
+    \ restore frame
+    jvm_stack.getCurrentFrame()
+    \ TODO implement setFrame method
+    dup jvm_frame.getDynamicLink() jvm_stack jvm_stack.currentFrame + ! \ restore frame
+    dup jvm_frame.getReturnAddr() jvm_stack.setPC() \ restore frame
+    free throw \ free frame
+  ENDIF
 ]<
 
 0x35 0 s" saload" \ ( arrayref, index -- value )

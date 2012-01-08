@@ -277,6 +277,18 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 \ Code Attribute stuff
 
 \ TODO test me
+: jvm_code_attr_max_stack ( addr ) 
+  6 POSTPONE literal POSTPONE + POSTPONE jvm_uw@
+; immediate
+
+: jvm_code_attr_max_locals ( addr ) 
+  8 POSTPONE literal POSTPONE + POSTPONE jvm_uw@
+; immediate
+
+: jvm_code_attr_code_length ( addr ) 
+  10 POSTPONE literal POSTPONE + POSTPONE jvm_ul@
+; immediate
+
 : jvm_code_attr_code_addr ( addr ) 
   14 POSTPONE literal POSTPONE +
 ; immediate

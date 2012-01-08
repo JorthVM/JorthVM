@@ -105,6 +105,35 @@ program_sipush write-programm
   
   assert( depth 0 = )
 ;
+
+: static_invocation_test1 
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" StaticInvocation" jvm_java
+  s" StaticInvocation" jvm_stack.findClass() throw
+  dup s" foo|I" jvm_class.getStatic() 
+  throw
+  assert( 0x42 = )
+  s" bar|I" jvm_class.getStatic() throw
+  assert( 0x84 = )
+  
+  assert( depth 0 = )
+;
+
+: static_invocation_test2 
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" StaticInvocation2" jvm_java
+  s" StaticInvocation2" jvm_stack.findClass() throw
+  dup s" foo|I" jvm_class.getStatic() 
+  throw
+  assert( 0x42 = )
+  s" bar|I" jvm_class.getStatic() throw
+  assert( 0x84 = )
+  
+  assert( depth 0 = )
+;
+
 : test
   test_bipush
   test_sipush
@@ -113,4 +142,6 @@ program_sipush write-programm
   test_mnemonic
   putstatic_test
   putstatic_test2
+  static_invocation_test1 
+  static_invocation_test2 
 ;

@@ -134,6 +134,20 @@ program_sipush write-programm
   assert( depth 0 = )
 ;
 
+: parameter_test1 
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" StaticInvocationParameter" jvm_java
+  s" StaticInvocationParameter" jvm_stack.findClass() throw
+  dup s" foo|I" jvm_class.getStatic() 
+  throw
+  assert( 0x42 = )
+  s" bar|I" jvm_class.getStatic() throw
+  assert( 0x84 = )
+  
+  assert( depth 0 = )
+;
+
 : test
   test_bipush
   test_sipush
@@ -144,4 +158,5 @@ program_sipush write-programm
   putstatic_test2
   static_invocation_test1 
   static_invocation_test2 
+  parameter_test1
 ;

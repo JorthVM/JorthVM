@@ -238,7 +238,6 @@ jvm_stack.new() constant jvm_stack
   jvm_stack.getCurrentFrame() 
   jvm_frame.getClass()
   jvm_class.getRTCP()
-  ." invokestatic " .s CR
   dup rot jvm_rtcp.getConstpoolByIdx()
   ( addr_rtcp addr_md )
   dup jvm_cp_methodref_class_idx
@@ -255,6 +254,29 @@ jvm_stack.new() constant jvm_stack
   ( c-addr1 n1 c-addr2 n2 )
 ;
 
+: jvm_stack.setCurrentFrame() ( addr_fm -- )
+\ *G set the current frame
+  \ store current frame
+  dup jvm_stack jvm_stack.currentFrame + !
+  dup jvm_frame.getClass()
+  swap jvm_frame.getMethod()
+  ( addr_cl addr_md )
+  jvm_class.getMethodCodeAttr()
+  jvm_code_attr_code_addr
+  jvm_stack.setPC()
+;
+
+: jvm_stack.resetCurrentFrame() ( -- )
+\ *G reset the current frame
+  \ restore frame
+  jvm_stack.getCurrentFrame()
+  dup jvm_frame.getDynamicLink() 
+  jvm_stack jvm_stack.currentFrame + ! \ restore frame
+  dup jvm_frame.getReturnAddr() 
+  jvm_stack.setPC() \ restore frame
+  free throw \ free frame
+;
+
 \ FIXME handle parameters! either in jvm_frame.new() or in the invoke words!
 
 : jvm_stack.invokeInitial() { c-addr n -- wior }
@@ -262,40 +284,30 @@ jvm_stack.new() constant jvm_stack
   c-addr n s" main|([Ljava/lang/String;)V"
   jvm_stack.findMethod() throw
   ( addr_cl addr_md )
-  2dup 0 0
+  0 0
   jvm_frame.new()
-  ( addr_cl addr_md frame )
+  ( frame )
+  \ TODO dup jvm_frame.setParameters()
 
-  \ store current frame
-  jvm_stack jvm_stack.currentFrame + !
-  
-  ( addr_cl addr_md )
-  jvm_class.getMethodCodeAttr()
-  jvm_code_attr_code_addr
-  jvm_stack.setPC()
+  jvm_stack.setCurrentFrame()
   jvm_stack.run()
 ;
 
 : jvm_stack.invokestatic() ( idx -- wior )
 \ *G invoke a static method
   jvm_stack.getNamesFromMethodRef()
-  2swap ." Classname: " 2dup type CR
-  2swap ." NameType: " 2dup type CR
+  \ 2swap ." Classname: " 2dup type CR
+  \ 2swap ." NameType: " 2dup type CR
   jvm_stack.findMethod() throw
   ( addr_cl addr_md )
-  2dup
   jvm_stack.getCurrentFrame() \ dynamic link
   jvm_stack.getPC_next() \ return address
   jvm_frame.new()
+  dup >r
+  jvm_frame.setParameters()
+  r>
 
-  \ store current frame
-  jvm_stack jvm_stack.currentFrame + !
-  
-  ( addr_cl addr_md )
-  jvm_class.getMethodCodeAttr()
-  jvm_code_attr_code_addr
-  jvm_stack.setPC()
-  \ FIXME this a new invokation of run() we should do this better
+  jvm_stack.setCurrentFrame()
   0
 ;
 

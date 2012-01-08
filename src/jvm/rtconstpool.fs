@@ -98,7 +98,6 @@ require classfile.fs
   jvm_nametype_identifier
 ;
 
-
 : jvm_rtcp.getClass_info() ( addr -- wid )
 \ *G get the class_info wordlist id from runtime classfile pool
   jvm_rtcp.class_info + @

@@ -589,19 +589,27 @@ require exception.fs
 
 0x1A 0 s" iload_0" \ ( -- value )
 \ load an int value from local variable 0
-^> : <^ ; >[ jvm_not_implemented ]<
+^> : <^ ; >[ 
+  jvm_stack.getCurrentFrame() 0 jvm_frame.getLocal()
+]<
 
 0x1B 0 s" iload_1" \ ( -- value )
 \ load an int value from local variable 1
-^> : <^ ; >[ jvm_not_implemented ]<
+^> : <^ ; >[ 
+  jvm_stack.getCurrentFrame() 1 jvm_frame.getLocal()
+]<
 
 0x1C 0 s" iload_2" \ ( -- value )
 \ load an int value from local variable 2
-^> : <^ ; >[ jvm_not_implemented ]<
+^> : <^ ; >[ 
+  jvm_stack.getCurrentFrame() 2 jvm_frame.getLocal()
+]<
 
 0x1D 0 s" iload_3" \ ( -- value )
 \ load an int value from local variable 3
-^> : <^ ; >[ jvm_not_implemented ]<
+^> : <^ ; >[ 
+  jvm_stack.getCurrentFrame() 3 jvm_frame.getLocal()
+]<
 
 0x68 0 s" imul" \ ( value1, value2 -- result )
 \ multiply two integers
@@ -960,12 +968,7 @@ require exception.fs
     \ return from main
     JVM_RETURN_EXCEPTION throw
   ELSE
-    \ restore frame
-    jvm_stack.getCurrentFrame()
-    \ TODO implement setFrame method
-    dup jvm_frame.getDynamicLink() jvm_stack jvm_stack.currentFrame + ! \ restore frame
-    dup jvm_frame.getReturnAddr() jvm_stack.setPC() \ restore frame
-    free throw \ free frame
+    jvm_stack.resetCurrentFrame()
   ENDIF
 ]<
 

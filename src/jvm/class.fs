@@ -15,7 +15,7 @@ require rtconstpool.fs
 \ *S Field Access Helpers
 \ ========
 \ 
-: jvm_field_desc_size { c-addr n -- u }
+: jvm_field_desc_sizeC ( c -- u )
 \ *G Get the size of a field (in Bytes)
 
 \ *C B              byte             signed byte
@@ -30,7 +30,6 @@ require rtconstpool.fs
 \ *C [              reference        one array dimension 
 
 \ TODO be more efficient (e.g. on 64 bit systems)
-  c-addr c@ \ get first char
   CASE
     [CHAR] B OF 1 cells ENDOF
     [CHAR] C OF 1 cells ENDOF
@@ -43,8 +42,13 @@ require rtconstpool.fs
     [CHAR] Z OF 1 cells ENDOF
     [CHAR] [ OF 1 cells ENDOF
     \ default
-    drop 1
+    1 swap
   ENDCASE
+;
+
+: jvm_field_desc_size { c-addr n -- u }
+\ *G Get the size of a field (in Bytes)
+  c-addr c@ jvm_field_desc_sizeC
 ;
 
 : jvm_field_@ ( addr -- val )

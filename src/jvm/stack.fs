@@ -324,7 +324,7 @@ jvm_stack.new() constant jvm_stack
   0 0
   jvm_frame.new()
   ( frame )
-  \ TODO dup jvm_frame.setParameters()
+  \ TODO dup >r jvm_frame.setParameters() r>
 
   jvm_stack.setCurrentFrame()
   jvm_stack.run()

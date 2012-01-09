@@ -370,8 +370,29 @@ defer jvm_stack.findAndInitClass()
 
 : jvm_class.init() { addr_cl -- wior }
 \ *G initialaze class
-  \ TODO implement me
-  jvm_class.STATUS:INIT addr_cl jvm_class.status + ! \ store status
+  \ TODO init superclass
+  \ TODO call static initialazer
+  dup jvm_class.STATUS:INIT addr_cl jvm_class.status + ! \ store status
+\  dup jvm_class.method_list + @ wordlist-words
+\  ." pre clinit check" .s CR
+\  try
+\    s" <init>|()V" jvm_class.getMethod() throw
+\    true
+\  iferror 
+\    ." iferror " .s CR
+\    drop \ drop woir
+\    false
+\  endif
+\  endtry
+\  IF
+\    ." clinit found " .s CR
+\    2drop
+\  ELSE
+\    ." clinit not found " .s CR
+\  ENDIF
+  ( addr_cl addr_md )
+  drop
+  \ 2drop
   0
 ;
 

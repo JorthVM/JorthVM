@@ -193,8 +193,8 @@ jvm_stack.new() constant jvm_stack
 : ?debug_trace true ;
 
 : show_insn ( opcode -- )
-  dup jvm_mnemonic CR type
-  jvm_mnemonic_imm 0 ?DO
+  dup jvm_decode.mnemonic() CR type
+  jvm_decode.mnemonic_imm() 0 ?DO
     ." , " jvm_stack.getPC_next() i + c@ hex.
   LOOP
 ;
@@ -202,7 +202,7 @@ jvm_stack.new() constant jvm_stack
 : jvm_stack.next()
   POSTPONE jvm_stack.fetchByte() 
   [ ?debug_trace ] [IF] POSTPONE dup POSTPONE show_insn [ENDIF]
-  POSTPONE jvm_execute
+  POSTPONE <[ POSTPONE swap POSTPONE ]>
   POSTPONE jvm_stack.incPC()
 ; immediate
 

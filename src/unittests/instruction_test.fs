@@ -24,12 +24,10 @@ program_sipush write-programm
   program_bipush jvm_stack.setPC()
 
 \ no sign ext
-  jvm_stack.fetchByte()
-  jvm_execute
+  <[ jvm_stack.fetchByte() ]>
   assert( 42 = ) 
 \ sign ext
-  jvm_stack.fetchByte()
-  jvm_execute
+  <[ jvm_stack.fetchByte() ]>
   assert( -1 = ) 
 ;
 
@@ -37,28 +35,24 @@ program_sipush write-programm
   program_sipush jvm_stack.setPC()
 
 \ no sign ext
-  jvm_stack.fetchByte()
-  jvm_execute
+  <[ jvm_stack.fetchByte() ]>
   assert( 0x2A2A = ) 
 \ sign ext
-  jvm_stack.fetchByte()
-  jvm_execute
+  <[ jvm_stack.fetchByte() ]>
   assert( -1 = ) 
 
 ;
 
 : test_dup
   42  \ value
-  jdup
-  jvm_execute
+  <[ jdup ]>
   assert( 42 = ) 
   assert( 42 = )
 ;
 
 : test_iadd
   42 42
-  iadd
-  jvm_execute
+  <[ iadd ]>
   assert( 84 = )
 ;
 
@@ -67,9 +61,9 @@ program_sipush write-programm
 ;
 
 : test_mnemonic
-  0x10 jvm_mnemonic s" bipush" compare
+  0x10 jvm_decode.mnemonic() s" bipush" compare
   assert( invert )
-  0x10 jvm_mnemonic_imm
+  0x10 jvm_decode.mnemonic_imm()
   assert( 1 = )
 ;
 

@@ -774,8 +774,8 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   0> WHILE
     over c@ dup 
     ."     "
-    jvm_mnemonic type
-    jvm_mnemonic_imm 
+    jvm_decode.mnemonic() type
+    jvm_decode.mnemonic_imm()
     dup >r          \ store imm count
     0 ?DO
       space over i + 1 + c@ hex.

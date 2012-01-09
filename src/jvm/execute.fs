@@ -13,7 +13,7 @@ require exception.fs
   CR CR 
   ." The following instruction not yet implemented: " 
   jvm_stack.currentInstruction()
-  jvm_mnemonic type 
+  jvm_decode.mnemonic() type 
   CR 
   ." Stack: " .s 
   CR CR

@@ -48,12 +48,14 @@ CREATE jvm_mnemonic_table jvm_opcode_count 2* cells allot
   cells + @ EXECUTE
 ;
 
-: jvm_mnemonic ( opcode -- mnemonic len )
+: jvm_decode.mnemonic() ( opcode -- mnemonic len )
+\ *G converts opcode into readable string
   2* cells jvm_mnemonic_table + >r r@ @ 8 rshift
   r> cell+ @ swap
 ;
 
-: jvm_mnemonic_imm ( opcode -- amounts of immediates )
+: jvm_decode.mnemonic_imm() ( opcode -- amount of immediates )
+\ *G returns the number of immediates for the given opcode
   2* cells jvm_mnemonic_table + @ 0xff and
 ;
 
@@ -70,7 +72,7 @@ CREATE jvm_mnemonic_table jvm_opcode_count 2* cells allot
 ; IMMEDIATE
 
 \ show the implementeation of opcode
-: jvm_opcode_see ( ... opcode - )
+: jvm_decode.opcode_see() ( ... opcode - )
   cells jvm_opcode_table + @ xt-see
 ;
 

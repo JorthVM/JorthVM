@@ -14,32 +14,38 @@
 CREATE jvm_opcode_table jvm_opcode_count cells allot
 CREATE jvm_mnemonic_table jvm_opcode_count 2* cells allot
 
-\ general:
-\ (1) define instruction (opcode, number of immediates and mnemonic):
-\     `0x32 0 s" aaload" ^> : <^ ; >[ mycode ]<'
-\ (2) use word (will emit opcode on stack):
-\     `aaload'
-\ (3) execute instruction (as defined in `mycode'):
-\     <[ aaload ]>
+\ ========
+\ *S Defining Instructions
+\ ========
 
-\ FIXME: ugly workaround...
-: ^> { opcode imm mnemonic len -- }
-  opcode mnemonic len imm opcode mnemonic len nextname ;
+\ *(
+\ *B define instruction (opcode, number of immediates and mnemonic):
+\ *C 0x32 0 s" aaload" >[ mycode ]<
+\ *B use word (emits opcode on stack):
+\ *C aaload
+\ *B execute instruction (as defined with `mycode'):
+\ *C <[ aaload ]>
+\ *)
 
-\ FIXME: wtf @ interpret mode
-: <^
-  POSTPONE [ >r 2over drop ]
-  POSTPONE literal
-  POSTPONE [ r> ]
-; immediate
+: >[ { opcode imm mnemonic len -- }
+\ *G read: "to opcode table". see above for a explanation
+  \ define word which pushes the opcode to stack
+  mnemonic len nextname
+  : opcode POSTPONE literal POSTPONE ;
 
-: >[ ( opcode mnemonic len imm opcode -- )
-  2* cells jvm_mnemonic_table + >r ( opcode mnemonic len imm ; R: table )
-  over 8 lshift or r@ ! ( opcode mnemonic len ; R: table )
-  dup allocate throw >r r@ swap ( opcode mnemonic addr len ; R: table addr )
-  cmove ( opcode ; R: table addr )
-  r> r> cell+ ! ( opcode )
-  cells jvm_opcode_table + :noname
+  opcode 2* cells jvm_mnemonic_table + >r ( ; R: table )
+  len 8 lshift imm or r@ ! \ pack length and immediate value ( ; R: table )
+  len allocate throw >r ( ; R: table addr )
+  mnemonic r@ len cmove ( ; R: table addr )
+  r> r> ( addr table )
+  cell+ ! \ save pointer for mnemonic-str
+  opcode cells jvm_opcode_table + \ addr for xt
+  :noname
+;
+
+: ]>
+\ *G close instruction implementation
+  cells + @ EXECUTE
 ;
 
 : jvm_mnemonic ( opcode -- mnemonic len )
@@ -51,22 +57,17 @@ CREATE jvm_mnemonic_table jvm_opcode_count 2* cells allot
   2* cells jvm_mnemonic_table + @ 0xff and
 ;
 
-: ]<
-  POSTPONE ; swap !
-; IMMEDIATE
-
-\ `<[ 0x42 ]>' executes the xt token stored at offest 0x42 of the opcode-table
 : <[
+\ *G executes the xt token stored at the given offset of the opcode-table, e.g.
+\ *C <[ 0x42 ]>
+\ *P reads the xt from offset 0x42 and executes it
   jvm_opcode_table
 ;
 
-: ]>
-  cells + @ EXECUTE
-;
-
-: jvm_execute { opcode -- [result of operation] }
-  <[ opcode ]>
-;
+: ]<
+\ *G see <[
+  POSTPONE ; swap !
+; IMMEDIATE
 
 \ show the implementeation of opcode
 : jvm_opcode_see ( ... opcode - )

@@ -155,13 +155,13 @@ require classfile.fs
     ( [arg1, [arg2 ... ]] index addr_lt' )
     swap 1- tuck
     ( [arg1, [arg2 ... ]] index' addr_lt' index' )
-  0 >= WHILE
+    0 >= WHILE
     ( [arg1, [arg2 ... ]] index' addr_lt' )
     rot swap 
     ( [arg1, [arg2 ... ]] index' arg_n addr_lt' )
     tuck !
   REPEAT
-  2 drop
+  2drop
 ;
 
 \ ======

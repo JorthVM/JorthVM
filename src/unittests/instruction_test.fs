@@ -141,9 +141,9 @@ program_sipush write-programm
   s" StaticInvocationParameter" jvm_stack.findClass() throw
   dup s" foo|I" jvm_class.getStatic() 
   throw
-  assert( 0x42 = )
+  assert( 0x11 = )
   s" bar|I" jvm_class.getStatic() throw
-  assert( 0x84 = )
+  assert( 0x11 3 * = )
   
   assert( depth 0 = )
 ;

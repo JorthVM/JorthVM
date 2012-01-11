@@ -659,7 +659,10 @@ require exception.fs
 0xB6 2 s" invokevirtual" \ 2[indexbyte1, indexbyte2] ( objectref, [arg1, arg2, ...] -- )
 \ invoke virtual method on object objectref, where the method is identified by
 \ method reference index in constant pool (indexbyte1 ^> 8 + indexbyte2)
->[ jvm_not_implemented ]<
+>[
+  \ TODO: dunno if this is really enough...
+  <[ invokestatic ]>
+]<
 
 0x80 0 s" ior" \ ( value1, value2 -- result )
 \ bitwise int or

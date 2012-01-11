@@ -13,3 +13,7 @@ include jvm/jvm.fs  \ include the jvm
   ." StaticIntOtherStore.bar: " hex. CR
 ;
 
+: RunDemoObj ( -- )
+  s" testfiles/" jvm_classpath.add()
+  s" ObjectCreation" jvm_java
+;

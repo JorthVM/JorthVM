@@ -880,7 +880,33 @@ require exception.fs
 0xBB 2 s" new" \ 2[indexbyte1, indexbyte2] ( -- objectref )
 \ create new object of type identified by class reference in constant pool
 \ index (indexbyte1 ^> 8 + indexbyte2)
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.fetchByte() \ load byte
+  8 lshift
+  jvm_stack.fetchByte() \ load byte
+  or
+
+  jvm_stack.getCurrentFrame() 
+  jvm_frame.getClass()
+  jvm_class.getRTCP()
+  dup rot ( addr_rtcp addr_rtcp idx )
+  jvm_rtcp.getConstpoolByIdx() ( addr_rtcp addr_fd )
+  dup jvm_cp_tag assert( CONSTANT_Class = )
+  ( addr_rtcp addr_fd )
+  swap jvm_rtcp.getClassfile() jvm_cf_constpool_addr swap \ debug
+  ( const-addr addr_fd )
+  cr ." [dbg] new " jvm_constpool.getClassname() jvm_cp_utf8_c-ref 2dup type \ debug
+  jvm_stack.findAndInitClass() throw dup ( addr_class addr_class )
+  jvm_class.getRTCP() ( addr_class addr_rtcp )
+  jvm_rtcp.getClassfile() ( addr_class addr_classf )
+
+  \ TODO: (1) get correct size
+  \       (2) recursive add sizes up to java.lang.Object
+  jvm_cf_fields_count cells allocate throw ( addr_class addr_this )
+  swap over ! ( addr_this )
+
+  \ TODO: add stuff for GC here.
+]<
 
 0xBC 1 s" newarray" \ 1[atype] ( count -- arrayref )
 \ create new array with count elements of primitive type identified by atype

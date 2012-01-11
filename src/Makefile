@@ -23,11 +23,12 @@ ppcdeb.tar.gz:
 ppcdeb.tar.gz.md5sum:
 	wget $(IMGHOST)/$@
 
-ppcfs: ppcdeb.tar.gz ppcdeb.tar.gz.md5sum
+ppcfs/.extract: ppcdeb.tar.gz ppcdeb.tar.gz.md5sum
 	md5sum --check $<.md5sum
 	tar xf $<
+	touch $@
 
-bigendian: ppcfs/
+bigendian: ppcfs/.extract
 	FORTH="$(BGFORTH)" $(MAKE) -C $(UNITTEST_DIR)
 
 clean:

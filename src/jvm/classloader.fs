@@ -132,6 +132,8 @@ variable jvm_classpath_list
   n swap !
 ;
 
+\ default classpath (TODO: path always okay?)
+s" ../" jvm_classpath.add()
 
 \ ======
 \ *> ###

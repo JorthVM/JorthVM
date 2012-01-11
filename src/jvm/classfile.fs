@@ -699,6 +699,13 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   ENDIF
 ;
 
+: jvm_constpool.getClassname_idx() { const-addr idx -- addr }
+  const-addr idx
+  jvm_constpool_idx ( addr_cp addr_scl )
+  jvm_cp_class_name_idx ( addr_cp idx2 )
+  jvm_constpool_idx ( addr_scl_str )
+;
+
 : jvm_constpool.getClassname() { const-addr class-addr -- addr }
   class-addr 
   jvm_cp_class_name_idx \ read idx

@@ -231,9 +231,30 @@ require rtconstpool.fs
   \ 0 over jvm_class.field_table + !
 ;
 
+\ TODO move that into a deferred.fs file or so
+defer jvm_stack.newClass()
+defer jvm_stack.findAndInitClass()
+
 : jvm_class.prepare() { addr_cl loader addr_cf -- wior }
 \ *G prepare a class using a classfile and a loader
 \ NOTE loader is a value to identify loaders
+
+  \ get this class
+  addr_cf jvm_cf_constpool_addr dup ( addr_cp addr_cp )
+  addr_cf jvm_cf_this_class ( addr_cp addr_cp idx1 )
+  jvm_constpool.getClassname_idx() ( scl_addr )
+  jvm_cp_utf8_c-ref ( scl_str n )
+  s" java/lang/Object" str= invert IF
+    \ get ref to superclass
+    addr_cf jvm_cf_constpool_addr dup ( addr_cp addr_cp )
+    addr_cf jvm_cf_super_class ( addr_cp idx1 )
+    jvm_constpool.getClassname_idx() ( scl_addr )
+    jvm_cp_utf8_c-ref ( scl_str n )
+    2dup ( scl_str n scl_str n )
+    jvm_stack.newClass() ( scl_str n )
+    jvm_stack.findAndInitClass() throw ( addr_super_class )
+    addr_cl jvm_class.super + !
+  ENDIF
   
   \ create runtime constant pool
   addr_cf jvm_rtcp.new() addr_cl jvm_class.rtcp + !

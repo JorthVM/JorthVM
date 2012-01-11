@@ -899,9 +899,11 @@ require exception.fs
   jvm_rtcp.getConstpoolByIdx() ( addr_rtcp addr_fd )
   dup jvm_cp_tag assert( CONSTANT_Class = )
   ( addr_rtcp addr_fd )
-  swap jvm_rtcp.getClassfile() jvm_cf_constpool_addr swap \ debug
+  swap jvm_rtcp.getClassfile() jvm_cf_constpool_addr swap
   ( const-addr addr_fd )
-  cr ." [dbg] new " jvm_constpool.getClassname() jvm_cp_utf8_c-ref 2dup type \ debug
+  jvm_constpool.getClassname()
+  jvm_cp_utf8_c-ref ( c-addr n )
+  2dup jvm_stack.newClass() ( c-addr n )
   jvm_stack.findAndInitClass() throw dup ( addr_class addr_class )
   jvm_class.getRTCP() ( addr_class addr_rtcp )
   jvm_rtcp.getClassfile() ( addr_class addr_classf )

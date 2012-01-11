@@ -96,7 +96,8 @@ jvm_stack.new() constant jvm_stack
   \ throw 0
 ;
 
-: jvm_stack.newClass() { c-addr n -- }
+\ : jvm_stack.newClass() { c-addr n -- }
+:noname { c-addr n -- }
   \ ." newClass: " c-addr n type space .s CR 
   TRY
     c-addr n jvm_stack.findClass() 
@@ -117,7 +118,8 @@ jvm_stack.new() constant jvm_stack
   ENDTRY
   throw
   \ ." END newClass" .s CR
-;
+; IS jvm_stack.newClass()
+
 : jvm_stack.loadClasses() ( addr -- ) 
 \ add all class constpool entries
   jvm_class.getRTCP()
@@ -147,7 +149,8 @@ jvm_stack.new() constant jvm_stack
   drop \ drop rtcp
 ;
 
-: jvm_stack.findAndInitClass() { c-addr n -- addr2 woir }
+\ jvm_stack.findAndInitClass() { c-addr n -- addr2 woir }
+:noname { c-addr n -- addr2 woir }
 \ *G search for a class an initialize it if needed
   \ ." jvm_stack.findAndInitClass() " c-addr n type space .s CR
   c-addr n jvm_stack.findClass() throw
@@ -189,7 +192,7 @@ jvm_stack.new() constant jvm_stack
   ENDCASE
   \ ." end jvm_stack.findAndInitClass(): " .s CR
   0 \ no exception
-;
+; IS jvm_stack.findAndInitClass()
 
 : jvm_stack.getCurrentFrame() ( -- addr )
 \ *G get the current frame

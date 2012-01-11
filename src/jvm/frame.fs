@@ -52,7 +52,7 @@ require classfile.fs
   dup rot
   ( addr_fm addr_locals addr_locals size )
   erase  
-  ( addr_addr_locals )
+  ( addr_fm addr_locals )
   over jvm_frame.local_table + ! 
   
   \ TODO exception table

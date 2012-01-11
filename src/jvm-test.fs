@@ -17,4 +17,8 @@ include jvm/jvm.fs  \ include the jvm
   s" testfiles/" jvm_classpath.add()
   s" ./" jvm_classpath.add()
   s" ObjectCreation" jvm_java
+  s" ObjectCreation" jvm_stack.findClass() throw
+  s" checkMe|I"
+  jvm_class.getStatic() throw
+  ." ObjectCreation.checkMe: " hex. CR
 ;

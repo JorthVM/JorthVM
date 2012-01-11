@@ -1,47 +1,33 @@
 public class ObjectCreation {
-	public static int foo;
+	public static int checkMe;
 	public static ObjectCreation obj;
 
-	public int stuff = 0;
+	public int stuff;
 
 	public static void main(String []args) {
-		// ObjectCreation.obj = new ObjectCreation();
-		// ObjectCreation.obj.whatEver();
 		CreateMe obj = new CreateMe();
 		obj.executeMe();
 	}
 
 	public ObjectCreation() {
-		ObjectCreation.foo = 0x42;
+		this.stuff = 0x1337;
 	}
 	
-	public void whatEver() {
-		stuff = 0x1337;
+	public void executeMe() {
+		ObjectCreation.checkMe = 0xdead;
 	}
 }
 
 class CreateMe extends ObjectCreation {
-	public static int padding1;
-	public static int padding2;
-	public static int padding3;
-	public static int padding4;
-	// public long var1;
 	public int var1;
 	public int var2;
 
 	public CreateMe() {
-		stuff = 0x101;
-		var1 = 0x11;
-		var2 = 0x22;
-	}
-
-	public CreateMe(int a) {
-		var1 = a;
+		this.var1 = 0x11;
+		this.var2 = 0x22;
 	}
 
 	public void executeMe() {
-		stuff = 0x202;
-		var1 = 0x33;
-		var2 = 0x44;
+		ObjectCreation.checkMe = this.var1 + this.var2 + this.stuff;
 	}
 }

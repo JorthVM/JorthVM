@@ -64,7 +64,6 @@ require ../jvm/stack.fs
 
 create program2 4 cells allot
 0x01020304 program2 l!-be
-program2 jvm_stack.setPC()
 
 \ test fetch_instruction
 : fetch_instruction-test2
@@ -80,8 +79,15 @@ program2 jvm_stack.setPC()
   \ TODO check stack size
 ;
 
+: fetch_short-test1
+  program2 jvm_stack.setPC()
+  jvm_stack.fetchShort()
+  assert( 0x0102 = )
+;
+
 : test
   fetch_instruction-test
   fetch_instruction-test2
+  fetch_short-test1
 ;
 

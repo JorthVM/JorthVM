@@ -54,6 +54,13 @@ jvm_stack.new() constant jvm_stack
    +!
 ;
 
+: jvm_stack.fetchShort() ( -- short )
+  jvm_stack.fetchByte() \ load byte
+  8 lshift
+  jvm_stack.fetchByte() \ load byte
+  or
+;
+
 : jvm_stack.currentInstruction() ( -- opcode )
 \ *G return opcode of the current instruction 
    jvm_stack.getPC() c@

@@ -373,10 +373,7 @@ require exception.fs
 \ get a static field value of a class, where the field is identified by field
 \ reference in the constant pool index (index1 ^> 8 + index2)
 >[
-  jvm_stack.fetchByte() \ load byte
-  8 lshift
-  jvm_stack.fetchByte() \ load byte
-  or
+  jvm_stack.fetchShort()
   \ ." idx fetched " .s CR
   jvm_stack.getCurrentFrame() 
   jvm_frame.getClass()
@@ -640,10 +637,7 @@ require exception.fs
 \ invoke a static method, where the method is identified by method reference
 \ index in constant pool (indexbyte1 ^> 8 + indexbyte2)
 >[ 
-  jvm_stack.fetchByte() \ load byte
-  8 lshift
-  jvm_stack.fetchByte() \ load byte
-  or
+  jvm_stack.fetchShort()
   \ ." idx fetched " .s CR
   jvm_stack.invokestatic() throw
 ]<
@@ -884,10 +878,7 @@ require exception.fs
 \ create new object of type identified by class reference in constant pool
 \ index (indexbyte1 ^> 8 + indexbyte2)
 >[
-  jvm_stack.fetchByte() \ load byte
-  8 lshift
-  jvm_stack.fetchByte() \ load byte
-  or
+  jvm_stack.fetchShort()
 
   jvm_stack.getCurrentFrame() 
   jvm_frame.getClass()
@@ -936,10 +927,7 @@ require exception.fs
 \ set static field to value in a class, where the field is identified by a
 \ field reference index in constant pool (indexbyte1 ^> 8 + indexbyte2)
 >[
-  jvm_stack.fetchByte() \ load byte
-  8 lshift
-  jvm_stack.fetchByte() \ load byte
-  or
+  jvm_stack.fetchShort()
   \ ." idx fetched " .s CR
   jvm_stack.getCurrentFrame() 
   jvm_frame.getClass()

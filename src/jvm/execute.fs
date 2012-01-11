@@ -38,7 +38,9 @@ require exception.fs
 
 0x2A 0 s" aload_0" \ ( -- objectref )
 \ load a reference onto the stack from local variable 0
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.getCurrentFrame() 0 jvm_frame.getLocal()
+]<
 
 0x2B 0 s" aload_1" \ ( -- objectref )
 \ load a reference onto the stack from local variable 1
@@ -634,11 +636,6 @@ require exception.fs
 \ is identified by method reference index in constant pool (indexbyte1 ^> 8 + indexbyte2)
 >[ jvm_not_implemented ]<
 
-0xB7 2 s" invokespecial" \ 2[indexbyte1, indexbyte2] ( objectref, [arg1, arg2, ...] -- )
-\ invoke instance method on object objectref, where the method is identified
-\ by method reference index in constant pool (indexbyte1 ^> 8 + indexbyte2)
->[ jvm_not_implemented ]<
-
 0xB8 2 s" invokestatic" \ 2[indexbyte1, indexbyte2] ( [arg1, arg2, ...] -- )
 \ invoke a static method, where the method is identified by method reference
 \ index in constant pool (indexbyte1 ^> 8 + indexbyte2)
@@ -649,7 +646,13 @@ require exception.fs
   or
   \ ." idx fetched " .s CR
   jvm_stack.invokestatic() throw
+]<
 
+0xB7 2 s" invokespecial" \ 2[indexbyte1, indexbyte2] ( objectref, [arg1, arg2, ...] -- )
+\ invoke instance method on object objectref, where the method is identified
+\ by method reference index in constant pool (indexbyte1 ^> 8 + indexbyte2)
+>[
+  <[ invokestatic ]>
 ]<
 
 0xB6 2 s" invokevirtual" \ 2[indexbyte1, indexbyte2] ( objectref, [arg1, arg2, ...] -- )

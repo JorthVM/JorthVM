@@ -15,5 +15,6 @@ include jvm/jvm.fs  \ include the jvm
 
 : RunDemoObj ( -- )
   s" testfiles/" jvm_classpath.add()
+  s" ./" jvm_classpath.add()
   s" ObjectCreation" jvm_java
 ;

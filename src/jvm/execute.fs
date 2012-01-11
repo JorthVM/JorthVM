@@ -921,7 +921,9 @@ require exception.fs
 0xB5 2 s" putfield" \ 2[indexbyte1, indexbyte2] ( objectref, value -- )
 \ set field to value in an object objectref, where the field is identified by
 \ a field reference index in constant pool (indexbyte1 ^> 8 + indexbyte2)
->[ jvm_not_implemented ]<
+>[
+  cr .s swap jvm_stack.fetchShort() cells + cr .s !
+]<
 
 0xB3 2 s" putstatic" \ 2[indexbyte1, indexbyte2] ( value -- )
 \ set static field to value in a class, where the field is identified by a

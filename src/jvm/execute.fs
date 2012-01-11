@@ -39,12 +39,16 @@ require exception.fs
 0x2A 0 s" aload_0" \ ( -- objectref )
 \ load a reference onto the stack from local variable 0
 >[
-  jvm_stack.getCurrentFrame() 0 jvm_frame.getLocal()
+  jvm_stack.getCurrentFrame()
+  0 jvm_frame.getLocal()
 ]<
 
 0x2B 0 s" aload_1" \ ( -- objectref )
 \ load a reference onto the stack from local variable 1
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.getCurrentFrame()
+  1 jvm_frame.getLocal()
+]<
 
 0x2C 0 s" aload_2" \ ( -- objectref )
 \ load a reference onto the stack from local variable 2
@@ -78,7 +82,10 @@ require exception.fs
 
 0x4C 0 s" astore_1" \ ( objectref -- )
 \ store a reference into local variable 1
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.getCurrentFrame()
+  1 jvm_frame.setLocal()
+]<
 
 0x4D 0 s" astore_2" \ ( objectref -- )
 \ store a reference into local variable 2

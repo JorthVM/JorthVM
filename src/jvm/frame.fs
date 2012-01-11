@@ -80,8 +80,13 @@ require classfile.fs
 ;
 
 : jvm_frame.getLocal() { addr_fm local -- value }
-\ *G get the retunr address
+\ *G get the value of the local
   addr_fm jvm_frame.local_table + @ local cells + @ 
+;
+
+: jvm_frame.setLocal() { val addr_fm local -- }
+\ *G set the value of the local
+  val addr_fm jvm_frame.local_table + @ local cells + !
 ;
 
 : jvm_frame.numberOfParamters() ( c-addr n -- count )

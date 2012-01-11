@@ -206,10 +206,15 @@ jvm_stack.new() constant jvm_stack
   LOOP
 ;
 
+: show_stack ( -- )
+  base @ >r hex cr ." stack: " .s r> base !
+;
+
 : jvm_stack.next()
   POSTPONE jvm_stack.fetchByte() 
   [ ?debug_trace ] [IF] POSTPONE dup POSTPONE show_insn [ENDIF]
   POSTPONE <[ POSTPONE swap POSTPONE ]>
+  [ ?debug_trace ] [IF] POSTPONE show_stack [ENDIF]
   POSTPONE jvm_stack.incPC()
 ; immediate
 

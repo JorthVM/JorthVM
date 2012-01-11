@@ -374,7 +374,9 @@ require exception.fs
 0xB4 2 s" getfield" \ 2[index1, index2] ( objectref -- value )
 \ get a field value of an object objectref, where the field is identified by
 \ field reference in the constant pool index (index1 ^> 8 + index2)
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.fetchShort() cells + @
+]<
 
 0xB2 2 s" getstatic" \ 2[index1, index2] ( -- value )
 \ get a static field value of a class, where the field is identified by field

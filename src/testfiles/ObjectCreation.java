@@ -7,14 +7,24 @@ public class ObjectCreation {
 	public static void main(String []args) {
 		CreateMe obj = new CreateMe();
 		obj.executeMe();
+		obj.objcOnly();
+		CreateMe.woot();
 	}
 
 	public ObjectCreation() {
-		this.stuff = 0x1337;
+		this.stuff = 0x1300;
+	}
+
+	public void objcOnly() {
+		ObjectCreation.checkMe += 0x3;
 	}
 	
 	public void executeMe() {
 		ObjectCreation.checkMe = 0xdead;
+	}
+
+	public static void woot() {
+		checkMe++;
 	}
 }
 

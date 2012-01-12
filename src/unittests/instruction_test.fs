@@ -142,6 +142,17 @@ program_sipush write-programm
   assert( depth 0 = )
 ;
 
+: invoke_inheritance_test1
+  \ non-static field access and {non-,}static method calls!
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" ObjectCreation" jvm_java
+  s" ObjectCreation" jvm_stack.findClass() throw
+  s" checkMe|I" jvm_class.getStatic() throw
+  assert( 0x1337 = )
+  assert( depth 0 = )
+;
+
 : test
   test_bipush
   test_sipush
@@ -153,4 +164,5 @@ program_sipush write-programm
   static_invocation_test1 
   static_invocation_test2 
   parameter_test1
+  invoke_inheritance_test1
 ;

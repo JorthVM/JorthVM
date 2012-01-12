@@ -22,3 +22,9 @@ include jvm/jvm.fs  \ include the jvm
   jvm_class.getStatic() throw
   ." ObjectCreation.checkMe: " hex. CR
 ;
+
+: RunDemoNative ( -- )
+  s" testfiles/" jvm_classpath.add()
+  s" ./" jvm_classpath.add()
+  s" PrintMe" jvm_java
+;

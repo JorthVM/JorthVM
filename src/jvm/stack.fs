@@ -12,6 +12,7 @@ require classloader.fs
 \ require decode.fs
 require util.fs
 require frame.fs
+require native.fs
 
 \ *S JVM Stack Structure
 \ *E   Stack {
@@ -251,11 +252,23 @@ jvm_stack.new() constant jvm_stack
   0
 ;
 
-: jvm_stack.getNamesFromMethodRef() ( idx -- c-addr1 n1 c-addr2 n2 )
+: jvm_stack.getNamesFromMethodRef() { idx -- c-addr1 n1 c-addr2 n2 ?native }
 \ *G get the class name and nametype from Methodref constant pool entry
+  idx
   jvm_stack.getCurrentFrame() 
   jvm_frame.getClass()
   jvm_class.getRTCP()
+
+  \ check if native
+  dup jvm_rtcp.getClassfile()
+  jvm_cf_methods_addr
+  idx 1- 0 ?DO
+    ( addr_md )
+    dup jvm_md_size +
+  LOOP
+  dup ACC_NATIVE jvm_md_?flags >r
+  ACC_STATIC jvm_md_?flags >r
+
   dup rot jvm_rtcp.getConstpoolByIdx()
   ( addr_rtcp addr_md )
   dup jvm_cp_methodref_class_idx
@@ -270,6 +283,8 @@ jvm_stack.new() constant jvm_stack
   ( c-addr1 n1 addr_rtcp md_idx )
   jvm_rtcp.getNameType() 
   ( c-addr1 n1 c-addr2 n2 )
+  r> r> swap
+  ( c-addr1 n1 c-addr2 n2 ?static ?native)
 ;
 
 : jvm_stack.setCurrentFrame() ( addr_fm -- )
@@ -311,22 +326,35 @@ jvm_stack.new() constant jvm_stack
   jvm_stack.run()
 ;
 
-: jvm_stack.invokestatic() ( idx -- wior )
+: jvm_stack.invokestatic() { idx -- wior }
 \ *G invoke a static method
-  jvm_stack.getNamesFromMethodRef()
-  \ 2swap ." Classname: " 2dup type CR
-  \ 2swap ." NameType: " 2dup type CR
-  jvm_stack.findMethod() throw
-  ( addr_cl addr_md )
-  jvm_stack.getCurrentFrame() \ dynamic link
-  jvm_stack.getPC_next() \ return address
-  jvm_frame.new()
-  dup >r
-  jvm_frame.setParameters()
-  r>
+  idx jvm_stack.getNamesFromMethodRef()
+  ( c-addr1 n1 c-addr2 n2 ?static ?native )
+  IF \ it's native
+    >r
+    s" ." 2swap strcat strcat \ class.nametyp
+    r> IF \ it's static
+      s" .static" strcat
+    ENDIF
+    evaluate
+    0
+  ELSE
+    ( c-addr1 n1 c-addr2 n2 )
+    \ 2swap ." Classname: " 2dup type CR
+    \ 2swap ." NameType: " 2dup type CR
+    idx 
+    jvm_stack.findMethod() throw
+    ( addr_cl addr_md )
+    jvm_stack.getCurrentFrame() \ dynamic link
+    jvm_stack.getPC_next() \ return address
+    jvm_frame.new()
+    dup >r
+    jvm_frame.setParameters()
+    r>
 
-  jvm_stack.setCurrentFrame()
-  0
+    jvm_stack.setCurrentFrame()
+    0
+  ENDIF
 ;
 
 \ ======

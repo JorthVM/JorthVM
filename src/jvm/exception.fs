@@ -17,6 +17,7 @@ s" JVM class not found Exception" exception constant JVM_CLASSNOTFOUND_EXCEPTION
 \ *G
 
 s" JVM word not found Exception" exception constant JVM_WORDNOTFOUND_EXCEPTION
+s" JVM native word not found Exception" exception constant JVM_NATIVENOTFOUND_EXCEPTION
 \ *G
 s" JVM Classfile: unknown Constant Pool Type Exception" exception constant JVM_UNKNOWNCONSTPOOLTYPE_EXCEPTION
 \ *G

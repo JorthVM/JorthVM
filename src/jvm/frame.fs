@@ -142,8 +142,7 @@ require classfile.fs
 \ *G set the parameters
   dup jvm_frame.getClass()
   over jvm_frame.getMethod()
-  \ TODO: implement and use `jvm_md_?flags'
-  dup 0x0008 jvm_fd_?flags invert 1 and >r ( add 1 for this if not static )
+  dup ACC_STATIC jvm_md_?flags invert 1 and >r ( add 1 for this if not static )
   rot jvm_frame.local_table + @ -rot
   ( [arg1, [arg2 ... ]] addr_lt addr_cl addr_md )
   jvm_md_desc_idx

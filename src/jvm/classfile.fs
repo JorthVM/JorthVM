@@ -382,6 +382,11 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   swap -
 ;
 
+: jvm_md_?flags ( addr flag -- f )
+\ *G is flag set
+  swap jvm_md_access_flags and 0<>
+;
+
 : jvm_md_print_access_flags { flags -- }
   flags hex. ." is"
   flags 0x0001 and IF ."  ACC_PUBLIC"       ENDIF \ Declared public; may be accessed from outside its package.

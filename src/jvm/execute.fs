@@ -408,7 +408,16 @@ require exception.fs
 \ get a field value of an object objectref, where the field is identified by
 \ field reference in the constant pool index (index1 ^> 8 + index2)
 >[
-  jvm_stack.fetchShort() cells + @
+  jvm_stack.fetchShort()
+  jvm_stack.getCurrentFrame()
+  jvm_frame.getClass()
+  jvm_class.getRTCP()
+  ( this addr_rtcp idx )
+  jvm_exec.getClassAndNameForField()
+  ( this addr_cl c-addr n)
+  jvm_class.getField_offset() throw
+  ( this off )
+  + @
 ]<
 
 0xB2 2 s" getstatic" \ 2[index1, index2] ( -- value )
@@ -941,7 +950,17 @@ require exception.fs
 \ set field to value in an object objectref, where the field is identified by
 \ a field reference index in constant pool (indexbyte1 ^> 8 + indexbyte2)
 >[
-  cr .s swap jvm_stack.fetchShort() cells + cr .s !
+  jvm_stack.fetchShort()
+  jvm_stack.getCurrentFrame()
+  jvm_frame.getClass()
+  jvm_class.getRTCP()
+  ( this value addr_rtcp idx )
+  jvm_exec.getClassAndNameForField()
+  ( this value addr_cl c-addr n)
+  jvm_class.getField_offset() throw
+  ( this value off )
+  rot ( value off this )
+  + !
 ]<
 
 0xB3 2 s" putstatic" \ 2[indexbyte1, indexbyte2] ( value -- )

@@ -252,22 +252,12 @@ jvm_stack.new() constant jvm_stack
   0
 ;
 
-: jvm_stack.getNamesFromMethodRef() { idx -- c-addr1 n1 c-addr2 n2 ?native }
+: jvm_stack.getNamesFromMethodRef() { idx -- c-addr1 n1 c-addr23 n23 ?static ?native }
 \ *G get the class name and nametype from Methodref constant pool entry
   idx
   jvm_stack.getCurrentFrame() 
   jvm_frame.getClass()
   jvm_class.getRTCP()
-
-  \ check if native
-  dup jvm_rtcp.getClassfile()
-  jvm_cf_methods_addr
-  idx 1- 0 ?DO
-    ( addr_md )
-    dup jvm_md_size +
-  LOOP
-  dup ACC_NATIVE jvm_md_?flags >r
-  ACC_STATIC jvm_md_?flags >r
 
   dup rot jvm_rtcp.getConstpoolByIdx()
   ( addr_rtcp addr_md )
@@ -281,10 +271,24 @@ jvm_stack.new() constant jvm_stack
   ( c-addr1 n1 addr_rtcp addr_md )
   jvm_cp_methodref_nametype_idx
   ( c-addr1 n1 addr_rtcp md_idx )
-  jvm_rtcp.getNameType() 
-  ( c-addr1 n1 c-addr2 n2 )
-  r> r> swap
-  ( c-addr1 n1 c-addr2 n2 ?static ?native)
+  jvm_rtcp.getNameAndType()
+  ( c-addr1 n1 c-addr2 n2 c-addr3 n3 )
+
+  \ TODO: please cleanup (omg)
+  5 pick 5 pick
+  jvm_stack.findAndInitClass() throw
+  jvm_class.getRTCP()
+  jvm_rtcp.getClassfile()
+  ( c-addr1 n1 c-addr2 n2 c-addr3 n3 cf-addr )
+  4 pick 4 pick 4 pick 4 pick
+  jvm_get_method_by_nametype drop
+  ( c-addr1 n1 c-addr2 n2 c-addr3 n3 md-addr )
+  >r jvm_nametype_identifier r> dup
+  ( c-addr1 n1 c-addr23 n23 md-addr )
+  \ check if native and static
+  ACC_STATIC jvm_md_?flags swap
+  ACC_NATIVE jvm_md_?flags
+  ( c-addr1 n1 c-addr23 n23 ?static ?native)
 ;
 
 : jvm_stack.setCurrentFrame() ( addr_fm -- )
@@ -336,13 +340,17 @@ jvm_stack.new() constant jvm_stack
     r> IF \ it's static
       s" .static" strcat
     ENDIF
-    evaluate
-    0
+    \ ." native call: " 2dup type cr
+    TRY
+      evaluate
+      IFERROR JVM_NATIVENOTFOUND_EXCEPTION ELSE 0 ENDIF
+    ENDTRY
+    throw 0
   ELSE
+    drop
     ( c-addr1 n1 c-addr2 n2 )
     \ 2swap ." Classname: " 2dup type CR
     \ 2swap ." NameType: " 2dup type CR
-    idx 
     jvm_stack.findMethod() throw
     ( addr_cl addr_md )
     jvm_stack.getCurrentFrame() \ dynamic link

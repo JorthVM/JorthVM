@@ -71,8 +71,8 @@ require classfile.fs
   jvm_cp_utf8_c-ref
 ;
 \ FIXME other name?
-: jvm_rtcp.getNameType() { addr idx -- c-addr n }
-\ *G get the qualified NameType from a class idx
+
+: jvm_rtcp.getNameAndType() { addr idx -- c-addr n }
   addr idx jvm_rtcp.getConstpoolByIdx()
   ( nametype_addr)
   dup jvm_cp_nametype_name_idx
@@ -95,7 +95,11 @@ require classfile.fs
   ( c-addr n addr_utf8)
   jvm_cp_utf8_c-ref
   ( c-addr n c-addr2 n2)
-  jvm_nametype_identifier
+;
+
+: jvm_rtcp.getNameType() { addr idx -- c-addr n }
+\ *G get the qualified NameType from a class idx
+  addr idx jvm_rtcp.getNameAndType() jvm_nametype_identifier
 ;
 
 : jvm_rtcp.getClass_info() ( addr -- wid )

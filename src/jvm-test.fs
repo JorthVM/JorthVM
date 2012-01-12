@@ -26,5 +26,8 @@ include jvm/jvm.fs  \ include the jvm
 : RunDemoNative ( -- )
   s" testfiles/" jvm_classpath.add()
   s" ./" jvm_classpath.add()
-  s" PrintMe" jvm_java
+  s" NativeTest1" jvm_java
+  s" NativeTest1" jvm_stack.findClass() throw
+  s" a|I" jvm_class.getStatic() throw
+  ." NativeTest1.a: " hex. CR
 ;

@@ -140,12 +140,26 @@ require rtconstpool.fs
   jvm_class.field_length + !
 ;
 
-: jvm_class.getField_offset() { addr c-addr n -- off woir }
-\ *G get the offset of a static field
-  addr jvm_class.getField_offset_wid()
-  c-addr n rot
-  jvm_find_word throw
-  0
+: jvm_class.getField_offset() { addr c-addr n -- off wior }
+  addr BEGIN 
+    dup jvm_class.getField_offset_wid()
+    c-addr n rot
+    TRY
+      jvm_find_word
+      IFERROR
+        2drop \ weird stack effect o_O
+      ENDIF
+    ENDTRY
+    WHILE \ if false, we're done (i.e. found an offset)
+    drop \ we don't want this value then
+    jvm_class.getSuper() ( addr_super )
+    dup 0= IF
+      \ we're are at java/lang/Object now, hence
+      \ this field doesn't exist
+      1 JVM_WORDNOTFOUND_EXCEPTION throw
+    ENDIF
+  REPEAT
+  swap drop 0
 ;
 
 : jvm_class.getStaticOffset() { addr off -- value }

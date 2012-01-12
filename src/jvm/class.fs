@@ -242,7 +242,44 @@ require rtconstpool.fs
   wordlist over jvm_class.field_offset + !
   wordlist over jvm_class.method_list + !
   \ 0 over jvm_class.field_table + !
-  \ 0 over jvm_class.field_length + !
+  cell over jvm_class.field_length + ! \ reserver one cell for class pointer
+;
+
+: jvm_class.createStaticFields() { addr_cf addr_cl addr count -- ?? }
+  0 addr count 0 ?DO
+    ( off )
+    \ off next free offset of the table
+    \ addr address of the field entry
+    dup ACC_STATIC jvm_fd_?flags IF
+      addr_cf over jvm_fd_identifier
+      ( off addr c-addr n )
+      addr_cf jvm_cf_constpool_addr
+      ( off addr c-addr n addr2 )
+      3 pick jvm_fd_desc_idx
+      ( off addr c-addr n addr2 idx2 )
+      jvm_constpool_idx
+      ( off addr c-addr n addr3 )
+      jvm_cp_utf8_c-ref
+      ( off addr c-addr n c-addr2 n2 )
+      jvm_field_desc_size -rot
+      ( off addr size c-addr n )
+      4 pick -rot
+      ( off addr size off c-addr n )
+      addr_cl jvm_class.getField_offset_wid()
+      ( off addr size off c-addr n wid )
+      jvm_add_word
+      ( off addr size )
+      rot + swap
+    ENDIF
+
+    dup jvm_fd_size + \ next entry
+  LOOP
+  drop \ drop last+1 field address
+
+  allocate throw                                         \ allocate static table memory
+  \ TODO Initial values §5.4.2, 1st paragraph
+
+  addr_cl jvm_class.field_table + !                         \ store table
 ;
 
 \ TODO move that into a deferred.fs file or so
@@ -280,43 +317,10 @@ defer jvm_stack.findAndInitClass()
   \ TODO add super class
 
   \ create static fields
-  0
+  addr_cf addr_cl
   addr_cf jvm_cf_fields_addr
   addr_cf jvm_cf_fields_count
-  0 ?DO
-    ( off addr )
-    \ off next free offset of the table
-    \ addr address of the field entry
-    dup ACC_STATIC jvm_fd_?flags IF 
-      addr_cf over jvm_fd_identifier
-      ( off addr c-addr n )
-      addr_cf jvm_cf_constpool_addr 
-      ( off addr c-addr n addr2 )
-      3 pick jvm_fd_desc_idx 
-      ( off addr c-addr n addr2 idx2 )
-      jvm_constpool_idx
-      ( off addr c-addr n addr3 )
-      jvm_cp_utf8_c-ref
-      ( off addr c-addr n c-addr2 n2 )
-      jvm_field_desc_size -rot
-      ( off addr size c-addr n )
-      4 pick -rot
-      ( off addr size off c-addr n )
-      addr_cl jvm_class.getField_offset_wid() 
-      ( off addr size off c-addr n wid )
-      jvm_add_word
-      ( off addr size )
-      rot + swap 
-    ENDIF
-
-    dup jvm_fd_size + \ next entry
-  LOOP
-  drop \ drop last+1 field address
-  
-  allocate throw                                         \ allocate static table memory
-  \ TODO Initial values §5.4.2, 1st paragraph
-
-  addr_cl jvm_class.field_table + !                         \ store table
+  jvm_class.createStaticFields()
 
   \ method
   addr_cf jvm_cf_methods_addr

@@ -943,6 +943,9 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
       jvm_cp_long_bytes 
       swap hex. hex.
     ENDOF
+    CONSTANT_String OF
+      ." idx: " addr_cpe jvm_cp_string_idx .
+    ENDOF
   ENDCASE
 ;
 

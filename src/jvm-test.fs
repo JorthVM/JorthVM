@@ -31,3 +31,9 @@ include jvm/jvm.fs  \ include the jvm
   s" a|I" jvm_class.getStatic() throw
   ." NativeTest1.a: " hex. CR
 ;
+
+: RunDemoPrintln ( -- )
+  s" testfiles/" jvm_classpath.add()
+  s" ./" jvm_classpath.add()
+  s" StringTest1" jvm_java
+;

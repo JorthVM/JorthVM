@@ -783,9 +783,23 @@ require exception.fs
 \ push the long 1 onto the stack
 >[ jvm_not_implemented ]<
 
-0x12 0 s" ldc" \ 1[index] ( -- value )
+0x12 1 s" ldc" \ 1[index] ( -- value )
 \ push a constant #index from a constant pool (String, int or float) onto the stack
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.fetchByte()
+
+  jvm_stack.getCurrentFrame()
+  jvm_frame.getClass()
+  jvm_class.getRTCP()
+  dup rot ( addr_rtcp addr_rtcp idx )
+  jvm_rtcp.getConstpoolByIdx() ( addr_rtcp addr_str )
+  \ TODO: should also work for int and float
+  dup jvm_cp_tag assert( CONSTANT_String = )
+  jvm_cp_string_idx ( addr_rtcp idxu )
+  swap jvm_rtcp.getClassfile() ( idxu addr_cl )
+  jvm_cf_constpool_addr ( idxu addr_cf )
+  swap jvm_constpool_idx ( addr )
+]<
 
 0x13 2 s" ldc_w" \ 2[indexbyte1, indexbyte2] ( -- value )
 \ push a constant #index from a constant pool (String, int or float) onto the

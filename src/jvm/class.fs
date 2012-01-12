@@ -245,32 +245,37 @@ require rtconstpool.fs
   cell over jvm_class.field_length + ! \ reserver one cell for class pointer
 ;
 
-: jvm_class.createStaticFields() { addr_cf addr_cl addr count -- ?? }
+: jvm_class.createFields() { addr_cf addr_cl addr count -- ?? }
   0 addr count 0 ?DO
-    ( off )
+    ( off addr )
     \ off next free offset of the table
     \ addr address of the field entry
-    dup ACC_STATIC jvm_fd_?flags IF
-      addr_cf over jvm_fd_identifier
-      ( off addr c-addr n )
-      addr_cf jvm_cf_constpool_addr
-      ( off addr c-addr n addr2 )
-      3 pick jvm_fd_desc_idx
-      ( off addr c-addr n addr2 idx2 )
-      jvm_constpool_idx
-      ( off addr c-addr n addr3 )
-      jvm_cp_utf8_c-ref
-      ( off addr c-addr n c-addr2 n2 )
-      jvm_field_desc_size -rot
-      ( off addr size c-addr n )
+    addr_cf over jvm_fd_identifier
+    ( off addr c-addr n )
+    addr_cf jvm_cf_constpool_addr
+    ( off addr c-addr n addr2 )
+    3 pick jvm_fd_desc_idx
+    ( off addr c-addr n addr2 idx2 )
+    jvm_constpool_idx
+    ( off addr c-addr n addr3 )
+    jvm_cp_utf8_c-ref
+    ( off addr c-addr n c-addr2 n2 )
+    jvm_field_desc_size -rot
+    ( off addr size c-addr n )
+    3 pick ACC_STATIC jvm_fd_?flags IF
       4 pick -rot
-      ( off addr size off c-addr n )
-      addr_cl jvm_class.getField_offset_wid()
-      ( off addr size off c-addr n wid )
-      jvm_add_word
-      ( off addr size )
-      rot + swap
+    ELSE
+      addr_cl jvm_class.getField_length() -rot
+      ( off addr size foff c-addr n )
+      \ FIXME: reserve space according to the actual field size
+      2 cells addr_cl jvm_class.incField_length()
     ENDIF
+    ( off addr size off c-addr n )
+    addr_cl jvm_class.getField_offset_wid()
+    ( off addr size off c-addr n wid )
+    jvm_add_word
+    ( off addr size )
+    rot + swap
 
     dup jvm_fd_size + \ next entry
   LOOP
@@ -320,7 +325,7 @@ defer jvm_stack.findAndInitClass()
   addr_cf addr_cl
   addr_cf jvm_cf_fields_addr
   addr_cf jvm_cf_fields_count
-  jvm_class.createStaticFields()
+  jvm_class.createFields()
 
   \ method
   addr_cf jvm_cf_methods_addr

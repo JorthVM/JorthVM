@@ -5,11 +5,16 @@ IMGHOST=http://wien.tomnetworks.com/jvm
 
 UNITTEST_DIR=unittests
 
+CLASSFILES := $(subst .java,.class,$(shell ls testfiles/*.java))
 
-.PHONY: all unittests bigendian clean
 
-all: testfiles/StaticIntOther.class testfiles/StaticIntOtherStore.class
+.PHONY: all unittests bigendian clean ohai
+
+all: $(CLASSFILES)
 	$(FORTH) jvm-test.fs
+
+ohai: $(CLASSFILES)
+	$(FORTH) jvm-test.fs -e RunDemoPrintln -e bye
 
 %.class: %.java
 	make -C $(dir $@) $(notdir $@)

@@ -1007,7 +1007,7 @@ require exception.fs
   jvm_stack.getCurrentFrame()
   jvm_frame.getDynamicLink()
   0= IF
-    CR ." Data Stack: " CR .s CR
+    [ ?debug_trace ] [IF] CR ." Data Stack: " CR .s CR [ENDIF]
     \ return from main
     JVM_RETURN_EXCEPTION throw
   ELSE

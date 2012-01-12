@@ -201,7 +201,7 @@ jvm_stack.new() constant jvm_stack
 ;
 
 
-: ?debug_trace true ;
+: ?debug_trace false ;
 
 : show_insn ( opcode -- )
   dup jvm_decode.mnemonic() CR type
@@ -223,7 +223,7 @@ jvm_stack.new() constant jvm_stack
 ; immediate
 
 : jvm_stack.run()
-  ." run() start " .s CR
+  [ ?debug_trace ] [IF] ." run() start " .s CR [ENDIF]
   try
     begin 
       jvm_stack.next()
@@ -238,7 +238,7 @@ jvm_stack.new() constant jvm_stack
   ( woir )
   throw
   \ TODO handle exceptions
-  ." run() terminating " .s CR
+  [ ?debug_trace ] [IF] ." run() terminating " .s CR [ENDIF]
 ;
 
 : jvm_stack.findMethod() { c-addr1 n1 c-addr2 n2 -- addr_c2 addr_md wior }

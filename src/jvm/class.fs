@@ -95,8 +95,9 @@ require rtconstpool.fs
  4 cells constant jvm_class.field_offset
  5 cells constant jvm_class.field_table
  6 cells constant jvm_class.method_list
+ 7 cells constant jvm_class.field_length
 
- 7 cells constant jvm_class.size()
+ 8 cells constant jvm_class.size()
 
  1 constant jvm_class.STATUS:UNINIT
  2 constant jvm_class.STATUS:PREPARED
@@ -125,6 +126,18 @@ require rtconstpool.fs
 : jvm_class.getField_offset_wid() ( addr -- wid )
 \ *G get the wordlist id for the static field offset translation
   jvm_class.field_offset + @
+;
+
+: jvm_class.getField_length() ( addr -- n )
+\ *G get length of non-static field members
+  jvm_class.field_length + @
+;
+
+: jvm_class.incField_length() ( inc addr -- )
+\ *G increment length of non-static field members with `n'
+  dup jvm_class.getField_length() ( inc addr n )
+  rot ( addr n inc ) + swap ( incn addr )
+  jvm_class.field_length + !
 ;
 
 : jvm_class.getField_offset() { addr c-addr n -- off woir }
@@ -229,6 +242,7 @@ require rtconstpool.fs
   wordlist over jvm_class.field_offset + !
   wordlist over jvm_class.method_list + !
   \ 0 over jvm_class.field_table + !
+  \ 0 over jvm_class.field_length + !
 ;
 
 \ TODO move that into a deferred.fs file or so
@@ -253,7 +267,12 @@ defer jvm_stack.findAndInitClass()
     2dup ( scl_str n scl_str n )
     jvm_stack.newClass() ( scl_str n )
     jvm_stack.findAndInitClass() throw ( addr_super_class )
-    addr_cl jvm_class.super + !
+    dup ( addr_super_class addr_super_class )
+    addr_cl jvm_class.super + ! ( addr_super_class )
+
+    \ set field length from superclass
+    jvm_class.getField_length() ( length )
+    addr_cl jvm_class.incField_length()
   ENDIF
   
   \ create runtime constant pool

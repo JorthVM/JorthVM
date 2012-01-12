@@ -140,9 +140,9 @@ require rtconstpool.fs
   jvm_class.field_length + !
 ;
 
-: jvm_class.getField_offset() { addr c-addr n -- off wior }
+: jvm_class.getInheritanceStuff() { addr c-addr n wid-xt -- addr_cl off wior }
   addr BEGIN 
-    dup jvm_class.getField_offset_wid()
+    dup wid-xt execute
     c-addr n rot
     TRY
       jvm_find_word
@@ -159,7 +159,13 @@ require rtconstpool.fs
       1 JVM_WORDNOTFOUND_EXCEPTION throw
     ENDIF
   REPEAT
-  swap drop 0
+  ( addr_cl off )
+  0
+;
+
+: jvm_class.getField_offset() { addr c-addr n -- off wior }
+  addr c-addr n ['] jvm_class.getField_offset_wid()
+  jvm_class.getInheritanceStuff() rot drop
 ;
 
 : jvm_class.getStaticOffset() { addr off -- value }
@@ -206,12 +212,10 @@ require rtconstpool.fs
   jvm_class.method_list + @
 ;
 
-: jvm_class.getMethod() { addr c-addr n -- addr_md woir }
+: jvm_class.getMethod() { addr c-addr n -- addr_cl addr_md woir }
 \ *G get the address of a method entry
-  addr jvm_class.getMethodList()
-  c-addr n rot
-  jvm_find_word throw
-  0
+  addr c-addr n ['] jvm_class.getMethodList()
+  jvm_class.getInheritanceStuff()
 ;
 
 : jvm_class.getMethodCodeAttr() { addr addr_md -- addr_code_attr }

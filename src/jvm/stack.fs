@@ -240,11 +240,14 @@ jvm_stack.new() constant jvm_stack
   ." run() terminating " .s CR
 ;
 
-: jvm_stack.findMethod() { c-addr1 n1 c-addr2 n2 -- addr_cl addr_md wior }
+: jvm_stack.findMethod() { c-addr1 n1 c-addr2 n2 -- addr_c2 addr_md wior }
 \ *G find a method return class address and method attribute address
   c-addr1 n1 jvm_stack.findAndInitClass() throw
   ( addr-cl )
-  dup c-addr2 n2 jvm_class.getMethod() throw
+  c-addr2 n2 jvm_class.getMethod() throw
+  ( addr-cl2 addr_md )
+  \ addr-cl2 can be different to addr-cl, e.g. when the
+  \ method only exists in the superclass
   0
 ;
 

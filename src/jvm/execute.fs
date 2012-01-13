@@ -177,7 +177,9 @@ require exception.fs
 
 0x55 0 s" castore" \ ( arrayref, index, value -- )
 \ store a char into an array
->[ jvm_not_implemented ]<
+>[
+  -rot + c!
+]<
 
 0xC0 2 s" checkcast" \ 2[indexbyte1, indexbyte2] ( objectref -- objectref )
 \ checks whether an objectref is of a certain type, the class reference of
@@ -459,7 +461,10 @@ require exception.fs
 0xA7 2 s" goto" \ 2[branchbyte1, branchbyte2] ( -- )
 \ goes to another instruction at branchoffset (signed short constructed from
 \ unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.fetchSignedShort()
+  jvm_stack.getPC() + jvm_stack.setPC()
+]<
 
 0xC8 4 s" goto_w" \ 4[branchbyte1, branchbyte2, branchbyte3, branchbyte4] ( -- )
 \ goes to another instruction at branchoffset (signed int constructed from
@@ -552,9 +557,7 @@ require exception.fs
 \ if ints are equal, branch to instruction at branchoffset (signed short
 \ constructed from unsigned bytes branchbyte1 ^> 8 + branchbyte2)
 >[
-  =
-  jvm_stack.fetchShort() \ TODO: signed short!
-  swap IF jvm_stack.setPC() ELSE drop ENDIF
+  = IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
 ]<
 
 0xA0 2 s" if_icmpne" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
@@ -572,9 +575,7 @@ require exception.fs
 \ branchoffset (signed short constructed from unsigned bytes
 \ branchbyte1 ^> 8 + branchbyte2)
 >[
-  >=
-  jvm_stack.fetchShort() \ TODO: signed short!
-  swap IF jvm_stack.setPC() ELSE drop ENDIF
+  >= IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
 ]<
 
 0xA3 2 s" if_icmpgt" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
@@ -631,7 +632,13 @@ require exception.fs
 
 0x84 2 s" iinc" \ 2[index, const] ( -- )
 \ increment local variable #index by signed byte const
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.getCurrentFrame() ( addr_fm )
+  jvm_stack.fetchByte() 2dup ( addr_fm idx addr_fm idx )
+  jvm_frame.getLocal() ( addr_fm idx value )
+  jvm_stack.fetchByte() + ( addr_fm idx nvalue )
+  -rot jvm_frame.setLocal()
+]<
 
 0x15 1 s" iload" \ 1[index] ( -- value )
 \ load an int value from a local variable #index
@@ -989,7 +996,7 @@ require exception.fs
 
 0x57 0 s" pop" \ ( value -- )
 \ discard the top value on the stack
->[ jvm_not_implemented ]<
+>[ drop ]<
 
 0x58 0 s" pop2" \ ( {value2, value1} -- )
 \ discard the top two values on the stack (or one value, if it is a double or long)

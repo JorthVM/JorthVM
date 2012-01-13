@@ -69,17 +69,27 @@ jvm_stack.new() constant jvm_stack
 ;
 
 : jvm_stack.fetchByte() ( -- byte )
-\ *G return program counter 
+\ *G return byte pointed by the program counter
    jvm_stack.getPC_next() c@
    jvm_stack jvm_stack.pc_next + 1 swap 
    +!
 ;
 
 : jvm_stack.fetchShort() ( -- short )
+\ *G return short pointed by the program counter
   jvm_stack.fetchByte() \ load byte
   8 lshift
   jvm_stack.fetchByte() \ load byte
   or
+;
+
+: jvm_stack.fetchSignedShort() ( -- short )
+\ *G return signed short pointed by the program counter
+  jvm_stack.fetchShort()
+  dup 0x8000 and \ sign ext
+  if
+  [ -1 16 lshift ] literal or
+  endif
 ;
 
 : jvm_stack.currentInstruction() ( -- opcode )

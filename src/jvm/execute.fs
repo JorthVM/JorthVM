@@ -752,7 +752,10 @@ require exception.fs
 
 0x3D 0 s" istore_2" \ ( value -- )
 \ store int value into variable 2
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.getCurrentFrame()
+  1 jvm_frame.setLocal()
+]<
 
 0x3E 0 s" istore_3" \ ( value -- )
 \ store int value into variable 3

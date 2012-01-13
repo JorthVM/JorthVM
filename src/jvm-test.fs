@@ -3,6 +3,7 @@ include jvm/jvm.fs  \ include the jvm
 
 : RunDemo ( -- )
   s" testfiles/" jvm_classpath.add()
+  s" ./" jvm_classpath.add()
   s" StaticIntOther" jvm_java
   \ show static values
   s" StaticIntOtherStore" jvm_stack.findClass() throw

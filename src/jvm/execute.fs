@@ -551,7 +551,11 @@ require exception.fs
 0x9F 2 s" if_icmpeq" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
 \ if ints are equal, branch to instruction at branchoffset (signed short
 \ constructed from unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  =
+  jvm_stack.fetchShort() \ TODO: signed short!
+  swap IF jvm_stack.setPC() ELSE drop ENDIF
+]<
 
 0xA0 2 s" if_icmpne" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
 \ if ints are not equal, branch to instruction at branchoffset (signed short
@@ -567,7 +571,11 @@ require exception.fs
 \ if value1 is greater than or equal to value2, branch to instruction at
 \ branchoffset (signed short constructed from unsigned bytes
 \ branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  >=
+  jvm_stack.fetchShort() \ TODO: signed short!
+  swap IF jvm_stack.setPC() ELSE drop ENDIF
+]<
 
 0xA3 2 s" if_icmpgt" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
 \ if value1 is greater than value2, branch to instruction at branchoffset
@@ -730,7 +738,10 @@ require exception.fs
 
 0x3C 0 s" istore_1" \ ( value -- )
 \ store int value into variable 1
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.getCurrentFrame()
+  1 jvm_frame.setLocal()
+]<
 
 0x3D 0 s" istore_2" \ ( value -- )
 \ store int value into variable 2
@@ -966,7 +977,11 @@ require exception.fs
 
 0xBC 1 s" newarray" \ 1[atype] ( count -- arrayref )
 \ create new array with count elements of primitive type identified by atype
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.fetchByte()
+  assert( 5 = ) \ TODO: implement more types
+  allocate throw
+]<
 
 0x00 0 s" nop" \ ( -- )
 \ perform no operation

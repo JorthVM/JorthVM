@@ -38,3 +38,9 @@ include jvm/jvm.fs  \ include the jvm
   s" ./" jvm_classpath.add()
   s" StringTest1" jvm_java
 ;
+
+: RunDemoString ( -- )
+  s" testfiles/" jvm_classpath.add()
+  s" ./" jvm_classpath.add()
+  s" StringTest3" jvm_java
+;

@@ -221,7 +221,7 @@ jvm_stack.new() constant jvm_stack
 ;
 
 
-: ?debug_trace false ;
+: ?debug_trace true ;
 
 : show_insn ( opcode -- )
   dup jvm_decode.mnemonic() CR type

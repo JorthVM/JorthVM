@@ -180,7 +180,6 @@ program_sipush write-programm
   jvm_stack.findClass() throw
   dup 
   s" foo|I" jvm_class.getStatic() throw
-  ." BLABLABLA " .s CR
   assert( 0x42 = )
   s" bar|I" jvm_class.getStatic() throw
   assert( 0x84 = )

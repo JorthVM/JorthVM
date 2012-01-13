@@ -222,7 +222,6 @@ jvm_stack.new() constant jvm_stack
 
 
 : ?debug_trace false ;
-: ?debug_trace true ;
 
 : show_insn ( opcode -- )
   dup jvm_decode.mnemonic() CR type
@@ -355,7 +354,6 @@ jvm_stack.new() constant jvm_stack
 :noname ( addr_cl -- wior )
 \ *G Execute the static initializer
   \ dup jvm_class.method_list + @ wordlist-words
-  ." pre clinit check" .s CR
   ( addr_cl )
   dup
   try
@@ -363,34 +361,23 @@ jvm_stack.new() constant jvm_stack
     true
   iferror 
     ( addr_cl addr_cl wior )
-    ." iferror " .s CR
     drop \ drop woir
     false
   endif
   endtry
   ( addr_cl addr_md|addr_cl f )
   IF
-    ." clinit found " .s CR
     ( addr_cl addr_md )
     \ TODO bad habbit
     jvm_stack.getCurrentFrame() >r \ dynamic link
     jvm_stack.getPC() >r \ return address
     jvm_stack.getPC_next() >r \ return address
     0 0
-    ." clinit found 2 " .s CR
     jvm_frame.new()
-    ." clinit found 3 " .s CR
     ( frame )
     \ TODO dup >r jvm_frame.setParameters() r>
 
-    \ FIXME check frame
-    ." JVM Stack:" CR
-    jvm_stack.getCurrentFrame() hex. CR \ dynamic link
-    jvm_stack.getPC() hex. CR \ return address
-    jvm_stack.getPC_next() hex. CR \ return address
-
     jvm_stack.setCurrentFrame()
-    ." clinit found 4 " .s CR
     jvm_stack.run()
     r> \ jvm_stack.getPC_next()             \ return address
     jvm_stack jvm_stack.pc_next + !       \ restore frame
@@ -399,15 +386,7 @@ jvm_stack.new() constant jvm_stack
     r> \ jvm_stack.getCurrentFrame()        \ dynamic link
     jvm_stack jvm_stack.currentFrame + !  \ restore frame
     
-    \ FIXME check frame
-    ." JVM Stack:" CR
-    jvm_stack.getCurrentFrame() hex. CR \ dynamic link
-    jvm_stack.getPC() hex. CR \ return address
-    jvm_stack.getPC_next() hex. CR \ return address
-    ." clinit found end " .s CR
-    \ FIXME check frame
   ELSE
-    ." clinit not found " .s CR
     2drop \ addr_cl addr_cl
   ENDIF
   0

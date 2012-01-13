@@ -401,30 +401,7 @@ defer jvm_stack.invokeStaticInitializer()
   \ TODO init superclass
   \ TODO call static initialazer
   dup jvm_class.STATUS:INIT addr_cl jvm_class.status + ! \ store status
-  CR
-  ." pre invokeStaticInitializer() " .s CR
   jvm_stack.invokeStaticInitializer() throw
-  \ drop
-  ." post invokeStaticInitializer() " .s CR
-\  dup jvm_class.method_list + @ wordlist-words
-\  ." pre clinit check" .s CR
-\  try
-\    s" <init>|()V" jvm_class.getMethod() throw
-\    true
-\  iferror 
-\    ." iferror " .s CR
-\    drop \ drop woir
-\    false
-\  endif
-\  endtry
-\  IF
-\    ." clinit found " .s CR
-\    2drop
-\  ELSE
-\    ." clinit not found " .s CR
-\  ENDIF
-  ( addr_cl addr_md )
-  \ 2drop
   0
 ;
 

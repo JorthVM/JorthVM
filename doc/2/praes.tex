@@ -1,0 +1,72 @@
+\documentclass{beamer}
+\usepackage{pgfpages}
+\usepackage{hyperref}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage[utf8]{inputenc}
+\usepackage{verbatim}
+\usepackage{listings}
+
+% no navigation icons
+\setbeamertemplate{navigation symbols}{}
+\usetheme{Copenhagen}
+%gets rid of bottom navigation bars
+\setbeamertemplate{footline}[page number]{}
+
+%gets rid of navigation symbols
+\setbeamertemplate{navigation symbols}{}
+\usecolortheme{seahorse}
+\usefonttheme{professionalfonts}
+
+\title{JorthVM\\[0.2cm]\url{https://github.com/JorthVM/JorthVM}\\\small{Stack-Based Programming (WS2011)}}
+\author{Sebastian Rumpl \and Josef Eisl \and Bernhard
+Urban\\\includegraphics{../github}\vspace{-1cm}}
+
+\begin{document}
+\frame{\titlepage}
+%%%%%%
+\begin{frame}
+	\frametitle{Implemented}
+	\begin{itemize}
+		\item class loading, classfile parsing
+		\item static field access, calling static methods
+		\begin{itemize}
+			\item static initializer works too \texttt{:-)}
+		\end{itemize}
+		\item object creation, field access and method calling
+		\item inheritance, using wordlists
+		\item native calls, using forth words
+	\end{itemize}
+\end{frame}
+
+\lstset{
+	basicstyle=\scriptsize
+}
+\begin{frame}[fragile]
+	\frametitle{Forth Features used}
+	
+	\begin{itemize}
+		\item decode: defining a instruction
+		\begin{lstlisting}
+		0x11 2 s" sipush" \ 2[byte1, byte2] ( -- value )
+		>[
+		   <[ bipush ]> \ fetch high byte and sign ext
+		   8 lshift
+		   jvm_stack.fetchByte() or \ fetch low byte
+		]<
+		\end{lstlisting}
+		\pause
+		\item wordlists: ``recursive'' search for method/field entry
+		\pause
+		\item conditional compilation: \texttt{?bigendian},
+		\texttt{?debug\_trace}, \dots
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\begin{center}
+		demo
+	\end{center}
+\end{frame}
+\end{document}

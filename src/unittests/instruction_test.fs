@@ -153,6 +153,35 @@ program_sipush write-programm
   assert( depth 0 = )
 ;
 
+: static_inititilazer_test1
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" StaticFieldInit" 2dup 
+  jvm_java
+  jvm_stack.findClass() throw
+  dup 
+  s" foo|I" jvm_class.getStatic() throw
+  ." BLABLABLA " .s CR
+  assert( 0x42 = )
+  s" bar|I" jvm_class.getStatic() throw
+  assert( 0x84 = )
+  assert( depth 0 = )
+;
+
+: static_inititilazer_test2
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" StaticInitializer" 2dup 
+  jvm_java
+  jvm_stack.findClass() throw
+  dup 
+  s" foo|I" jvm_class.getStatic() throw
+  assert( 0x42 = )
+  s" bar|I" jvm_class.getStatic() throw
+  assert( 0x84 = )
+  assert( depth 0 = )
+;
+
 : test
   test_bipush
   test_sipush
@@ -165,4 +194,6 @@ program_sipush write-programm
   static_invocation_test2 
   parameter_test1
   invoke_inheritance_test1
+  static_inititilazer_test1
+  static_inititilazer_test2
 ;

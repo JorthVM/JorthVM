@@ -10,3 +10,7 @@
 : java/io/PrintStream.println|(Ljava/lang/String;)V ( this utf8_str -- )
   jvm_constpool_print_utf8 cr drop
 ;
+
+: java/lang/Object.registerNatives|()V.static ( )
+  
+;

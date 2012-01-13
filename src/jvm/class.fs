@@ -213,9 +213,17 @@ require rtconstpool.fs
 ;
 
 : jvm_class.getMethod() { addr c-addr n -- addr_cl addr_md woir }
-\ *G get the address of a method entry
+\ *G get the address of a method entry and the according class (might be a super class)
   addr c-addr n ['] jvm_class.getMethodList()
   jvm_class.getInheritanceStuff()
+;
+
+: jvm_class.getMethodNoSuper() { addr c-addr n -- addr_md woir }
+\ *G get the address of a method entry
+  addr jvm_class.getMethodList()
+  c-addr n rot
+  jvm_find_word throw
+  0
 ;
 
 : jvm_class.getMethodCodeAttr() { addr addr_md -- addr_code_attr }
@@ -308,6 +316,7 @@ require rtconstpool.fs
 \ TODO move that into a deferred.fs file or so
 defer jvm_stack.newClass()
 defer jvm_stack.findAndInitClass()
+defer jvm_stack.invokeStaticInitializer()
 
 : jvm_class.prepare() { addr_cl loader addr_cf -- wior }
 \ *G prepare a class using a classfile and a loader
@@ -373,6 +382,11 @@ defer jvm_stack.findAndInitClass()
   \ TODO init superclass
   \ TODO call static initialazer
   dup jvm_class.STATUS:INIT addr_cl jvm_class.status + ! \ store status
+  CR
+  ." pre invokeStaticInitializer() " .s CR
+  jvm_stack.invokeStaticInitializer() throw
+  \ drop
+  ." post invokeStaticInitializer() " .s CR
 \  dup jvm_class.method_list + @ wordlist-words
 \  ." pre clinit check" .s CR
 \  try
@@ -391,7 +405,6 @@ defer jvm_stack.findAndInitClass()
 \    ." clinit not found " .s CR
 \  ENDIF
   ( addr_cl addr_md )
-  drop
   \ 2drop
   0
 ;

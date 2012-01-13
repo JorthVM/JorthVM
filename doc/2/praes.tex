@@ -19,9 +19,9 @@
 \usecolortheme{seahorse}
 \usefonttheme{professionalfonts}
 
-\title{JorthVM\\[0.2cm]\url{https://github.com/JorthVM/JorthVM}\\\small{Stack-Based Programming (WS2011)}}
+\title{JorthVM\\\small{Stack-Based Programming (WS2011)}}
 \author{Sebastian Rumpl \and Josef Eisl \and Bernhard
-Urban\\\includegraphics{../github}\vspace{-1cm}}
+Urban\\\includegraphics{../github}\\\url{https://github.com/JorthVM/JorthVM}}
 
 \begin{document}
 \frame{\titlepage}
@@ -63,6 +63,8 @@ $ wc -l testfiles/*.java
 	\frametitle{Forth Features used}
 	
 	\begin{itemize}
+		\item forth stack $\leftrightarrow$ JVM stack
+		\pause
 		\item decode: defining a instruction
 		\pause
 		\begin{verbatim}

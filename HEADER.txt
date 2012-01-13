@@ -1,4 +1,4 @@
-FORTH JVM
+JorthVM
 =========
 
 Java Virtual Machine
@@ -34,7 +34,7 @@ frame.
 
 ### Operant Stack
 
-Conceptually the operant stack is part of the current frame. In Forth JVM the Forth stack is used
+Conceptually the operant stack is part of the current frame. In JorthVM the Forth stack is used
 for operants wereas other frame data (local variables, previous frame pointer, etc.) are 
 stored on the heap.
 
@@ -93,7 +93,7 @@ Core
 
 ### Threading Technique `jvm_next`  
 
-The main part of Forth JVM is the so-called _NEXT routine_. It repeatedly performes the following 
+The main part of JorthVM is the so-called _NEXT routine_. It repeatedly performes the following 
 tasks:
 
 1. load the next instruction

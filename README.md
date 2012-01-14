@@ -2,8 +2,8 @@ JorthVM - A Java Virtual Machine written in Forth
 
 GENERAL INFORMATION
 ===================
-JorthJVM is an implementation of the Java Virual Machine written in Forth.
-
+JorthVM is an implementation of the Java Virual Machine written in Forth.
+join us at #JorthVM on irc.oftc.net !
 
 USAGE
 =====
@@ -75,4 +75,3 @@ Forth JVM is written by
 - Sebastian Rumpl <e0828489@student.tuwien.ac.at>
 - Bernhard Urban <lewurm@gmail.com>
 - Josef Eisl <zapster@zapster.cc>
-

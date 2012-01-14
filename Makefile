@@ -23,7 +23,7 @@ PP=cpp -P
 
 DOCS: HEADER.html README.html implementation.html
 
-.PHONY: all test
+.PHONY: all test clean
 
 all: $(DOCS)
 
@@ -33,8 +33,9 @@ test:
 %.html: %.md
 	$(SM) $< > $@
 
-%.html: %.txt
-	$(SM) $< > $@
-
 implementation.html: implementation.tmpl HEADER.html
 	$(PP) $< $@ 
+
+clean:
+	make -C src $@
+	rm *.html

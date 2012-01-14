@@ -695,6 +695,7 @@ require exception.fs
 \ invoke a static method, where the method is identified by method reference
 \ index in constant pool (indexbyte1 ^> 8 + indexbyte2)
 >[ 
+  [ ?debug_trace ] [IF] jvm_stack.incInvoke() [ENDIF]
   jvm_stack.fetchShort()
   \ ." idx fetched " .s CR
   jvm_stack.invokestatic() throw
@@ -1049,6 +1050,7 @@ require exception.fs
 0xB1 0 s" return" \ ( -- [empty] )
 \ return void from method
 >[
+  [ ?debug_trace ] [IF] jvm_stack.decInvoke() [ENDIF]
   jvm_stack.getCurrentFrame()
   jvm_frame.getDynamicLink()
   0= IF

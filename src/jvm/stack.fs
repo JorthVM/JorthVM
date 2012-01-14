@@ -230,11 +230,17 @@ jvm_stack.new() constant jvm_stack
   jvm_stack jvm_stack.currentFrame + @
 ;
 
+variable debug_indent
+0 debug_indent !
+: jvm_stack.incInvoke() debug_indent @ 1+ debug_indent ! ;
+: jvm_stack.decInvoke() debug_indent @ 1- debug_indent ! ;
 
 : ?debug_trace true ;
 
 : show_insn ( opcode -- )
-  dup jvm_decode.mnemonic() CR type
+  dup jvm_decode.mnemonic() CR
+  debug_indent @ 2* spaces
+  type
   jvm_decode.mnemonic_imm() 0 ?DO
     ." , " jvm_stack.getPC_next() i + c@ hex.
   LOOP

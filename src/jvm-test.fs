@@ -50,3 +50,12 @@ include jvm/jvm.fs  \ include the jvm
   s" ./" jvm_classpath.add()
   s" StringTest2" jvm_java
 ;
+
+: RunDemoFrameTest1
+  s" testfiles/" jvm_classpath.add()
+  s" ./" jvm_classpath.add()
+  s" FrameTest1" jvm_java
+  s" FrameTest1" jvm_stack.findClass() throw
+  s" res|I" jvm_class.getStatic() throw
+  ." result: " hex. cr
+;

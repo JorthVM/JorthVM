@@ -28,7 +28,7 @@
 ;
 
 : java/io/PrintStream.println|(Ljava/lang/String;)V { this string -- }
-  string 2 cells @ ( c-addr )
+  string 2 cells + @ ( c-addr )
   string cell+ @ ( c-addr n )
   type
   \ drop this

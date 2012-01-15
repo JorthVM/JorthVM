@@ -843,7 +843,7 @@ require exception.fs
   swap jvm_constpool_idx ( addr )
 
   s" java/lang/String" 2dup
-  jvm_stack.newClass() ( c-addr n )
+  jvm_stack.newClass() ( addr c-addr n )
   jvm_stack.findAndInitClass() throw dup ( addr addr_class addr_class )
   jvm_class.getRTCP() ( addr addr_class addr_rtcp )
   jvm_rtcp.getClassfile() ( addr addr_class addr_classf )

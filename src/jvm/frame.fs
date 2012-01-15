@@ -162,7 +162,7 @@ require classfile.fs
 \ *G set the parameters
   dup jvm_frame.getClass()
   over jvm_frame.getMethod()
-  dup ACC_STATIC jvm_md_?flags invert 1 and >r ( add 1 for this if not static )
+  dup ACC_STATIC jvm_md_?flags invert 1 and dup ." add? " . cr >r ( add 1 for this if not static )
   rot jvm_frame.local_table + @ -rot
   ( [arg1, [arg2 ... ]] addr_lt addr_cl addr_md )
   jvm_md_desc_idx
@@ -173,6 +173,7 @@ require classfile.fs
   jvm_cp_utf8_c-ref 
   ( [arg1, [arg2 ... ]] addr_lt c-addr n )
   jvm_frame.numberOfParamters() r> +
+  dup cr ." numberOfParams: " . cr
   ( [arg1, [arg2 ... ]] addr_lt index )
   tuck cells + 
   BEGIN

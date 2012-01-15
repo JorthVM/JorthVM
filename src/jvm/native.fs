@@ -1,5 +1,3 @@
-: PrintMe.printHello|()V.static ( -- )
-
 \ `JorthVM', a Java VM implemented in Forth
 \ 
 \ Copyright (C) 2012 Sebastian Rumpl <e0828489@student.tuwien.ac.at>
@@ -19,6 +17,8 @@
 \ You should have received a copy of the GNU General Public License
 \ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 \ this file implements functionality that is needed to read class files
+
+: PrintMe.printHello|()V.static ( -- )
   ." ohai from gforth, whats up?" cr
 ;
 
@@ -27,8 +27,11 @@
   0xffffffff and
 ;
 
-: java/io/PrintStream.println|(Ljava/lang/String;)V ( this utf8_str -- )
-  jvm_constpool_print_utf8 cr drop
+: java/io/PrintStream.println|(Ljava/lang/String;)V { this string -- }
+  string 2 cells @ ( c-addr )
+  string cell+ @ ( c-addr n )
+  type
+  \ drop this
 ;
 
 : java/lang/Object.registerNatives|()V.static ( )

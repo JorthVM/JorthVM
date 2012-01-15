@@ -1,8 +1,8 @@
 package java.lang;
 
 public class String {
-	char buf[];
 	int length;
+	char buf[];
 
 	public String(StringBuilder sb) {
  		this.buf = sb.buf;

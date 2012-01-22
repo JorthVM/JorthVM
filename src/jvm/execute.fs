@@ -83,7 +83,9 @@ require exception.fs
 
 0x01 0 s" aconst_null" \ ( -- null )
 \ push a null reference onto the stack
->[ jvm_not_implemented ]<
+>[
+  0
+]<
 
 0x19 1 s" aload" \ 1[index] ( -- objectref )
 \ load a reference onto the stack from a local variable #index
@@ -726,7 +728,15 @@ require exception.fs
 
 0xAC 0 s" ireturn" \ ( value -- [empty] )
 \ return an integer from a method
->[ jvm_not_implemented ]<
+>[
+  cr ." ireturn: " .s cr
+  >r
+  [ ?debug_trace ] [IF] jvm_stack.decInvoke() [ENDIF]
+  jvm_stack.getCurrentFrame()
+  jvm_frame.getDynamicLink()
+  jvm_stack.resetCurrentFrame()
+  r>
+]<
 
 0x78 0 s" ishl" \ ( value1, value2 -- result )
 \ int shift left

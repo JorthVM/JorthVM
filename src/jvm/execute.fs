@@ -565,12 +565,16 @@ require exception.fs
 0xA0 2 s" if_icmpne" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
 \ if ints are not equal, branch to instruction at branchoffset (signed short
 \ constructed from unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  <> IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0xA1 2 s" if_icmplt" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
 \ if value1 is less than value2, branch to instruction at branchoffset (signed
 \ short constructed from unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  < IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0xA2 2 s" if_icmpge" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
 \ if value1 is greater than or equal to value2, branch to instruction at
@@ -583,44 +587,60 @@ require exception.fs
 0xA3 2 s" if_icmpgt" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
 \ if value1 is greater than value2, branch to instruction at branchoffset
 \ (signed short constructed from unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  > IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0xA4 2 s" if_icmple" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
 \ if value1 is less than or equal to value2, branch to instruction at
 \ branchoffset (signed short constructed from unsigned bytes
 \ branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  <= IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0x99 2 s" ifeq" \ 2[branchbyte1, branchbyte2] ( value -- )
 \ if value is 0, branch to instruction at branchoffset (signed short
 \ constructed from unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  0= IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0x9A 2 s" ifne" \ 2[branchbyte1, branchbyte2] ( value -- )
 \ if value is not 0, branch to instruction at branchoffset (signed short
 \ constructed from unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  0<> IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0x9B 2 s" iflt" \ 2[branchbyte1, branchbyte2] ( value -- )
 \ if value is less than 0, branch to instruction at branchoffset (signed short
 \ constructed from unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  0< IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0x9C 2 s" ifge" \ 2[branchbyte1, branchbyte2] ( value -- )
 \ if value is greater than or equal to 0, branch to instruction at
 \ branchoffset (signed short constructed from unsigned bytes
 \ branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  0>= IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0x9D 2 s" ifgt" \ 2[branchbyte1, branchbyte2] ( value -- )
 \ if value is greater than 0, branch to instruction at branchoffset (signed
 \ short constructed from unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  0> IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0x9E 2 s" ifle" \ 2[branchbyte1, branchbyte2] ( value -- )
 \ if value is less than or equal to 0, branch to instruction at branchoffset
 \ (signed short constructed from unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  0< IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0xC7 2 s" ifnonnull" \ 2[branchbyte1, branchbyte2] ( value -- )
 \ if value is not null, branch to instruction at branchoffset (signed short

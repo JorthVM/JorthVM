@@ -200,6 +200,20 @@ program_sipush write-programm
   assert( depth 0 = )
 ;
 
+: if_icmp_test1
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" IfIntegerCompare" 2dup 
+  jvm_java
+  jvm_stack.findClass() throw
+  dup 
+  s" res1|I" jvm_class.getStatic() throw
+  assert( 0xDEAD = )
+  s" res2|I" jvm_class.getStatic() throw
+  assert( 0xBABE = )
+  \ TODO test: eq ne lt gt ifeq ifne iflt ifge ifgt ifle
+  assert( depth 0 = )
+;
 : test
   test_bipush
   test_sipush
@@ -214,4 +228,5 @@ program_sipush write-programm
   invoke_inheritance_test1
   static_inititilazer_test1
   static_inititilazer_test2
+  if_icmp_test1
 ;

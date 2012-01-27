@@ -221,7 +221,10 @@ jvm_stack.new() constant jvm_stack
 ;
 
 
+\ FIXME outsource somewhere
+[IFUNDEF] ?debug_trace
 : ?debug_trace false ;
+[ENDIF]
 
 : show_insn ( opcode -- )
   dup jvm_decode.mnemonic() CR type

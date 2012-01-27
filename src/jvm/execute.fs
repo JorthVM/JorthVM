@@ -83,7 +83,9 @@ require exception.fs
 
 0x01 0 s" aconst_null" \ ( -- null )
 \ push a null reference onto the stack
->[ jvm_not_implemented ]<
+>[
+  0
+]<
 
 0x19 1 s" aload" \ 1[index] ( -- objectref )
 \ load a reference onto the stack from a local variable #index
@@ -177,7 +179,9 @@ require exception.fs
 
 0x55 0 s" castore" \ ( arrayref, index, value -- )
 \ store a char into an array
->[ jvm_not_implemented ]<
+>[
+  -rot + c!
+]<
 
 0xC0 2 s" checkcast" \ 2[indexbyte1, indexbyte2] ( objectref -- objectref )
 \ checks whether an objectref is of a certain type, the class reference of
@@ -459,7 +463,10 @@ require exception.fs
 0xA7 2 s" goto" \ 2[branchbyte1, branchbyte2] ( -- )
 \ goes to another instruction at branchoffset (signed short constructed from
 \ unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.fetchSignedShort()
+  jvm_stack.getPC() + jvm_stack.setPC()
+]<
 
 0xC8 4 s" goto_w" \ 4[branchbyte1, branchbyte2, branchbyte3, branchbyte4] ( -- )
 \ goes to another instruction at branchoffset (signed int constructed from
@@ -551,7 +558,9 @@ require exception.fs
 0x9F 2 s" if_icmpeq" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
 \ if ints are equal, branch to instruction at branchoffset (signed short
 \ constructed from unsigned bytes branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  = IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0xA0 2 s" if_icmpne" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
 \ if ints are not equal, branch to instruction at branchoffset (signed short
@@ -567,7 +576,9 @@ require exception.fs
 \ if value1 is greater than or equal to value2, branch to instruction at
 \ branchoffset (signed short constructed from unsigned bytes
 \ branchbyte1 ^> 8 + branchbyte2)
->[ jvm_not_implemented ]<
+>[
+  >= IF <[ goto ]> ELSE jvm_stack.fetchShort() drop ENDIF
+]<
 
 0xA3 2 s" if_icmpgt" \ 2[branchbyte1, branchbyte2] ( value1, value2 -- )
 \ if value1 is greater than value2, branch to instruction at branchoffset
@@ -623,7 +634,13 @@ require exception.fs
 
 0x84 2 s" iinc" \ 2[index, const] ( -- )
 \ increment local variable #index by signed byte const
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.getCurrentFrame() ( addr_fm )
+  jvm_stack.fetchByte() 2dup ( addr_fm idx addr_fm idx )
+  jvm_frame.getLocal() ( addr_fm idx value )
+  jvm_stack.fetchByte() + ( addr_fm idx nvalue )
+  -rot jvm_frame.setLocal()
+]<
 
 0x15 1 s" iload" \ 1[index] ( -- value )
 \ load an int value from a local variable #index
@@ -680,6 +697,7 @@ require exception.fs
 \ invoke a static method, where the method is identified by method reference
 \ index in constant pool (indexbyte1 ^> 8 + indexbyte2)
 >[ 
+  [ ?debug_trace ] [IF] jvm_stack.incInvoke() [ENDIF]
   jvm_stack.fetchShort()
   \ ." idx fetched " .s CR
   jvm_stack.invokestatic() throw
@@ -710,7 +728,15 @@ require exception.fs
 
 0xAC 0 s" ireturn" \ ( value -- [empty] )
 \ return an integer from a method
->[ jvm_not_implemented ]<
+>[
+  cr ." ireturn: " .s cr
+  >r
+  [ ?debug_trace ] [IF] jvm_stack.decInvoke() [ENDIF]
+  jvm_stack.getCurrentFrame()
+  jvm_frame.getDynamicLink()
+  jvm_stack.resetCurrentFrame()
+  r>
+]<
 
 0x78 0 s" ishl" \ ( value1, value2 -- result )
 \ int shift left
@@ -730,11 +756,17 @@ require exception.fs
 
 0x3C 0 s" istore_1" \ ( value -- )
 \ store int value into variable 1
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.getCurrentFrame()
+  1 jvm_frame.setLocal()
+]<
 
 0x3D 0 s" istore_2" \ ( value -- )
 \ store int value into variable 2
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.getCurrentFrame()
+  1 jvm_frame.setLocal()
+]<
 
 0x3E 0 s" istore_3" \ ( value -- )
 \ store int value into variable 3
@@ -819,6 +851,22 @@ require exception.fs
   swap jvm_rtcp.getClassfile() ( idxu addr_cl )
   jvm_cf_constpool_addr ( idxu addr_cf )
   swap jvm_constpool_idx ( addr )
+
+  s" java/lang/String" 2dup
+  jvm_stack.newClass() ( addr c-addr n )
+  jvm_stack.findAndInitClass() throw dup ( addr addr_class addr_class )
+  jvm_class.getRTCP() ( addr addr_class addr_rtcp )
+  jvm_rtcp.getClassfile() ( addr addr_class addr_classf )
+
+  jvm_cf_fields_count cells allocate throw ( addr addr_class addr_this )
+  swap over ! dup >r ( addr addr_this )
+
+  \ copy (constant) string to new String object
+  cell+ swap jvm_cp_utf8_c-ref ( addr_this+cell c-addr n )
+  rot ( c-addr n addr_this+cell )
+  dup >r ! ( c-addr addr_this+cell )
+  r> cell+ !
+  r> ( addr_this )
 ]<
 
 0x13 2 s" ldc_w" \ 2[indexbyte1, indexbyte2] ( -- value )
@@ -966,7 +1014,11 @@ require exception.fs
 
 0xBC 1 s" newarray" \ 1[atype] ( count -- arrayref )
 \ create new array with count elements of primitive type identified by atype
->[ jvm_not_implemented ]<
+>[
+  jvm_stack.fetchByte()
+  assert( 5 = ) \ TODO: implement more types
+  allocate throw
+]<
 
 0x00 0 s" nop" \ ( -- )
 \ perform no operation
@@ -974,7 +1026,7 @@ require exception.fs
 
 0x57 0 s" pop" \ ( value -- )
 \ discard the top value on the stack
->[ jvm_not_implemented ]<
+>[ drop ]<
 
 0x58 0 s" pop2" \ ( {value2, value1} -- )
 \ discard the top two values on the stack (or one value, if it is a double or long)
@@ -1024,6 +1076,7 @@ require exception.fs
 0xB1 0 s" return" \ ( -- [empty] )
 \ return void from method
 >[
+  [ ?debug_trace ] [IF] jvm_stack.decInvoke() [ENDIF]
   jvm_stack.getCurrentFrame()
   jvm_frame.getDynamicLink()
   0= IF

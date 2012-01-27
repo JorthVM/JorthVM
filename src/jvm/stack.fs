@@ -69,17 +69,27 @@ jvm_stack.new() constant jvm_stack
 ;
 
 : jvm_stack.fetchByte() ( -- byte )
-\ *G return program counter 
+\ *G return byte pointed by the program counter
    jvm_stack.getPC_next() c@
    jvm_stack jvm_stack.pc_next + 1 swap 
    +!
 ;
 
 : jvm_stack.fetchShort() ( -- short )
+\ *G return short pointed by the program counter
   jvm_stack.fetchByte() \ load byte
   8 lshift
   jvm_stack.fetchByte() \ load byte
   or
+;
+
+: jvm_stack.fetchSignedShort() ( -- short )
+\ *G return signed short pointed by the program counter
+  jvm_stack.fetchShort()
+  dup 0x8000 and \ sign ext
+  if
+  [ -1 16 lshift ] literal or
+  endif
 ;
 
 : jvm_stack.currentInstruction() ( -- opcode )
@@ -220,6 +230,10 @@ jvm_stack.new() constant jvm_stack
   jvm_stack jvm_stack.currentFrame + @
 ;
 
+variable debug_indent
+0 debug_indent !
+: jvm_stack.incInvoke() debug_indent @ 1+ debug_indent ! ;
+: jvm_stack.decInvoke() debug_indent @ 1- debug_indent ! ;
 
 \ FIXME outsource somewhere
 [IFUNDEF] ?debug_trace
@@ -227,7 +241,9 @@ jvm_stack.new() constant jvm_stack
 [ENDIF]
 
 : show_insn ( opcode -- )
-  dup jvm_decode.mnemonic() CR type
+  dup jvm_decode.mnemonic() CR
+  debug_indent @ 2* spaces
+  type
   jvm_decode.mnemonic_imm() 0 ?DO
     ." , " jvm_stack.getPC_next() i + c@ hex.
   LOOP
@@ -414,8 +430,8 @@ jvm_stack.new() constant jvm_stack
   ELSE
     drop
     ( c-addr1 n1 c-addr2 n2 )
-    \ 2swap ." Classname: " 2dup type CR
-    \ 2swap ." NameType: " 2dup type CR
+    2swap ." Classname: " 2dup type CR
+    2swap ." NameType: " 2dup type CR
     jvm_stack.findMethod() throw
     ( addr_cl addr_md )
     jvm_stack.getCurrentFrame() \ dynamic link

@@ -37,6 +37,8 @@ FIXME's
 
 Features
 --------
+- string stuff
+- array stuff
 - exception handling
 - interfaces
 - implmement more instructions
@@ -84,8 +86,9 @@ LICENSING INFORMATION
 =====================
 Copyright (C) 2011, 2012 Sebastian Rumpl, Bernhard Urban, Josef Eisl
 
+JorthVM is distributed under the GNU General Public license (see COPYING).
 
-Forth JVM is written by 
+JorthVM is written by 
 
 - Sebastian Rumpl
 - Bernhard Urban

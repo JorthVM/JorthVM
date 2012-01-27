@@ -34,6 +34,7 @@ FIXME's
 - float/double
 - documentation (rename HEADER)
 - GNU classpath integration
+- ANSify
 
 Features
 --------

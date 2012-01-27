@@ -838,16 +838,20 @@ require exception.fs
 0x12 1 s" ldc" \ 1[index] ( -- value )
 \ push a constant #index from a constant pool (String, int or float) onto the stack
 >[
+  depth >r
   jvm_stack.fetchByte()
 
   jvm_stack.getCurrentFrame()
   jvm_frame.getClass()
   jvm_class.getRTCP()
   dup rot ( addr_rtcp addr_rtcp idx )
-  jvm_rtcp.getConstpoolByIdx() ( addr_rtcp addr_str )
+  jvm_rtcp.getConstpoolByIdx() ( addr_rtcp addr_cp )
   \ TODO: should also work for int and float
   dup jvm_cp_tag 
   CASE
+    CONSTANT_Integer OF
+      jvm_cp_integer_bytes nip
+    ENDOF
     CONSTANT_String OF
       jvm_cp_string_idx ( addr_rtcp idxu )
       swap jvm_rtcp.getClassfile() ( idxu addr_cl )
@@ -875,6 +879,7 @@ require exception.fs
     over jvm_constpool_type_name type CR
     jvm_not_implemented
   ENDCASE
+  depth r> 1+ assert( = ) \ check stack effect
 ]<
 
 0x13 2 s" ldc_w" \ 2[indexbyte1, indexbyte2] ( -- value )

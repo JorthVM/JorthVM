@@ -3,7 +3,7 @@ JorthVM - A Java Virtual Machine written in Forth
 GENERAL INFORMATION
 ===================
 JorthVM is an implementation of the Java Virual Machine written in Forth.
-join us at #JorthVM on irc.oftc.net !
+Join us at #JorthVM on irc.oftc.net !
 
 USAGE
 =====
@@ -22,6 +22,21 @@ IMPLEMENTED
 
 TODO
 ====
+
+FIXME's
+-------
+- mnemonics -> dictionary
+- documentation -> gforth docs
+- License headers (This program -> JorthVM, remove email addresses)
+- recursion
+- regression test clean up
+- long support (testing?)
+- float/double
+- documentation (rename HEADER)
+- GNU classpath integration
+
+Features
+--------
 - exception handling
 - interfaces
 - implmement more instructions
@@ -36,7 +51,7 @@ SPECIFICATION
 DOCUMENTATION
 =============
 
-JorthVM documentation is contained in _this file_ as well as in [HEADER.txt](HEADER.txt). These
+JorthVM documentation is contained in _this file_ as well as in [HEADER.md](HEADER.md). These
 files are formated using the [markdown](http://daringfireball.net/projects/markdown/) markup language.
 A HTML version of the documentation can be created by `make doc`.
 
@@ -72,6 +87,7 @@ Copyright (C) 2011, 2012 Sebastian Rumpl, Bernhard Urban, Josef Eisl
 
 Forth JVM is written by 
 
-- Sebastian Rumpl <e0828489@student.tuwien.ac.at>
-- Bernhard Urban <lewurm@gmail.com>
-- Josef Eisl <zapster@zapster.cc>
+- Sebastian Rumpl
+- Bernhard Urban
+- Josef Eisl
+

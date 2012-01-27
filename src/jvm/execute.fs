@@ -846,27 +846,35 @@ require exception.fs
   dup rot ( addr_rtcp addr_rtcp idx )
   jvm_rtcp.getConstpoolByIdx() ( addr_rtcp addr_str )
   \ TODO: should also work for int and float
-  dup jvm_cp_tag assert( CONSTANT_String = )
-  jvm_cp_string_idx ( addr_rtcp idxu )
-  swap jvm_rtcp.getClassfile() ( idxu addr_cl )
-  jvm_cf_constpool_addr ( idxu addr_cf )
-  swap jvm_constpool_idx ( addr )
+  dup jvm_cp_tag 
+  CASE
+    CONSTANT_String OF
+      jvm_cp_string_idx ( addr_rtcp idxu )
+      swap jvm_rtcp.getClassfile() ( idxu addr_cl )
+      jvm_cf_constpool_addr ( idxu addr_cf )
+      swap jvm_constpool_idx ( addr )
 
-  s" java/lang/String" 2dup
-  jvm_stack.newClass() ( addr c-addr n )
-  jvm_stack.findAndInitClass() throw dup ( addr addr_class addr_class )
-  jvm_class.getRTCP() ( addr addr_class addr_rtcp )
-  jvm_rtcp.getClassfile() ( addr addr_class addr_classf )
+      s" java/lang/String" 2dup
+      jvm_stack.newClass() ( addr c-addr n )
+      jvm_stack.findAndInitClass() throw dup ( addr addr_class addr_class )
+      jvm_class.getRTCP() ( addr addr_class addr_rtcp )
+      jvm_rtcp.getClassfile() ( addr addr_class addr_classf )
 
-  jvm_cf_fields_count cells allocate throw ( addr addr_class addr_this )
-  swap over ! dup >r ( addr addr_this )
+      jvm_cf_fields_count cells allocate throw ( addr addr_class addr_this )
+      swap over ! dup >r ( addr addr_this )
 
-  \ copy (constant) string to new String object
-  cell+ swap jvm_cp_utf8_c-ref ( addr_this+cell c-addr n )
-  rot ( c-addr n addr_this+cell )
-  dup >r ! ( c-addr addr_this+cell )
-  r> cell+ !
-  r> ( addr_this )
+      \ copy (constant) string to new String object
+      cell+ swap jvm_cp_utf8_c-ref ( addr_this+cell c-addr n )
+      rot ( c-addr n addr_this+cell )
+      dup >r ! ( c-addr addr_this+cell )
+      r> cell+ !
+      r> ( addr_this )
+    ENDOF
+    \ default
+    ." ldc does not yet support constant type: "
+    over jvm_constpool_type_name type CR
+    jvm_not_implemented
+  ENDCASE
 ]<
 
 0x13 2 s" ldc_w" \ 2[indexbyte1, indexbyte2] ( -- value )

@@ -189,7 +189,7 @@ require rtconstpool.fs
 
 : jvm_class.getStaticOffset() { addr off -- value }
 \ *G get the value of a static field (32bit) by offset
-  addr jvm_class.field_table + off cells + jvm_field_@
+  addr jvm_class.field_table + @ off cells + jvm_field_@
 ;
 
 : jvm_class.getStatic() { addr c-addr n -- value woir }
@@ -202,7 +202,7 @@ require rtconstpool.fs
 
 : jvm_class.setStaticOffset() { addr val off -- }
 \ *G set the value of a static field (32bit) by offset
-  val addr jvm_class.field_table + off cells +
+  val addr jvm_class.field_table + @ off cells +
   jvm_field_!
 ;
 

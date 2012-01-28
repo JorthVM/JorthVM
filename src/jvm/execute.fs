@@ -748,13 +748,8 @@ require exception.fs
 0xAC 0 s" ireturn" \ ( value -- [empty] )
 \ return an integer from a method
 >[
-  cr ." ireturn: " .s cr
-  >r
   [ ?debug_trace ] [IF] jvm_stack.decInvoke() [ENDIF]
-  jvm_stack.getCurrentFrame()
-  jvm_frame.getDynamicLink()
   jvm_stack.resetCurrentFrame()
-  r>
 ]<
 
 0x78 0 s" ishl" \ ( value1, value2 -- result )

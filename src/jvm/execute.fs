@@ -793,7 +793,7 @@ require exception.fs
 
 0x64 0 s" isub" \ ( value1, value2 -- result )
 \ int subtract
->[ jvm_not_implemented ]<
+>[ - ]<
 
 0x7C 0 s" iushr" \ ( value1, value2 -- result )
 \ int logical shift right

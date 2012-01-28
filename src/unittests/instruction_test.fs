@@ -233,6 +233,33 @@ program_sipush write-programm
   \ TODO test: eq ne lt gt ifeq ifne iflt ifge ifgt ifle
   assert( depth 0 = )
 ;
+
+: ireturn_test 
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" IReturn" 2dup
+  jvm_java
+  jvm_stack.findClass() throw
+  dup 
+  s" res|I" jvm_class.getStatic() throw
+  assert( 0xDEAD = )
+  drop
+  assert( depth 0 = )
+;
+
+: fibonacci_test 
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" StaticFibonacci" 2dup
+  jvm_java
+  jvm_stack.findClass() throw
+  dup 
+  s" res|I" jvm_class.getStatic() throw
+  assert( 55 = )
+  drop
+  assert( depth 0 = )
+;
+
 : test
   test_bipush
   test_sipush
@@ -249,4 +276,6 @@ program_sipush write-programm
   static_inititilazer_test2
   if_icmp_test1
   ldc_integer_test
+  ireturn_test
+  fibonacci_test
 ;

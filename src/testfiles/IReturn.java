@@ -16,22 +16,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-public class StaticFibonacci
+public class IReturn
 { 
   private static int res;
 
 	public static void main(String [] args)
 	{
-		res = fib(10);
+		res = set();
 	}
 
-	private static int fib(int i) 
+	private static int set() 
 	{
-		if ( i < 1 )
-			return 0;
-		if ( i < 2 )
-			return 1;
-		return fib(i-1) + fib(i-2);
+		return 0xDEAD;
 	}
 
 }

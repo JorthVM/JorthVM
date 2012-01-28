@@ -27,8 +27,6 @@ FIXME's
 -------
 - mnemonics -> dictionary
 - documentation -> gforth docs
-- License headers (This program -> JorthVM, remove email addresses)
-- recursion
 - regression test clean up
 - long support (testing?)
 - float/double

@@ -22,7 +22,7 @@ public class StaticFibonacci
 
 	public static void main(String [] args)
 	{
-		res = fib(10);
+		res = fib(20);
 	}
 
 	private static int fib(int i) 

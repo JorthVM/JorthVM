@@ -255,7 +255,7 @@ program_sipush write-programm
   jvm_stack.findClass() throw
   dup 
   s" res|I" jvm_class.getStatic() throw
-  assert( 55 = )
+  assert( 6765 = )
   drop
   assert( depth 0 = )
 ;

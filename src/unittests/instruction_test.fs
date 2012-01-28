@@ -200,17 +200,36 @@ program_sipush write-programm
   assert( depth 0 = )
 ;
 
+: ldc_integer_test
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" LdcInteger" 2dup
+  jvm_java
+  jvm_stack.findClass() throw
+  s" babe|I" jvm_class.getStatic() throw
+  assert( 0xBABE = )
+  assert( depth 0 = )
+;
+
 : if_icmp_test1
   assert( depth 0 = )
   s" ../testfiles/" jvm_classpath.add()
-  s" IfIntegerCompare" 2dup 
+  s" IfIntegerCompare" 2dup
   jvm_java
   jvm_stack.findClass() throw
   dup 
   s" res1|I" jvm_class.getStatic() throw
   assert( 0xDEAD = )
+  dup
   s" res2|I" jvm_class.getStatic() throw
   assert( 0xBABE = )
+  dup
+  s" res3|I" jvm_class.getStatic() throw
+  assert( 0xBEEF = )
+  dup
+  s" res4|I" jvm_class.getStatic() throw
+  assert( 0xAFFE = )
+  drop
   \ TODO test: eq ne lt gt ifeq ifne iflt ifge ifgt ifle
   assert( depth 0 = )
 ;
@@ -229,4 +248,5 @@ program_sipush write-programm
   static_inititilazer_test1
   static_inititilazer_test2
   if_icmp_test1
+  ldc_integer_test
 ;

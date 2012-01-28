@@ -21,6 +21,8 @@ public class IfIntegerCompare
 { 
   private static int res1;
   private static int res2;
+  private static int res3;
+  private static int res4;
   private static int cmp0 = 0;
   private static int cmp3 = 3;
 
@@ -37,6 +39,18 @@ public class IfIntegerCompare
 	    res2 = 0;
 	  } else {
 	    res2 = 0xBABE;
+	  }
+	  // if_icmplt
+	  if ( cmp0 >= cmp3 ) {
+	    res3 = 0;
+	  } else {
+	    res3 = 0xBEEF;
+	  }
+	  // if_icmpgt
+	  if ( cmp0 <= cmp3 ) {
+	    res4 = 0xAFFE;
+	  } else {
+	    res4 = 0;
 	  }
 	}
 

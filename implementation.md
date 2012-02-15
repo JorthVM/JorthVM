@@ -1,6 +1,9 @@
 JorthVM
 =========
 
+__NOTE:__ this file is outdated and needs reviewing. Look into the source code documentation for more recent
+information.
+
 Java Virtual Machine
 --------------------
 
@@ -35,7 +38,7 @@ frame.
 ### Operant Stack
 
 Conceptually the operant stack is part of the current frame. In JorthVM the Forth stack is used
-for operants wereas other frame data (local variables, previous frame pointer, etc.) are 
+for operants were as other frame data (local variables, previous frame pointer, etc.) are 
 stored on the heap.
 
 Where is my Stuff? 
@@ -67,16 +70,16 @@ Creation and Destruction
 
 ### Classes
 
-A Class is initialazed if
+A Class is initialized if
 - an Instance of that class is created, or
 - a static method is invoked, or
-- a nonconstant class variable (`static' but not `final') is used or assigned.
+- a non-constant class variable (`static' but not `final') is used or assigned.
 (See §2.17.4).
 
 During the initialization of a class the static initializer (§2.11) is executed and the static fields 
 (class variables, §2.9.2) are initialized.
 
-During the initialization of an interface the static fields are initialazed.
+During the initialization of an interface the static fields are initialized.
 
 ### Instance
 
@@ -129,29 +132,6 @@ The lookup table is an array of 256 cells. Each cell stores an _execution token_
 corresponds to the opcode of the JVM e.g. at the offset 0x10 the execution token for the JVM 
 instruction `bipush` is stored.
 
-TODO
-----
-
-- method frames/local variables
-- find a better solution for terminating a program (catch special exceptions)
-- Java Standard APIs. Somehow we must support at least some standard API calls 
-  (System.out.println(String) would be nice)
-- native code calls?!
-- threads? multiple pcs?!
-
-Ideas
------
-
-- use jumps instead of calls (call threading)
-- just-in-time compilation? replace opcode with execution token of the instruction?
-- constant pool: wordlist migth be useful
-- somehow abuse the (g)forth kernel to execute next?!
-
-Known Problems
---------------
-
-- much too much...
-- not even close to something usable...
 
 References
 ----------

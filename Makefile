@@ -18,23 +18,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # this file implements functionality that is needed to read class files
 
-SM=markdown # standard markdown
-PP=cpp -P
-
-DOCS: HEADER.html README.html implementation.html
-
 .PHONY: all test clean
 
 all: $(DOCS)
 
 test:
 	make test -C src/unittests
-
-%.html: %.md
-	$(SM) $< > $@
-
-implementation.html: implementation.tmpl HEADER.html
-	$(PP) $< $@ 
 
 clean:
 	make -C src $@

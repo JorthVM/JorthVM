@@ -2,14 +2,14 @@ JorthVM - A Java Virtual Machine written in Forth
 
 GENERAL INFORMATION
 ===================
-JorthVM is an implementation of the Java Virual Machine written in Forth.
+JorthVM is an implementation of the Java Virtual Machine written in Forth.
 Join us at #JorthVM on irc.oftc.net !
 
 USAGE
 =====
-go into src/ and type `make', then you get the gforth prompt
+go into `src/` and type `make`, then you get the gforth prompt
 
-look in ./src/jvm-test.fs for usage examples. (e.g. RunDemo)
+look in `./src/jvm-test.fs` for usage examples. (e.g. `RunDemo`)
 
 IMPLEMENTED
 ===========
@@ -23,54 +23,31 @@ IMPLEMENTED
 TODO
 ====
 
-FIXME's
--------
-- mnemonics -> dictionary
-- documentation -> gforth docs
-- regression test clean up
-- long support (testing?)
-- float/double
-- documentation (rename HEADER)
-- GNU classpath integration
-- ANSify
-
-Features
---------
-- string stuff
-- array stuff
-- exception handling
-- interfaces
-- implmement more instructions
-- more java.*;
+See [TODOs](TODO.md).
 
 SPECIFICATION
 =============
 - [The Java Virtual Machine Specification](http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html)
-- [Forth JVM implementation documentation](implementation.html)
+- [Forth JVM implementation documentation](implementation.md)
 
 
 DOCUMENTATION
 =============
 
-JorthVM documentation is contained in _this file_ as well as in [HEADER.md](HEADER.md). These
+JorthVM documentation is contained in [_this file_](README.md) as well as in [implementation.md](implementation.md). These
 files are formated using the [markdown](http://daringfireball.net/projects/markdown/) markup language.
-A HTML version of the documentation can be created by `make doc`.
-
 
 INSTALL
 =======
-TODO
+
+Installation is not neccessary. Just run the code as stated in the usage section.
 
 Requirements
-------------
+============
+
 - Gforth
 - javac
-- markdown (optional, for HTML documentation)
 - qemu-kvm-extra (ubuntu; optional, for cross testing)
-
-Compile & install
------------------
-FIXME
 
 Run unittests
 -------------

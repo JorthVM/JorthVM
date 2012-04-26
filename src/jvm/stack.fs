@@ -18,7 +18,7 @@
 \ You should have received a copy of the GNU General Public License
 \ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 \ this file implements functionality that is needed to read class files
-\ this file contains the implementaion of the JVM Stack 
+\ this file contains the implementaion of the JVM Stack
 \ of jvm stack frames
 
 \ ========
@@ -45,7 +45,7 @@ require native.fs
  1 cells constant jvm_stack.pc_next
  2 cells constant jvm_stack.classes
  3 cells constant jvm_stack.currentFrame
- 
+
  4 cells constant jvm_stack.size()
 
 : jvm_stack.new() ( -- addr )
@@ -70,7 +70,7 @@ jvm_stack.new() constant jvm_stack
 : jvm_stack.fetchByte() ( -- byte )
 \ *G return byte pointed by the program counter
    jvm_stack.getPC_next() c@
-   jvm_stack jvm_stack.pc_next + 1 swap 
+   jvm_stack jvm_stack.pc_next + 1 swap
    +!
 ;
 
@@ -92,7 +92,7 @@ jvm_stack.new() constant jvm_stack
 ;
 
 : jvm_stack.currentInstruction() ( -- opcode )
-\ *G return opcode of the current instruction 
+\ *G return opcode of the current instruction
    jvm_stack.getPC() c@
 ;
 
@@ -110,36 +110,36 @@ jvm_stack.new() constant jvm_stack
 
 : jvm_stack.findClass() { c-addr n -- addr2 woir }
 \ *G get the address of a class
-  c-addr n 
+  c-addr n
   jvm_stack jvm_stack.classes + @
-  jvm_find_word 
+  jvm_find_word
   \ throw 0
 ;
 
 : jvm_stack.addClass() { addr2 c-addr n -- woir }
 \ *G add a class
 \ addr2 class addr
-  \ ." addclass: " c-addr n type CR 
-  addr2 c-addr n 
+  \ ." addclass: " c-addr n type CR
+  addr2 c-addr n
   jvm_stack jvm_stack.classes + @
-  jvm_add_word 
+  jvm_add_word
   \ throw 0
 ;
 
 \ : jvm_stack.newClass() { c-addr n -- }
 :noname { c-addr n -- }
-  \ ." newClass: " c-addr n type space .s CR 
+  \ ." newClass: " c-addr n type space .s CR
   TRY
-    c-addr n jvm_stack.findClass() 
+    c-addr n jvm_stack.findClass()
     nip \ delete class address
-  \ ." class already found: " c-addr n type space .s CR 
+  \ ." class already found: " c-addr n type space .s CR
   IFERROR
     dup
     JVM_WORDNOTFOUND_EXCEPTION = IF
       drop
       \ add class to jvm stack
       \ ." add class to jvm stack" CR
-      jvm_class.new() c-addr n 
+      jvm_class.new() c-addr n
       \ ." pre addclass: " 2dup type space .s CR
       jvm_stack.addClass()
       0
@@ -150,7 +150,7 @@ jvm_stack.new() constant jvm_stack
   \ ." END newClass" .s CR
 ; IS jvm_stack.newClass()
 
-: jvm_stack.loadClasses() ( addr -- ) 
+: jvm_stack.loadClasses() ( addr -- )
 \ add all class constpool entries
   jvm_class.getRTCP()
   \ ." (rtcp) " .s CR
@@ -161,15 +161,15 @@ jvm_stack.new() constant jvm_stack
     \ ." LOOP (rtcp) " .s CR
     ( rtcp )
     dup i
-    jvm_rtcp.getConstpoolByIdx() 
+    jvm_rtcp.getConstpoolByIdx()
     jvm_cp_tag
     CASE
       \ ." CASE (rtcp) " .s CR
       CONSTANT_Class OF
         \ ." Class(rtcp) " .s CR
         dup
-        i 
-        jvm_rtcp.getClassName() 
+        i
+        jvm_rtcp.getClassName()
         \ ." pre newClass: " 2dup type space .s cr
         jvm_stack.newClass()
         \ ." endClass(rtcp) " .s CR
@@ -194,14 +194,14 @@ jvm_stack.new() constant jvm_stack
       \ .s cr
       dup
       dup
-      jvm_default_loader 
+      jvm_default_loader
       c-addr n jvm_search_classpath throw
       \ ." search classpath" .s cr
-      jvm_class.prepare() throw 
+      jvm_class.prepare() throw
       jvm_stack.loadClasses()
       \ ." class prepare" .s cr
       dup
-      jvm_class.init() 
+      jvm_class.init()
       \ ." throw" .s cr
       throw
     ENDOF
@@ -254,7 +254,7 @@ variable debug_indent
 ;
 
 : jvm_stack.next()
-  POSTPONE jvm_stack.fetchByte() 
+  POSTPONE jvm_stack.fetchByte()
   [ ?debug_trace ] [IF] POSTPONE dup POSTPONE show_insn [ENDIF]
   POSTPONE <[ POSTPONE swap POSTPONE ]>
   [ ?debug_trace ] [IF] POSTPONE show_stack [ENDIF]
@@ -264,14 +264,14 @@ variable debug_indent
 : jvm_stack.run()
   [ ?debug_trace ] [IF] ." run() start " .s CR [ENDIF]
   try
-    begin 
+    begin
       jvm_stack.next()
     again
-  restore 
+  restore
   endtry
   dup CASE
-    JVM_RETURN_EXCEPTION OF 
-      drop 0 
+    JVM_RETURN_EXCEPTION OF
+      drop 0
     ENDOF
   ENDCASE
   ( woir )
@@ -294,7 +294,7 @@ variable debug_indent
 : jvm_stack.getNamesFromMethodRef() { idx -- c-addr1 n1 c-addr23 n23 ?static ?native }
 \ *G get the class name and nametype from Methodref constant pool entry
   idx
-  jvm_stack.getCurrentFrame() 
+  jvm_stack.getCurrentFrame()
   jvm_frame.getClass()
   jvm_class.getRTCP()
 
@@ -304,7 +304,7 @@ variable debug_indent
   ( addr_rtcp addr_md class_idx )
   2 pick swap
   ( addr_rtcp addr_md addr_rtcp class_idx )
-  jvm_rtcp.getClassName() 
+  jvm_rtcp.getClassName()
   ( addr_rtcp addr_md c-addr1 n1 )
   2swap
   ( c-addr1 n1 addr_rtcp addr_md )
@@ -346,9 +346,9 @@ variable debug_indent
 \ *G reset the current frame
   \ restore frame
   jvm_stack.getCurrentFrame()
-  dup jvm_frame.getDynamicLink() 
+  dup jvm_frame.getDynamicLink()
   jvm_stack jvm_stack.currentFrame + ! \ restore frame
-  dup jvm_frame.getReturnAddr() 
+  dup jvm_frame.getReturnAddr()
   jvm_stack.setPC() \ restore frame
   free throw \ free frame
 ;
@@ -378,7 +378,7 @@ variable debug_indent
   try
     s" <clinit>|()V" jvm_class.getMethodNoSuper() throw
     true
-  iferror 
+  iferror
     ( addr_cl addr_cl wior )
     drop \ drop woir
     false
@@ -404,7 +404,7 @@ variable debug_indent
     jvm_stack jvm_stack.pc + !            \ restore frame
     r> \ jvm_stack.getCurrentFrame()        \ dynamic link
     jvm_stack jvm_stack.currentFrame + !  \ restore frame
-    
+
   ELSE
     2drop \ addr_cl addr_cl
   ENDIF

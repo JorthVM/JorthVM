@@ -26,6 +26,7 @@
 
 require stack.fs
 require exception.fs
+require array.fs
 
 : jvm_exec.getClassAndNameForField() ( addr_rtcp idx -- addr_cl c-addr n )
   dup rot
@@ -510,7 +511,9 @@ require exception.fs
 
 0x4F 0 s" iastore" \ ( arrayref, index, value -- )
 \ store an int into an array
->[ jvm_not_implemented ]<
+>[
+  jvm_array.store()
+]<
 
 0x02 0 s" iconst_m1 " \ ( -- -1 )
 \ load the int value -1 onto the stack
@@ -1043,8 +1046,8 @@ require exception.fs
 \ create new array with count elements of primitive type identified by atype
 >[
   jvm_stack.fetchByte()
-  assert( 5 = ) \ TODO: implement more types
-  allocate throw
+  ( count atype )
+  jvm_array.new()
 ]<
 
 0x00 0 s" nop" \ ( -- )

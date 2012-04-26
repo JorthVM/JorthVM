@@ -238,6 +238,7 @@ variable debug_indent
 [IFUNDEF] ?debug_trace
 : ?debug_trace false ;
 [ENDIF]
+\ : ?debug_trace true ;
 
 : show_insn ( opcode -- )
   dup jvm_decode.mnemonic() CR
@@ -429,8 +430,8 @@ variable debug_indent
   ELSE
     drop
     ( c-addr1 n1 c-addr2 n2 )
-    2swap ." Classname: " 2dup type CR
-    2swap ." NameType: " 2dup type CR
+    \ 2swap ." Classname: " 2dup type CR
+    \ 2swap ." NameType: " 2dup type CR
     jvm_stack.findMethod() throw
     ( addr_cl addr_md )
     jvm_stack.getCurrentFrame() \ dynamic link

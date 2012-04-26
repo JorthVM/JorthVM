@@ -44,10 +44,10 @@ program_sipush write-programm
 
 \ no sign ext
   <[ jvm_stack.fetchByte() ]>
-  assert( 42 = ) 
+  assert( 42 = )
 \ sign ext
   <[ jvm_stack.fetchByte() ]>
-  assert( -1 = ) 
+  assert( -1 = )
 ;
 
 : test_sipush
@@ -55,17 +55,17 @@ program_sipush write-programm
 
 \ no sign ext
   <[ jvm_stack.fetchByte() ]>
-  assert( 0x2A2A = ) 
+  assert( 0x2A2A = )
 \ sign ext
   <[ jvm_stack.fetchByte() ]>
-  assert( -1 = ) 
+  assert( -1 = )
 
 ;
 
 : test_dup
   42  \ value
   <[ jdup ]>
-  assert( 42 = ) 
+  assert( 42 = )
   assert( 42 = )
 ;
 
@@ -87,77 +87,77 @@ program_sipush write-programm
 ;
 
 : putstatic_test
-\ NOTE this testcase also ensures that jvm_class.{getStatic()|setStatic()} 
+\ NOTE this testcase also ensures that jvm_class.{getStatic()|setStatic()}
 \ are working
   assert( depth 0 = )
   s" ../testfiles/" jvm_classpath.add()
   s" StaticInt" jvm_java
   jvm_stack.getCurrentFrame()
   jvm_frame.getClass()
-  dup s" foo|I" jvm_class.getStatic() 
+  dup s" foo|I" jvm_class.getStatic()
   throw
   assert( 0x42 = )
   s" bar|I" jvm_class.getStatic() throw
   assert( 0x84 = )
-  
+
   assert( depth 0 = )
 ;
 
 : putstatic_test2
-\ NOTE this testcase also ensures that jvm_class.{getStatic()|setStatic()} 
+\ NOTE this testcase also ensures that jvm_class.{getStatic()|setStatic()}
 \ are working
   assert( depth 0 = )
   s" ../testfiles/" jvm_classpath.add()
   s" StaticIntOther" jvm_java
   s" StaticIntOtherStore" jvm_stack.findClass() throw
-  dup s" foo|I" jvm_class.getStatic() 
+  dup s" foo|I" jvm_class.getStatic()
   throw
   assert( 0x42 = )
   s" bar|I" jvm_class.getStatic() throw
   assert( 0x84 = )
-  
+
   assert( depth 0 = )
 ;
 
-: static_invocation_test1 
+: static_invocation_test1
   assert( depth 0 = )
   s" ../testfiles/" jvm_classpath.add()
   s" StaticInvocation" jvm_java
   s" StaticInvocation" jvm_stack.findClass() throw
-  dup s" foo|I" jvm_class.getStatic() 
+  dup s" foo|I" jvm_class.getStatic()
   throw
   assert( 0x42 = )
   s" bar|I" jvm_class.getStatic() throw
   assert( 0x84 = )
-  
+
   assert( depth 0 = )
 ;
 
-: static_invocation_test2 
+: static_invocation_test2
   assert( depth 0 = )
   s" ../testfiles/" jvm_classpath.add()
   s" StaticInvocation2" jvm_java
   s" StaticInvocation2" jvm_stack.findClass() throw
-  dup s" foo|I" jvm_class.getStatic() 
+  dup s" foo|I" jvm_class.getStatic()
   throw
   assert( 0x42 = )
   s" bar|I" jvm_class.getStatic() throw
   assert( 0x84 = )
-  
+
   assert( depth 0 = )
 ;
 
-: parameter_test1 
+: parameter_test1
   assert( depth 0 = )
   s" ../testfiles/" jvm_classpath.add()
   s" StaticInvocationParameter" jvm_java
   s" StaticInvocationParameter" jvm_stack.findClass() throw
-  dup s" foo|I" jvm_class.getStatic() 
+  dup s" foo|I" jvm_class.getStatic()
   throw
   assert( 0x11 = )
   s" bar|I" jvm_class.getStatic() throw
   assert( 0x11 3 * = )
-  
+
   assert( depth 0 = )
 ;
 
@@ -175,10 +175,10 @@ program_sipush write-programm
 : static_inititilazer_test1
   assert( depth 0 = )
   s" ../testfiles/" jvm_classpath.add()
-  s" StaticFieldInit" 2dup 
+  s" StaticFieldInit" 2dup
   jvm_java
   jvm_stack.findClass() throw
-  dup 
+  dup
   s" foo|I" jvm_class.getStatic() throw
   assert( 0x42 = )
   s" bar|I" jvm_class.getStatic() throw
@@ -189,10 +189,10 @@ program_sipush write-programm
 : static_inititilazer_test2
   assert( depth 0 = )
   s" ../testfiles/" jvm_classpath.add()
-  s" StaticInitializer" 2dup 
+  s" StaticInitializer" 2dup
   jvm_java
   jvm_stack.findClass() throw
-  dup 
+  dup
   s" foo|I" jvm_class.getStatic() throw
   assert( 0x42 = )
   s" bar|I" jvm_class.getStatic() throw
@@ -217,7 +217,7 @@ program_sipush write-programm
   s" IfIntegerCompare" 2dup
   jvm_java
   jvm_stack.findClass() throw
-  dup 
+  dup
   s" res1|I" jvm_class.getStatic() throw
   assert( 0xDEAD = )
   dup
@@ -234,28 +234,54 @@ program_sipush write-programm
   assert( depth 0 = )
 ;
 
-: ireturn_test 
+: ireturn_test
   assert( depth 0 = )
   s" ../testfiles/" jvm_classpath.add()
   s" IReturn" 2dup
   jvm_java
   jvm_stack.findClass() throw
-  dup 
+  dup
   s" res|I" jvm_class.getStatic() throw
   assert( 0xDEAD = )
   drop
   assert( depth 0 = )
 ;
 
-: fibonacci_test 
+: fibonacci_test
   assert( depth 0 = )
   s" ../testfiles/" jvm_classpath.add()
   s" StaticFibonacci" 2dup
   jvm_java
   jvm_stack.findClass() throw
-  dup 
+  dup
   s" res|I" jvm_class.getStatic() throw
   assert( 6765 = )
+  drop
+  assert( depth 0 = )
+;
+
+: array1_test
+  assert( depth 0 = )
+  s" ../testfiles/" jvm_classpath.add()
+  s" TestArray" 2dup
+  jvm_java
+  jvm_stack.findClass() throw
+  s" intarr|[I" jvm_class.getStatic() throw
+  dup
+  ( arrayref )
+  assert( 0 jvm_array.load() 2 = )
+  dup
+  ( arrayref )
+  assert( 1 jvm_array.load() 3 = )
+  dup
+  ( arrayref )
+  assert( 2 jvm_array.load() 5 = )
+  dup
+  ( arrayref )
+  assert( 3 jvm_array.load() 7 = )
+  dup
+  ( arrayref )
+  assert( 4 jvm_array.load() 11 = )
   drop
   assert( depth 0 = )
 ;
@@ -268,8 +294,8 @@ program_sipush write-programm
   test_mnemonic
   putstatic_test
   putstatic_test2
-  static_invocation_test1 
-  static_invocation_test2 
+  static_invocation_test1
+  static_invocation_test2
   parameter_test1
   invoke_inheritance_test1
   static_inititilazer_test1
@@ -278,4 +304,5 @@ program_sipush write-programm
   ldc_integer_test
   ireturn_test
   fibonacci_test
+  array1_test
 ;

@@ -18,7 +18,7 @@
 \ You should have received a copy of the GNU General Public License
 \ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 \ this file implements functionality that is needed to read class files
-\ this file contains the implementaion of the class loader 
+\ this file contains the implementaion of the class loader
 
 require exception.fs
 require util.fs
@@ -91,6 +91,12 @@ variable jvm_classpath_list
       s" .class" 
       strcat
       ( c-addr n -- )
+
+      \ debug
+      \ ." trying: "
+      \ 2dup type CR
+      \ end debug
+
       try
         jvm_read_classfile
       iferror
@@ -113,6 +119,9 @@ variable jvm_classpath_list
     0= IF
       JVM_CLASSNOTFOUND_EXCEPTION throw
     ELSE
+      \ debug
+      \ ." class found " CR
+      \ end debug
       0
     ENDIF
   ENDIF

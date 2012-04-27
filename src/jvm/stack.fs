@@ -17,9 +17,8 @@
 
 \ You should have received a copy of the GNU General Public License
 \ along with this program.  If not, see <http://www.gnu.org/licenses/>.
-\ this file implements functionality that is needed to read class files
+
 \ this file contains the implementaion of the JVM Stack
-\ of jvm stack frames
 
 \ ========
 \ *! stack
@@ -128,12 +127,12 @@ jvm_stack.new() constant jvm_stack
 
 \ : jvm_stack.newClass() { c-addr n -- }
 :noname { c-addr n -- }
-  \ ." newClass: " c-addr n type space .s CR
   TRY
     c-addr n jvm_stack.findClass()
     nip \ delete class address
   \ ." class already found: " c-addr n type space .s CR
   IFERROR
+    ." newClass: " c-addr n type CR
     dup
     JVM_WORDNOTFOUND_EXCEPTION = IF
       drop
@@ -182,7 +181,7 @@ jvm_stack.new() constant jvm_stack
 \ jvm_stack.findAndInitClass() { c-addr n -- addr2 woir }
 :noname { c-addr n -- addr2 woir }
 \ *G search for a class an initialize it if needed
-  \ ." jvm_stack.findAndInitClass() " c-addr n type space .s CR
+  ." findAndInitClass: " c-addr n type CR
   c-addr n jvm_stack.findClass() throw
   \ ." jvm_stack.findAndInitClass() begin " .s CR
   dup jvm_class.getStatus()
@@ -190,7 +189,8 @@ jvm_stack.new() constant jvm_stack
   CASE
     ( addr_cl )
     jvm_class.STATUS:UNINIT OF
-      \ ." class " c-addr n type ."  not prepared: prepare and init" cr
+      ." findAndInitClass " c-addr n type
+      ."  not prepared: prepare and init" CR
       \ .s cr
       dup
       dup
@@ -198,8 +198,9 @@ jvm_stack.new() constant jvm_stack
       c-addr n jvm_search_classpath throw
       \ ." search classpath" .s cr
       jvm_class.prepare() throw
-      jvm_stack.loadClasses()
       \ ." class prepare" .s cr
+      jvm_stack.loadClasses()
+      \ ." class loadClasses" .s cr
       dup
       jvm_class.init()
       \ ." throw" .s cr

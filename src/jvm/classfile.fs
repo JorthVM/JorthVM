@@ -1031,7 +1031,12 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
   ." Super Class: "
   addr jvm_cf_constpool_addr \ get start of the constpool
   addr jvm_cf_super_class
-  jvm_constpool_print_classname_idx CR
+  dup 0<> IF
+    jvm_constpool_print_classname_idx CR
+  ELSE
+    2 drop
+    ." <no superclass>" CR
+  ENDIF
 ;
 
 : jvm_cf_interfaces_count_print ( addr -- )

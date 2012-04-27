@@ -341,29 +341,56 @@ defer jvm_stack.invokeStaticInitializer()
 \ NOTE loader is a value to identify loaders
 
   \ get this class
-  addr_cf jvm_cf_constpool_addr dup ( addr_cp addr_cp )
-  addr_cf jvm_cf_this_class ( addr_cp addr_cp idx1 )
-  jvm_constpool.getClassname_idx() ( scl_addr )
-  jvm_cp_utf8_c-ref ( scl_str n )
-  s" java/lang/Object" str= invert IF
+  \ addr_cf jvm_cf_constpool_addr dup ( addr_cp addr_cp )
+  \ addr_cf jvm_cf_this_class ( addr_cp addr_cp idx1 )
+  \ jvm_constpool.getClassname_idx() ( scl_addr )
+  \ jvm_cp_utf8_c-ref ( scl_str n )
+  \ FIXME cleanup
+  \ 2drop
+\  s" java/lang/Object" str= invert IF
     \ get ref to superclass
-    addr_cf jvm_cf_constpool_addr dup ( addr_cp addr_cp )
-    addr_cf jvm_cf_super_class ( addr_cp idx1 )
-    jvm_constpool.getClassname_idx() ( scl_addr )
-    jvm_cp_utf8_c-ref ( scl_str n )
-    2dup ( scl_str n scl_str n )
-    jvm_stack.newClass() ( scl_str n )
-    jvm_stack.findAndInitClass() throw ( addr_super_class )
-    dup ( addr_super_class addr_super_class )
-    addr_cl jvm_class.super + ! ( addr_super_class )
+
+  addr_cf jvm_cf_constpool_addr
+  ( addr_cp )
+  \ ." STACK PREPREIF: " .s CR
+  addr_cf jvm_cf_super_class
+  ( addr_cp idx1 )
+  \ ." STACK PREIF: " .s CR
+  dup 0<> IF
+    \ ." STACK IF: " .s CR
+    jvm_constpool.getClassname_idx()
+    ( scl_addr )
+    jvm_cp_utf8_c-ref
+    ( scl_str n )
+    \ debug
+    \ 2dup ." Superclass: " type CR
+    \ end debug
+    2dup
+    ( scl_str n scl_str n )
+    jvm_stack.newClass()
+    ( scl_str n )
+    jvm_stack.findAndInitClass() throw
+    ( addr_super_class )
+    dup
+    ( addr_super_class addr_super_class )
+    addr_cl jvm_class.super + !
+    ( addr_super_class )
 
     \ set field length from superclass
     jvm_class.getField_length() ( length )
     addr_cl jvm_class.incField_length()
+  ELSE
+    \ ." STACK ELSE: " .s CR
+    2drop
   ENDIF
-  
+  \ ." STACK POSTIF: " .s CR
+
   \ create runtime constant pool
-  addr_cf jvm_rtcp.new() addr_cl jvm_class.rtcp + !
+  addr_cf jvm_rtcp.new()
+  \ debug
+  \ ." RTCP: " .s CR
+  \ end debug
+  addr_cl jvm_class.rtcp + !
   \ TODO add super class
 
   \ create static fields
@@ -383,12 +410,12 @@ defer jvm_stack.invokeStaticInitializer()
     ( addr_md addr_md name_idx desc_idx )
     addr_cf -rot jvm_cp_nametype_identifier
     \ 2dup ." Method: " type CR
-    addr_cl jvm_class.getMethodList() 
+    addr_cl jvm_class.getMethodList()
     \ ." pre add word " .s CR
     jvm_add_word
     dup jvm_md_size +
   LOOP
-  drop 
+  drop
 
   jvm_class.STATUS:PREPARED addr_cl jvm_class.status + ! \ store status
   loader addr_cl jvm_class.init_loader + !               \ store loader
@@ -397,8 +424,29 @@ defer jvm_stack.invokeStaticInitializer()
 
 : jvm_class.init() { addr_cl -- wior }
 \ *G initialaze class
+
   \ TODO init superclass
-  \ TODO call static initialazer
+  addr_cl jvm_class.getRTCP()
+  dup jvm_rtcp.getSuperClassIdx()
+  dup 0<> IF
+    ( rtcp idx )
+    jvm_rtcp.getClassName()
+    ( c-addr n )
+    jvm_stack.findAndInitClass()
+    drop
+  ELSE
+    2drop
+  ENDIF
+
+  \ TODO init interfaces
+
+  \ debug
+  addr_cl jvm_class.getRTCP()
+  jvm_rtcp.getThisClass()
+  ." initializing: " type CR
+  \ end debug
+
+  \ call static initializer
   dup jvm_class.STATUS:INIT addr_cl jvm_class.status + ! \ store status
   jvm_stack.invokeStaticInitializer() throw
   0

@@ -22,8 +22,8 @@
 \ ========
 \ *! rtconstpool
 \ *T Runtime Constant Pool
-\ 
-\ *P This file contains the implentation of the Runtime Constant Pool 
+
+\ *P This file contains the implentation of the Runtime Constant Pool
 \ ** as specified in the JVM specification §5.1 and §5.3.
 \ ========
 
@@ -33,7 +33,7 @@ require classfile.fs
 \ ========
 \ *S Runtime Constant Pool Struct
 \ ========
-\ 
+
 \ *E runtime_constant_ool {
 \ **    ClassFile classfile;
 \ **    addr constpool_table;
@@ -46,7 +46,7 @@ require classfile.fs
 \ **    addr long_info_table;
 \ **    addr double_info_table;
 \ **  }
-\ 
+
 
  0 cells constant jvm_rtcp.classfile
  1 cells constant jvm_rtcp.constpool_table
@@ -83,7 +83,7 @@ require classfile.fs
   ( class_addr)
   jvm_cp_class_name_idx
   ( name_idx)
-  addr swap 
+  addr swap
   ( addr_rtcp name_idx)
   jvm_rtcp.getConstpoolByIdx()
   ( addr_utf8)
@@ -91,12 +91,28 @@ require classfile.fs
 ;
 \ FIXME other name?
 
+: jvm_rtcp.getThisClassIdx() ( addr -- idx )
+\ *G get the constant pool index of this class
+  jvm_rtcp.getClassfile() jvm_cf_this_class
+;
+
+: jvm_rtcp.getThisClass() ( addr -- c-addr n )
+\ *G get the this class
+  dup jvm_rtcp.getThisClassIdx()
+  jvm_rtcp.getClassName()
+;
+
+: jvm_rtcp.getSuperClassIdx() ( addr -- idx )
+\ *G get the constant pool index of the super class
+  jvm_rtcp.getClassfile() jvm_cf_super_class
+;
+
 : jvm_rtcp.getNameAndType() { addr idx -- c-addr n }
   addr idx jvm_rtcp.getConstpoolByIdx()
   ( nametype_addr)
   dup jvm_cp_nametype_name_idx
   ( nametype_addr name_idx)
-  addr swap 
+  addr swap
   ( nametype addr_rtcp name_idx)
   jvm_rtcp.getConstpoolByIdx()
   ( nametype addr_utf8)
@@ -108,7 +124,7 @@ require classfile.fs
   ( c-addr n nametype)
   jvm_cp_nametype_desc_idx
   ( c-addr n desc_idx)
-  addr swap 
+  addr swap
   ( c-addr n addr_rtcp desc_idx)
   jvm_rtcp.getConstpoolByIdx()
   ( c-addr n addr_utf8)
@@ -188,8 +204,8 @@ require classfile.fs
   jvm_rtcp.size() allocate throw
   \ dup ." new addr: " . dup ." - " hex. cr
   dup addr swap ( jvm_rtcp.classfile +) ! \ store classfile reference
-  addr jvm_rtcp.createConstPoolTable() 
-  over jvm_rtcp.constpool_table + ! 
+  addr jvm_rtcp.createConstPoolTable()
+  over jvm_rtcp.constpool_table + !
   wordlist over jvm_rtcp.class_info + ! \ store class_info wordlist
   wordlist over jvm_rtcp.fieldref_info + ! \ store fieldref_info wordlist
   wordlist over jvm_rtcp.methodref_info + ! \ store methodref_info wordlist

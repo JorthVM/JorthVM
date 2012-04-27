@@ -160,6 +160,12 @@ require rtconstpool.fs
 
 : jvm_class.getInheritanceStuff() { addr c-addr n wid-xt -- addr_cl off wior }
   addr BEGIN 
+    \ debug
+      \ ." getInheritanceStuff class: "
+      \ dup jvm_class.getRTCP()
+      \ jvm_rtcp.getThisClass() 
+      \ type CR
+    \ end debug
     dup wid-xt execute
     c-addr n rot
     TRY
@@ -232,6 +238,12 @@ require rtconstpool.fs
 
 : jvm_class.getMethod() { addr c-addr n -- addr_cl addr_md woir }
 \ *G get the address of a method entry and the according class (might be a super class)
+\ debug
+  \ ." jvm_class.getMethod() "
+  \ addr jvm_class.getRTCP()
+  \ jvm_rtcp.getThisClass() type
+  \ CR
+\ end debug
   addr c-addr n ['] jvm_class.getMethodList()
   jvm_class.getInheritanceStuff()
 ;
@@ -336,6 +348,9 @@ defer jvm_stack.newClass()
 defer jvm_stack.findAndInitClass()
 defer jvm_stack.invokeStaticInitializer()
 
+\ : ?loadObject false ;
+: ?loadObject true ;
+
 : jvm_class.prepare() { addr_cl loader addr_cf -- wior }
 \ *G prepare a class using a classfile and a loader
 \ NOTE loader is a value to identify loaders
@@ -365,20 +380,30 @@ defer jvm_stack.invokeStaticInitializer()
     \ debug
     \ 2dup ." Superclass: " type CR
     \ end debug
+    \ DO NOT LOAD java/lang/Object yet
+    [ ?loadObject invert ] [IF]
     2dup
-    ( scl_str n scl_str n )
-    jvm_stack.newClass()
-    ( scl_str n )
-    jvm_stack.findAndInitClass() throw
-    ( addr_super_class )
-    dup
-    ( addr_super_class addr_super_class )
-    addr_cl jvm_class.super + !
-    ( addr_super_class )
+    s" java/lang/Object" str= invert IF
+    [ENDIF]
+      2dup
+      ( scl_str n scl_str n )
+      jvm_stack.newClass()
+      ( scl_str n )
+      jvm_stack.findAndInitClass() throw
+      ( addr_super_class )
+      dup
+      ( addr_super_class addr_super_class )
+      addr_cl jvm_class.super + !
+      ( addr_super_class )
 
-    \ set field length from superclass
-    jvm_class.getField_length() ( length )
-    addr_cl jvm_class.incField_length()
+      \ set field length from superclass
+      jvm_class.getField_length() ( length )
+      addr_cl jvm_class.incField_length()
+    [ ?loadObject invert ] [IF]
+    ELSE
+      2drop
+    ENDIF
+    [ENDIF]
   ELSE
     \ ." STACK ELSE: " .s CR
     2drop
@@ -426,6 +451,7 @@ defer jvm_stack.invokeStaticInitializer()
 \ *G initialaze class
 
   \ TODO init superclass
+  [ ?loadObject ] [IF]
   addr_cl jvm_class.getRTCP()
   dup jvm_rtcp.getSuperClassIdx()
   dup 0<> IF
@@ -433,17 +459,19 @@ defer jvm_stack.invokeStaticInitializer()
     jvm_rtcp.getClassName()
     ( c-addr n )
     jvm_stack.findAndInitClass()
+    throw
     drop
   ELSE
     2drop
   ENDIF
-
+  [ENDIF]
   \ TODO init interfaces
 
   \ debug
   addr_cl jvm_class.getRTCP()
   jvm_rtcp.getThisClass()
   ." initializing: " type CR
+  \ .s CR
   \ end debug
 
   \ call static initializer

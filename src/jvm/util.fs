@@ -28,6 +28,8 @@
 
 require exception.fs
 
+: ?debug false ;
+
 : decimal_places ( u1 -- u2 )
   1 swap begin
   10 / dup 0> while
@@ -87,12 +89,20 @@ require exception.fs
   previous definitions
 ;
 
-: jvm_find_word_addr ( c-addr n wid -- addr wior )
+: jvm_find_word_addr { c-addr n wid -- addr wior }
 \ *G find a word and return the associated addr in a specific wordlist
+\ debug
+\  c-addr n ." find word: " type CR
+\ end debug
+  c-addr n wid
   search-wordlist 
   case
     0 of
       ( -- ) \ word not found
+      \ ." word not found " c-addr n type CR
+      \ ." known words:" CR
+      \ wid wordlist-words
+      \ CR
       JVM_WORDNOTFOUND_EXCEPTION throw
     endof
     -1 of

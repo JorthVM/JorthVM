@@ -515,6 +515,11 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 
 : jvm_constpool_idx ( a-addr1 idx - a-addr2 )
 \ returns address of entry with index idx from constant pool starting at address a-addr1
+\ debug
+\  2dup
+\  ." idx: " . CR
+\  ." const-addr: " . CR
+\ end debug
   [ITERATE_CONSTPOOL]
   [ITERATE_END]
   2drop
@@ -723,7 +728,11 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 ;
 
 : jvm_constpool.getClassname_idx() { const-addr idx -- addr }
-  const-addr idx
+\ debug
+\  ." const addr: " const-addr . CR
+\  ." idx: " idx . CR
+\ end debug
+  const-addr dup idx
   jvm_constpool_idx ( addr_cp addr_scl )
   jvm_cp_class_name_idx ( addr_cp idx2 )
   jvm_constpool_idx ( addr_scl_str )
@@ -757,8 +766,8 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 : jvm_constpool_print_attr { const-addr addr1 -- addr2 }
   \ const-addr: address of the constpool, addr1: start address of the attribute, addr2: address after the attribute
   \ debug
-  ." const-addr: " const-addr . CR
-  ." addr1: " addr1 . CR
+  \ ." const-addr: " const-addr . CR
+  \ ." addr1: " addr1 . CR
   \ end debug
   addr1
   dup \ dup addr

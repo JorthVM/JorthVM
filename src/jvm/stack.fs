@@ -181,7 +181,9 @@ jvm_stack.new() constant jvm_stack
 \ jvm_stack.findAndInitClass() { c-addr n -- addr2 woir }
 :noname { c-addr n -- addr2 woir }
 \ *G search for a class an initialize it if needed
-  ." findAndInitClass: " c-addr n type CR
+\ debug
+  \ ." findAndInitClass: " c-addr n type CR
+\ end debug
   c-addr n jvm_stack.findClass() throw
   \ ." jvm_stack.findAndInitClass() begin " .s CR
   dup jvm_class.getStatus()
@@ -189,13 +191,18 @@ jvm_stack.new() constant jvm_stack
   CASE
     ( addr_cl )
     jvm_class.STATUS:UNINIT OF
-      ." findAndInitClass " c-addr n type
-      ."  not prepared: prepare and init" CR
+      \ debug
+      ." preparing: " c-addr n type CR
+      \ ."  not prepared: prepare and init" CR
       \ .s cr
+      \ end debug
       dup
       dup
       jvm_default_loader
       c-addr n jvm_search_classpath throw
+      \ debug
+      ." loaded: " c-addr n type ." .class" CR
+      \ end debug
       \ ." search classpath" .s cr
       jvm_class.prepare() throw
       \ ." class prepare" .s cr
@@ -283,7 +290,16 @@ variable debug_indent
 
 : jvm_stack.findMethod() { c-addr1 n1 c-addr2 n2 -- addr_c2 addr_md wior }
 \ *G find a method return class address and method attribute address
+\ debug
+  \ ." findMethod: " c-addr1 n1 type ." ." c-addr2 n2 type CR
+\ end debug
   c-addr1 n1 jvm_stack.findAndInitClass() throw
+\ debug
+  \ ." findMethod: found class: "
+  \ dup jvm_class.getRTCP()
+  \ jvm_rtcp.getThisClass() type
+  \ CR
+\ end debug
   ( addr-cl )
   c-addr2 n2 jvm_class.getMethod() throw
   ( addr-cl2 addr_md )
@@ -431,8 +447,10 @@ variable debug_indent
   ELSE
     drop
     ( c-addr1 n1 c-addr2 n2 )
+    \ debug
     \ 2swap ." Classname: " 2dup type CR
     \ 2swap ." NameType: " 2dup type CR
+    \ end debug
     jvm_stack.findMethod() throw
     ( addr_cl addr_md )
     jvm_stack.getCurrentFrame() \ dynamic link

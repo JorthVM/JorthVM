@@ -756,6 +756,10 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
 
 : jvm_constpool_print_attr { const-addr addr1 -- addr2 }
   \ const-addr: address of the constpool, addr1: start address of the attribute, addr2: address after the attribute
+  \ debug
+  ." const-addr: " const-addr . CR
+  ." addr1: " addr1 . CR
+  \ end debug
   addr1
   dup \ dup addr
   jvm_uw@ \ load name idx
@@ -1094,7 +1098,7 @@ variable jvm_p_attributes_addr \ stores the pointer to the first field
     ." -----------" CR
     ( const-addr addr count -- )
     0 ?DO
-      dup
+      over -rot
       ( const-addr const-addr addr1 -- const-addr addr2 )
       jvm_constpool_print_attr
     LOOP
